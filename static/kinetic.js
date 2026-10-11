@@ -157,8 +157,41 @@
 
   PRESETS.spiral = { ...PRESETS["focus-word"], id:"spiral", label:"Spiral Flight", enter:"fade", lead:0, tail:.25, description:"Words orbit inward from depth and resolve at the sung syllable." };
   PRESETS.constellation = { ...PRESETS["neon-flux"], id:"constellation", label:"Word Constellation", layout:"focus", pendingAlpha:.18, lead:0, description:"Scattered words surround the current word, held at the centre." };
+  // Karaoke Credit Crawl: a step-based vertical lyric roll. The sung cue stays
+  // centred while completed cues roll up and fade and upcoming cues rise from
+  // below. Cue timestamps are never rewritten; the roll is pure in t so seeking
+  // reconstructs the exact stack. Vertical motion is independent of word fill.
+  PRESETS["credit-crawl"] = {
+    id: "credit-crawl",
+    label: "Karaoke Credit Crawl",
+    sizeScale: 1,
+    layout: "inline",
+    lead: 0,
+    pendingAlpha: 0,
+    hold: "cue",
+    tail: 0,
+    enter: "none",
+    active: "wipe",
+    past: "none",
+    caseTransform: "none",
+    lineHeight: 1.0,
+    wordGap: 0.22,
+    beatReact: 0,
+    crawl: {
+      transition: 0.4,      // step ease, seconds
+      prevLines: 2,         // completed cues visible above
+      nextLines: 2,         // upcoming cues visible below
+      activeOpacity: 1,
+      nearOpacity: 0.58,    // immediate previous/next
+      farOpacity: 0.28,     // distant lines
+      gapHold: 1.2,         // keep the last line through a short instrumental gap
+      enterDrop: 1.4,       // upcoming cues rise from this many line-units below
+      blockGap: 0.35        // breathing room between cue blocks, line units
+    },
+    description: "The sung line stays centred while lyrics roll upward like film credits."
+  };
   const PRESET_ORDER = [
-    "kinetic-slam", "neon-flux", "focus-word", "cascade", "wipe-fill", "bold-stack", "minimal", "spiral", "constellation"
+    "kinetic-slam", "neon-flux", "focus-word", "cascade", "wipe-fill", "bold-stack", "minimal", "spiral", "constellation", "credit-crawl"
   ];
 
   const LEGACY_PRESETS = { "center-punch": "kinetic-slam", "karaoke": "wipe-fill", "neon": "neon-flux" };
@@ -249,6 +282,17 @@
   function wordState(word, cue, t, spec, beat = 0) {
     const start = word.start;
     const end = Math.max(start + 0.06, word.end);
+    if (spec.crawl) {
+      // The cue block owns visibility, dimming and vertical motion
+      // (creditCrawlState); words only own the karaoke fill, so the roll is
+      // independent of highlighting and seeking reconstructs both exactly.
+      const p = clamp((t - start) / Math.max(0.001, end - start));
+      return {
+        visible: true, opacity: 1, scale: 1, dx: 0, dy: 0, rotate: 0, blur: 0,
+        fill: p, fillAlpha: 1, glow: 0, role: t < start ? "pending" : "active",
+        weightBoost: 0, tracking: 0
+      };
+    }
     const pending = spec.pendingAlpha || 0;
     // Allocate a phrase ahead of time, but never show its first glyph before
     // the first timed word. Pending-tint presets used to bypass even a zero
@@ -463,6 +507,95 @@
   }
 
   /**
+   * Karaoke Credit Crawl cue-stack state — the single source of truth shared by
+   * the browser preview and the MP4 export.
+   *
+   * Each cue block occupies its own wrapped line count in "line units", blocks
+   * separated by blockGap. c_i is cue i's centre in stack space. The screen
+   * centre advances through stack space as eased cumulative steps, one per cue
+   * boundary that has passed:
+   *
+   *   centre(t) = Σ_{start_i ≤ t} easeOutCubic(clamp((t - start_i) / transition)) · (c_i − c_{i−1})
+   *   offset_i  = c_i − centre(t)
+   *
+   * At rest the active cue's offset is exactly 0 (centred); completed cues roll
+   * toward negative offsets and upcoming cues rise from positive ones. The
+   * function is pure in t: seeking reconstructs the exact stack without replaying
+   * missed transitions, and centre(t) stays continuous when cues are closer
+   * together than the transition, so closely spaced cues converge instead of
+   * jumping. Wrapped cues occupy their true height, so neighbours never collide.
+   * Cue timestamps are never rewritten.
+   *
+   * Returns { activeIndex, cues: [{index, cue, offset, opacity, active}] }
+   * ordered top to bottom. `index` is the position in the input cue list.
+   */
+  function creditCrawlState(cues, t, spec, charsPerLine = 22) {
+    const crawl = spec.crawl || PRESETS["credit-crawl"].crawl;
+    const transition = Math.max(0.05, crawl.transition);
+    const prevCues = Math.max(0, crawl.prevLines);
+    const nextCues = Math.max(0, crawl.nextLines);
+    const gapHold = Math.max(0.2, crawl.gapHold);
+    const blockGap = Math.max(0, crawl.blockGap);
+
+    const ordered = cues.map((cue, index) => ({ cue, index }))
+      .sort((a, b) => a.cue.start - b.cue.start);
+    const lineCounts = ordered.map(item =>
+      Math.max(1, layoutLines(cueWords(item.cue), spec, charsPerLine).length));
+
+    const centres = [];
+    let cursor = 0;
+    ordered.forEach((item, i) => {
+      centres.push(cursor + lineCounts[i] / 2);
+      cursor += lineCounts[i] + blockGap;
+    });
+
+    let centre = 0;
+    let activeIndex = -1;
+    for (let i = 0; i < ordered.length; i++) {
+      if (ordered[i].cue.start > t) break;
+      const step = i === 0 ? centres[0] : centres[i] - centres[i - 1];
+      centre += ease.outCubic(clamp((t - ordered[i].cue.start) / transition)) * step;
+      activeIndex = i;
+    }
+
+    const visible = [];
+    ordered.forEach((item, i) => {
+      const cue = item.cue;
+      const isActive = cue.start <= t && t < cue.end;
+      if (!isActive && cue.start > t) {
+        if (nextCues === 0 || i - activeIndex > nextCues) return;
+      }
+      if (!isActive && cue.start <= t) {
+        if (prevCues === 0 || activeIndex - i > prevCues) return;
+      }
+
+      const offset = centres[i] - centre;
+      const rank = isActive ? 0 : Math.abs(i - (activeIndex < 0 ? -1 : activeIndex));
+      let opacity;
+      if (isActive) {
+        // Brighten from readable-in-advance to full over the step ease.
+        opacity = mix(crawl.nearOpacity, crawl.activeOpacity,
+          ease.outCubic(clamp((t - cue.start) / transition)));
+      } else if (cue.start <= t) {
+        // Completed cue: settle to its distance-based level. The most recent
+        // line holds brighter through an instrumental gap (gapHold) instead of
+        // cutting or leaving a blank frame; earlier lines settle over the
+        // step transition so the boundary itself is continuous.
+        const lastPlayed = i === activeIndex;
+        const base = lastPlayed || rank <= 1 ? crawl.nearOpacity : crawl.farOpacity;
+        const window = lastPlayed ? gapHold : transition;
+        opacity = mix(crawl.activeOpacity, base, ease.outCubic(clamp((t - cue.end) / window)));
+      } else {
+        opacity = rank <= 1 ? crawl.nearOpacity : crawl.farOpacity;
+      }
+      if (opacity <= 0.004) return;
+      visible.push({ index: item.index, cue, offset, opacity, active: isActive });
+    });
+    visible.sort((a, b) => a.offset - b.offset);
+    return { activeIndex, cues: visible };
+  }
+
+  /**
    * Per-word size multiplier for the one-word-at-a-time layout, so a short word
    * fills the frame and a long one still fits. Deterministic from the token
    * length alone, which keeps the browser and the exporter in agreement.
@@ -573,6 +706,6 @@
 
   window.VFKinetic = {
     ease, clamp, mix, PRESETS, PRESET_ORDER, LEGACY_PRESETS,
-    preset, resolvedPreset, cueWords, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues
+    preset, resolvedPreset, cueWords, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues, creditCrawlState
   };
 })();

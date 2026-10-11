@@ -78,6 +78,16 @@ for (const presetId of input.presets) {
   out.lines[presetId] = K.layoutLines(words, K.preset(presetId), input.budget)
     .map(line => line.map(w => w.text));
 }
+out.crawl = [];
+const crawlSpec = K.preset("credit-crawl");
+for (const [name, cueList] of Object.entries(input.crawlCases)) {
+  for (const t of input.crawlTimes) {
+    const s = K.creditCrawlState(cueList, t, crawlSpec, input.budget);
+    out.crawl.push([name, t, s.activeIndex, s.cues.map(c => [
+      c.index, +c.offset.toFixed(6), +c.opacity.toFixed(6), c.active ? 1 : 0
+    ])]);
+  }
+}
 process.stdout.write(JSON.stringify(out));
 """
 
@@ -119,6 +129,36 @@ def test_every_preset_has_a_python_and_js_twin():
         assert f'"{preset_id}"' in js, f"{preset_id} missing from static/kinetic.js"
 
 
+def test_credit_crawl_blocks_never_collide():
+    """Wrapped cues occupy their true height in stack space, so neighbours
+    never collide at any time: offset_j - offset_i == c_j - c_i >=
+    lines_i/2 + blockGap + lines_j/2, and the centre term cancels."""
+    spec = kinetic.get_preset("credit-crawl")
+    cases = {
+        "wrapped": [
+            {"id": "w1", "start": 0.0, "end": 2.0, "text": "THIS IS A VERY LONG\nFIRST LINE WRAPPING", "words": []},
+            {"id": "w2", "start": 2.0, "end": 4.0, "text": "SECOND LINE AFTER IT", "words": []},
+            {"id": "w3", "start": 4.0, "end": 6.0, "text": "THIRD LINE HERE", "words": []},
+        ],
+        "overlap": [
+            {"id": "o1", "start": 0.0, "end": 1.0, "text": "quick one", "words": []},
+            {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
+            {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
+        ],
+    }
+    for name, cue_list in cases.items():
+        for t in [0.0, 0.4, 1.0, 1.9, 2.0, 2.2, 3.0, 4.0, 5.0]:
+            state = kinetic.credit_crawl_state(cue_list, t, spec, 24)
+            heights = [
+                max(1, len(kinetic.layout_lines(kinetic.cue_words(item["cue"]), spec, 24)))
+                for item in state["cues"]
+            ]
+            for (a, ha), (b, hb) in zip(zip(state["cues"], heights), list(zip(state["cues"], heights))[1:]):
+                assert b["offset"] - a["offset"] >= ha / 2 + hb / 2 - 1e-9, (
+                    f"{name} t={t} blocks {a['cue']['id']}/{b['cue']['id']} collide"
+                )
+
+
 def test_engines_agree():
     presets = list(kinetic.PRESETS)
     times = [0.5, 1.9, 2.0, 2.05, 2.3, 3.0, 4.4, 5.9, 6.0, 6.15, 6.4, 7.5]
@@ -131,10 +171,35 @@ def test_engines_agree():
         {"fontSize": 240, "maxWidth": 96, "fontPreset": "mono"},
     ]
     cues = {"plain": CUE, "timed": TIMED_CUE}
+    crawl_cases = {
+        "even": [
+            {"id": "c1", "start": 0.0, "end": 2.0, "text": "first line here", "words": []},
+            {"id": "c2", "start": 2.0, "end": 4.0, "text": "second line here", "words": []},
+            {"id": "c3", "start": 4.0, "end": 6.0, "text": "third line here", "words": []},
+            {"id": "c4", "start": 6.0, "end": 8.0, "text": "fourth line here", "words": []},
+            {"id": "c5", "start": 8.0, "end": 10.0, "text": "fifth line here", "words": []},
+        ],
+        "gap": [
+            {"id": "g1", "start": 0.0, "end": 1.5, "text": "before the break", "words": []},
+            {"id": "g2", "start": 5.0, "end": 7.0, "text": "after the break", "words": []},
+        ],
+        "overlap": [
+            {"id": "o1", "start": 0.0, "end": 1.0, "text": "quick one", "words": []},
+            {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
+            {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
+        ],
+        "wrapped": [
+            {"id": "w1", "start": 0.0, "end": 2.0, "text": "THIS IS A VERY LONG\nFIRST LINE WRAPPING", "words": []},
+            {"id": "w2", "start": 2.0, "end": 4.0, "text": "SECOND LINE AFTER IT", "words": []},
+            {"id": "w3", "start": 4.0, "end": 6.0, "text": "THIRD LINE HERE", "words": []},
+        ],
+    }
+    crawl_times = [-1.0, 0.0, 0.2, 1.0, 1.9, 2.0, 2.2, 3.0, 4.0, 5.5, 6.0, 7.9, 8.0, 9.5, 12.0]
     payload = {
         "cues": cues, "presets": presets, "times": times, "beats": beats,
         "styles": styles, "canvas": CANVAS, "tokens": tokens,
         "beatArgs": beat_args, "budget": 22,
+        "crawlCases": crawl_cases, "crawlTimes": crawl_times,
     }
     js = _node_results(payload)
 
@@ -186,3 +251,23 @@ def test_engines_agree():
         spec = kinetic.get_preset(preset_id)
         expected = [[word["text"] for word in line] for line in kinetic.layout_lines(words, spec, 22)]
         assert js["lines"][preset_id] == expected, f"layout mismatch for {preset_id}"
+
+    # Credit Crawl cue-stack state: the roll the preview shows must be the roll
+    # the exporter composites, cue for cue, frame for frame.
+    crawl_spec = kinetic.get_preset("credit-crawl")
+    cursor = 0
+    for name, cue_list in crawl_cases.items():
+        for t in crawl_times:
+            state = kinetic.credit_crawl_state(cue_list, t, crawl_spec, 22)
+            row = js["crawl"][cursor]
+            cursor += 1
+            label = f"crawl {name} t={t}"
+            assert row[:2] == [name, t], label
+            assert row[2] == state["activeIndex"], f"{label} activeIndex"
+            assert len(row[3]) == len(state["cues"]), f"{label} cue count"
+            for js_cue, cue in zip(row[3], state["cues"]):
+                assert js_cue[0] == cue["index"], f"{label} index"
+                assert js_cue[1] == pytest.approx(cue["offset"], abs=1e-6), f"{label} offset"
+                assert js_cue[2] == pytest.approx(cue["opacity"], abs=1e-6), f"{label} opacity"
+                assert js_cue[3] == (1 if cue["active"] else 0), f"{label} active"
+    assert cursor == len(js["crawl"])

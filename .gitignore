@@ -58,3 +58,6 @@ token.json
 *.key
 *.p12
 *.pfx
+
+# Local QA render artifacts
+.crawl_render/

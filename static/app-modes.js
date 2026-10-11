@@ -27,7 +27,8 @@ const PRESET_LABELS_2D = {
   cascade: "Cascade: stacked words",
   "wipe-fill": "Wipe Fill: karaoke fill",
   "bold-stack": "Bold Stack: poster",
-  minimal: "Minimal Caption"
+  minimal: "Minimal Caption",
+  "credit-crawl": "Karaoke Credit Crawl: rolling credits"
 };
 
 const PRESET_LABELS_3D = {
