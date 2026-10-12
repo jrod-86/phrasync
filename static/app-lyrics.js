@@ -89,7 +89,8 @@ function renderLyric(force = false) {
   // Credit Crawl drives its own cue window; 3D scene text keeps the standard one.
   const crawlMode = spec.id === "credit-crawl" && !lyricIsIn3D();
   const crawlState = crawlMode ? K().creditCrawlState(
-    project.cues, time, spec, K().charBudget(project.style, project.canvas, spec)) : null;
+    project.cues, time, spec, K().charBudget(project.style, project.canvas, spec),
+    K().crawlViewport(project.style, project.canvas, spec)) : null;
   const crawlByCueId = crawlState ? new Map(crawlState.cues.map(item => [item.cue.id, item])) : null;
   const active = crawlState ? crawlState.cues.map(item => item.cue)
     : K().activeCues(project.cues, time, lyricIsIn3D() ? preset3D(spec, true) : spec);

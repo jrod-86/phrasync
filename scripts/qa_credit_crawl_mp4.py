@@ -115,12 +115,13 @@ def main() -> int:
 
     spec = kinetic.resolved_preset({"preset": "credit-crawl"})
     budget = kinetic.char_budget(project["style"], project["canvas"], spec)
+    viewport = kinetic.crawl_viewport(project["style"], project["canvas"], spec)
 
     for t in [1.0, 2.2, 5.0]:
         frame = extract_frame(video, t)
         assert frame.size == (WIDTH, HEIGHT), f"frame {t} wrong size {frame.size}"
         frame.save(out_dir / f"mp4_t{t}.png")
-        state = kinetic.credit_crawl_state(CUES, t, spec, budget)
+        state = kinetic.credit_crawl_state(CUES, t, spec, budget, viewport)
         cues = state["cues"]
         assert cues, f"empty export state at t={t}"
 
@@ -169,7 +170,7 @@ def main() -> int:
         frame.save(out_dir / f"mp4_gap_t{t}.png")
         bands = glyph_bands(frame)
         assert bands, f"gap frame at t={t} is blank"
-        state = kinetic.credit_crawl_state(gap_cues, t, spec, budget)
+        state = kinetic.credit_crawl_state(gap_cues, t, spec, budget, viewport)
         assert state["cues"], f"gap state empty at t={t}"
 
     print("PASS credit-crawl MP4 export QA (decode, centring, fade ordering, gap calm)")

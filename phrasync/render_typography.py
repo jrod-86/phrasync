@@ -271,6 +271,7 @@ def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
         crawl_state = kinetic.credit_crawl_state(
             ctx.cues, lyric_t, spec,
             kinetic.char_budget(style, ctx.project.get("canvas") or {}, spec),
+            kinetic.crawl_viewport(style, ctx.project.get("canvas") or {}, spec),
         )
         cues = [item["cue"] for item in crawl_state["cues"]]
     else:

@@ -118,6 +118,7 @@ def main() -> int:
                 project.background = {type:'dynamic', visual:'aurora',
                     backgroundColor:'#101018', shade:1.0, visualIntensity:0.0};
                 project.style.fontSize = 100;
+                project.style.lineGap = 0;
                 applyStageStyle();
                 virtualTime = 0; virtualPlaying = false;
                 renderLyric(true);
@@ -142,6 +143,8 @@ def main() -> int:
                 VFKinetic.creditCrawlState(project.cues, 1.0,
                   VFKinetic.resolvedPreset(project.style),
                   VFKinetic.charBudget(project.style, project.canvas,
+                    VFKinetic.resolvedPreset(project.style)),
+                  VFKinetic.crawlViewport(project.style, project.canvas,
                     VFKinetic.resolvedPreset(project.style))).cues.map(c=>c.cue.id)
             """)
             assert ids_at == ["c1", "c2", "c3"], f"expected active c1 + upcoming c2,c3 at t=1.0, got {ids_at}"
@@ -165,6 +168,8 @@ def main() -> int:
                 (() => { const s = VFKinetic.creditCrawlState(project.cues, 1.0,
                     VFKinetic.resolvedPreset(project.style),
                     VFKinetic.charBudget(project.style, project.canvas,
+                      VFKinetic.resolvedPreset(project.style)),
+                    VFKinetic.crawlViewport(project.style, project.canvas,
                       VFKinetic.resolvedPreset(project.style)));
                     const a = s.cues.find(c=>c.active); return a ? a.cue.id : null; })()
             """)
@@ -182,9 +187,13 @@ def main() -> int:
                 VFKinetic.creditCrawlState(project.cues, 2.2,
                   VFKinetic.resolvedPreset(project.style),
                   VFKinetic.charBudget(project.style, project.canvas,
+                    VFKinetic.resolvedPreset(project.style)),
+                  VFKinetic.crawlViewport(project.style, project.canvas,
                     VFKinetic.resolvedPreset(project.style))).cues.map(c=>c.cue.id)
             """)
-            assert ids_rest == ["c1", "c2", "c3", "c4"], f"expected c1,c2,c3,c4 at t=2.2, got {ids_rest}"
+            # Viewport rule: c4's block would poke below the frame at t=2.2,
+            # so it is not shown until it fits completely (Codex finding 1).
+            assert ids_rest == ["c1", "c2", "c3"], f"expected c1,c2,c3 at t=2.2, got {ids_rest}"
             def band_centres(image):
                 return [(b[0] + b[1]) / 2 for b in glyph_rows(image)]
             stage_shot(dev).save(args.out / "preview_t2.2.png")
@@ -208,6 +217,8 @@ def main() -> int:
                 VFKinetic.creditCrawlState(project.cues, 5.0,
                   VFKinetic.resolvedPreset(project.style),
                   VFKinetic.charBudget(project.style, project.canvas,
+                    VFKinetic.resolvedPreset(project.style)),
+                  VFKinetic.crawlViewport(project.style, project.canvas,
                     VFKinetic.resolvedPreset(project.style))).cues.map(c=>c.cue.id)
             """)
             assert ids_seek == ["c1", "c2", "c3", "c4"], f"seek stack wrong: {ids_seek}"
@@ -233,7 +244,8 @@ def main() -> int:
                 (() => {
                     const preset = VFKinetic.resolvedPreset(project.style);
                     const budget = VFKinetic.charBudget(project.style, project.canvas, preset);
-                    const state = VFKinetic.creditCrawlState(project.cues, 5.0, preset, budget);
+                    const state = VFKinetic.creditCrawlState(project.cues, 5.0, preset, budget,
+                      VFKinetic.crawlViewport(project.style, project.canvas, preset));
                     const dom = [...document.querySelectorAll('.lyric-display .lyric-cue')];
                     return state.cues.map((c, i) => ({
                         id: c.cue.id,
@@ -260,11 +272,15 @@ def main() -> int:
                      % json.dumps(json.dumps(CUES)))
 
             # --- 7. preview DOM matches export state (offsets + opacity) ---
-            spec = kinetic.resolved_preset({"preset": "credit-crawl"})
+            spec = kinetic.resolved_preset({"preset": "credit-crawl", "fontSize": 100, "lineGap": 0})
+            qa_canvas = {"width": 1920, "height": 1080}
+            qa_style = {"preset": "credit-crawl", "fontSize": 100, "lineGap": 0}
             for t in [1.0, 2.2, 5.0]:
                 dom = dom_stack(t)
-                state = kinetic.credit_crawl_state(CUES, t, spec,
-                                                   kinetic.char_budget({"preset": "credit-crawl"}, {}, spec))
+                state = kinetic.credit_crawl_state(
+                    CUES, t, spec,
+                    kinetic.char_budget(qa_style, qa_canvas, spec),
+                    kinetic.crawl_viewport(qa_style, qa_canvas, spec))
                 assert len(dom) == len(state["cues"]), (
                     f"t={t}: preview shows {len(dom)} cues, export state has {len(state['cues'])}")
                 # both lists are ordered top-to-bottom; compare opacity per slot
@@ -296,13 +312,17 @@ def main() -> int:
                 assert layer is not None and layer.getchannel("A").getbbox() is not None
                 layer.convert("RGB").save(args.out / f"export_t{t}.png")
                 state = kinetic.credit_crawl_state(
-                    CUES, t, spec, kinetic.char_budget(project["style"], project["canvas"], spec))
+                    CUES, t, spec,
+                    kinetic.char_budget(project["style"], project["canvas"], spec),
+                    kinetic.crawl_viewport(project["style"], project["canvas"], spec))
                 # export band centres must follow the same top-to-bottom order as preview
                 preview_ids = [c["cue"]["id"] for c in state["cues"]]
                 dom_ids = dev.eval(f"""
                     VFKinetic.creditCrawlState(project.cues, {t},
                       VFKinetic.resolvedPreset(project.style),
                       VFKinetic.charBudget(project.style, project.canvas,
+                        VFKinetic.resolvedPreset(project.style)),
+                      VFKinetic.crawlViewport(project.style, project.canvas,
                         VFKinetic.resolvedPreset(project.style))).cues.map(c=>c.cue.id)
                 """)
                 assert preview_ids == dom_ids, f"t={t}: export/preview cue order differs {preview_ids} vs {dom_ids}"
