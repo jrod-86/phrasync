@@ -173,9 +173,104 @@ def main() -> int:
         state = kinetic.credit_crawl_state(gap_cues, t, spec, budget, viewport)
         assert state["cues"], f"gap state empty at t={t}"
 
-    print("PASS credit-crawl MP4 export QA (decode, centring, fade ordering, gap calm)")
-    return 0
+    # --- 5. realistic default-style 1080p export bounds (Codex Issue 3) ---
+    # The real export compositor at 1920x1080 with the app's own defaults:
+    # Impact, fontSize 160, maxWidth 88, positionY 52, lineGap -8, and five
+    # consecutive cues that each wrap to two lines. A very short ultrafast
+    # synthetic render is enough; no copyrighted material.
+    REALISTIC_STYLE = {"preset": "credit-crawl", "fontPreset": "impact",
+                       "fontSize": 160, "maxWidth": 88, "positionY": 52, "lineGap": -8}
+    REALISTIC_CUES = [
+        {"id": "r1", "start": 0.0, "end": 2.0, "text": "ALPHA BRAVO CHARLIE DELTA ECHO FOXTROT", "words": []},
+        {"id": "r2", "start": 2.0, "end": 4.0, "text": "GOLF HOTEL INDIA JULIET KILO LIMA", "words": []},
+        {"id": "r3", "start": 4.0, "end": 6.0, "text": "MIKE NOVEMBER OSCAR PAPA QUEBEC ROMEO", "words": []},
+        {"id": "r4", "start": 6.0, "end": 8.0, "text": "SIERRA TANGO UNIFORM VICTOR WHISKEY", "words": []},
+        {"id": "r5", "start": 8.0, "end": 10.0, "text": "XRAY YANKEE ZULU ALPHA BRAVO CHARLIE", "words": []},
+    ]
+    RW, RH = 1920, 1080
+    real_video = out_dir / "crawl-realistic-1080p.mp4"
+    real_project = {
+        "title": "credit crawl realistic 1080p", "duration": 6.0,
+        "canvas": {"width": RW, "height": RH, "fps": 30, "aspect": "16:9"},
+        "background": {"type": "color", "backgroundColor": "#101018"},
+        "style": dict(REALISTIC_STYLE),
+        "timing": {"offset": 0},
+        "cues": REALISTIC_CUES,
+        "export": {"crf": 24, "preset": "ultrafast"},
+    }
+    real_result = render_project(real_project, real_video)
+    assert real_video.exists(), "realistic render produced no file"
+    ok, detail = decode_test(real_video)
+    assert ok, f"realistic decode_test failed: {detail}"
+    real_duration = probe_duration(real_video)
+    print(f"rendered {real_video} {real_result.get('width')}x{real_result.get('height')} "
+          f"{real_duration:.2f}s {real_video.stat().st_size} bytes")
 
+    real_spec = kinetic.resolved_preset(REALISTIC_STYLE)
+    real_canvas = {"width": RW, "height": RH}
+    real_budget = kinetic.char_budget(REALISTIC_STYLE, real_canvas, real_spec)
+    real_vp = kinetic.crawl_viewport(REALISTIC_STYLE, real_canvas, real_spec)
+    assert real_budget == 24, f"realistic budget should be 24 chars, got {real_budget}"
+    assert all(len(kinetic.layout_lines(kinetic.cue_words(c), real_spec, real_budget)) == 2
+               for c in REALISTIC_CUES), "every realistic cue must wrap to two lines"
+
+    for t in [5.0, 5.5]:
+        frame = extract_frame(real_video, t)
+        assert frame.size == (RW, RH), f"realistic frame {t} wrong size {frame.size}"
+        frame.save(out_dir / f"mp4_realistic_t{t}.png")
+        state = kinetic.credit_crawl_state(REALISTIC_CUES, t, real_spec, real_budget, real_vp)
+        ids = [c["cue"]["id"] for c in state["cues"]]
+        # Engine keeps the middle cue + neighbours and drops the distant cues.
+        assert ids == ["r2", "r3", "r4"], f"realistic export cue set wrong at t={t}: {ids}"
+        active = next((c for c in state["cues"] if c["active"]), None)
+        assert active is not None and active["cue"]["id"] == "r3", f"middle cue must be active at t={t}"
+
+        # Rendered text bounds must remain inside the frame. Threshold on the
+        # row MAX so dim neighbour glyphs still register but the flat dark
+        # background never crosses it.
+        arr = np.asarray(frame.convert("L"), dtype=float)
+        rowmax = arr.max(axis=1)
+        threshold = 100.0
+        ys, xs = np.where(arr > threshold)
+        assert len(ys), f"no text ink found in realistic frame at t={t}"
+        top, bottom, left, right = int(ys.min()), int(ys.max()), int(xs.min()), int(xs.max())
+        assert top >= 0 and bottom <= RH - 1 and left >= 0 and right <= RW - 1, (
+            f"t={t}: rendered text bounds {left},{top}-{right},{bottom} escape frame {RW}x{RH}")
+        # The drop rule is what keeps ink inside the frame: if r1/r5 had been
+        # rendered their two-line blocks would poke past the top/bottom edges,
+        # so a real margin on both edges proves they were dropped.
+        assert top >= 8 and bottom <= RH - 9, (
+            f"t={t}: text ink touches frame edge (top={top}, bottom={bottom}); "
+            f"distant cues should have been dropped")
+
+        # Active cue centred: the brightest band straddles positionY of the frame.
+        # frac 0.5 separates the three cue blocks despite the shared glow.
+        bands = glyph_bands(frame, frac=0.5)
+        assert bands, f"no text bands in realistic frame at t={t}"
+        brightest = max(bands, key=lambda b: b[2])
+        centre = (brightest[0] + brightest[1]) / 2
+        anchor = RH * REALISTIC_STYLE["positionY"] / 100.0
+        assert abs(centre - anchor) < RH * 0.06, (
+            f"t={t}: active band centre {centre:.0f} not at anchor {anchor:.0f}")
+
+        # Neighbours remain (previous above, upcoming below) when space permits:
+        # robust to glow merging — require real text ink both above and below the
+        # active cue's own block.
+        ink = arr > threshold
+        above_rows = np.where(ink[: int(anchor - RH * 0.12)].any(axis=1))[0]
+        below_rows = np.where(ink[int(anchor + RH * 0.12):].any(axis=1))[0]
+        assert len(above_rows) > 0, f"t={t}: no previous-cue ink above the active cue"
+        assert len(below_rows) > 0, f"t={t}: no upcoming-cue ink below the active cue"
+
+        active_band = max(bands, key=lambda b: b[2])
+        for band in bands:
+            if band is active_band:
+                continue
+            assert band[2] <= active_band[2], (
+                f"t={t}: neighbour band {band} brighter than active band {active_band}")
+
+    print("PASS credit-crawl MP4 export QA (decode, centring, fade ordering, gap calm, realistic 1080p bounds)")
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())

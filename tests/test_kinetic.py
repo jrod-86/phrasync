@@ -154,6 +154,10 @@ def test_credit_crawl_blocks_never_collide():
             {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
             {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
         ],
+        "nested": [
+            {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+            {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
+        ],
     }
     for name, cue_list in cases.items():
         for t in [0.0, 0.4, 1.0, 1.9, 2.0, 2.2, 3.0, 4.0, 5.0]:
@@ -242,6 +246,97 @@ def test_overlap_keeps_exactly_one_active_cue():
             assert abs(anchor["offset"]) < 1e-9
 
 
+def test_nested_overlap_anchor_moves_forward_only():
+    """Codex Issue 1: a long older cue with a short newer cue nested inside it.
+    Once the newer cue starts, the anchor moves forward to it and never moves
+    back to the older cue — even though the older cue is technically still
+    playing after the short cue ends."""
+    spec = kinetic.get_preset("credit-crawl")
+    cues = [
+        {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+        {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
+    ]
+
+    # Before the short cue: the older cue owns the centre and is active.
+    state = kinetic.credit_crawl_state(cues, 0.5, spec, 22)
+    active = [c for c in state["cues"] if c["active"]]
+    assert len(active) == 1 and active[0]["cue"]["id"] == "nA"
+    assert abs(active[0]["offset"]) < 1e-9
+
+    # During the short cue: the newer cue owns the centre and is active; the
+    # older cue is a dimmed previous cue above it.
+    state = kinetic.credit_crawl_state(cues, 1.5, spec, 22)
+    active = [c for c in state["cues"] if c["active"]]
+    assert len(active) == 1 and active[0]["cue"]["id"] == "nB"
+    assert abs(active[0]["offset"]) < 1e-9
+    older = next(c for c in state["cues"] if c["cue"]["id"] == "nA")
+    assert older["offset"] < 0 and not older["active"]
+    assert older["opacity"] < active[0]["opacity"]
+
+    # After the short cue ends (t=3.0): the anchor stays on the newer cue as a
+    # completed gap-hold at centre with active=false. The older cue must NOT
+    # reactivate or scroll the centre backward.
+    state = kinetic.credit_crawl_state(cues, 3.0, spec, 22)
+    assert state["activeIndex"] == 1, "anchor must remain the newer short cue"
+    assert not any(c["active"] for c in state["cues"]), "no cue may be active after the short cue ends"
+    anchor = next(c for c in state["cues"] if c["index"] == state["activeIndex"])
+    assert anchor["cue"]["id"] == "nB"
+    assert abs(anchor["offset"]) < 1e-9, "gap anchor must sit at offset zero"
+    older = next(c for c in state["cues"] if c["cue"]["id"] == "nA")
+    assert older["offset"] < 0, "older cue must remain above the anchor"
+    assert older["opacity"] < anchor["opacity"], "older cue must stay dimmed"
+
+    # Monotonic: the anchor never moves backward for the rest of the long cue.
+    for t in [2.0, 2.5, 3.0, 5.0, 9.0, 9.9]:
+        state = kinetic.credit_crawl_state(cues, t, spec, 22)
+        assert state["activeIndex"] == 1, f"anchor regressed at t={t}"
+        assert not any(c["active"] for c in state["cues"]), f"cue reactivated at t={t}"
+        anchor = next(c for c in state["cues"] if c["index"] == 1)
+        assert abs(anchor["offset"]) < 1e-9, f"centre scrolled backward at t={t}"
+
+
+def test_genuine_word_timing_requires_valid_timings():
+    """Codex Issue 2: word count alone does not establish genuine timing. A cue
+    is genuine only when every stored word has explicit finite numeric
+    start/end with end > start and starts are monotonically non-decreasing.
+    Rejected/malformed arrays fall back to the static phrase treatment."""
+    spec = kinetic.get_preset("credit-crawl")
+    valid = {"start": 1.0, "end": 4.0, "text": "one two",
+             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": 1.8, "end": 2.4}]}
+    assert kinetic.has_genuine_word_timing(valid) is True
+
+    rejected = {
+        "missing": [{"text": "one", "start": 1.0, "end": 1.6}, {"text": "two"}],
+        "empty": [{"text": "one", "start": 1.0, "end": 1.6},
+                  {"text": "two", "start": "", "end": ""}],
+        "nonnumeric": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": "later", "end": "soon"}],
+        "end_before": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": 2.0, "end": 1.5}],
+        "equal": [{"text": "one", "start": 1.0, "end": 1.6},
+                  {"text": "two", "start": 2.0, "end": 2.0}],
+        "nonmono": [{"text": "one", "start": 2.5, "end": 3.0},
+                    {"text": "two", "start": 1.2, "end": 2.0}],
+        "nan": [{"text": "one", "start": 1.0, "end": 1.6},
+                {"text": "two", "start": float("nan"), "end": 3.0}],
+        "inf": [{"text": "one", "start": 1.0, "end": 1.6},
+                {"text": "two", "start": 2.0, "end": float("inf")}],
+        "null": [{"text": "one", "start": 1.0, "end": 1.6},
+                 {"text": "two", "start": None, "end": None}],
+        "count": [{"text": "one", "start": 1.0, "end": 1.6}],
+    }
+    for name, word_list in rejected.items():
+        cue = {"start": 1.0, "end": 4.0, "text": "one two", "words": word_list}
+        assert kinetic.has_genuine_word_timing(cue) is False, f"{name} must be rejected"
+        # Rejected timing must not fabricate word-accurate highlighting: the
+        # cue falls back to the static phrase fill (all words share one fill).
+        cue_words = kinetic.cue_words(cue)
+        for t in [1.0, 1.5, 2.5, 3.9]:
+            fills = {kinetic.word_state(w, cue, t, spec).fill for w in cue_words}
+            assert len(fills) == 1, f"{name} at t={t} produced a per-word wipe: {fills}"
+
+
 def test_viewport_keeps_wrapped_blocks_inside():
     """Codex finding 1: with a viewport supplied, a previous/upcoming cue is
     shown only while its COMPLETE wrapped block fits inside the frame; the
@@ -296,7 +391,39 @@ def test_engines_agree():
         {"fontSize": 90, "maxWidth": 70, "fontPreset": "modern"},
         {"fontSize": 240, "maxWidth": 96, "fontPreset": "mono"},
     ]
-    cues = {"plain": CUE, "timed": TIMED_CUE}
+    cues = {"plain": CUE, "timed": TIMED_CUE,
+            # Genuine-timing fixtures for the strict validator (Issue 2).
+            "g_valid": {"start": 1.0, "end": 4.0, "text": "one two three",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": 1.8, "end": 2.4},
+                                  {"text": "three", "start": 2.6, "end": 3.9}]},
+            "g_missing": {"start": 1.0, "end": 4.0, "text": "one two",
+                          "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                    {"text": "two"}]},
+            "g_empty": {"start": 1.0, "end": 4.0, "text": "one two",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": "", "end": ""}]},
+            "g_nonnumeric": {"start": 1.0, "end": 4.0, "text": "one two",
+                             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                       {"text": "two", "start": "later", "end": "soon"}]},
+            "g_end_before": {"start": 1.0, "end": 4.0, "text": "one two",
+                             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                       {"text": "two", "start": 2.0, "end": 1.5}]},
+            "g_equal": {"start": 1.0, "end": 4.0, "text": "one two",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": 2.0, "end": 2.0}]},
+            "g_nonmono": {"start": 1.0, "end": 4.0, "text": "one two",
+                          "words": [{"text": "one", "start": 2.5, "end": 3.0},
+                                    {"text": "two", "start": 1.2, "end": 2.0}]},
+            "g_nan": {"start": 1.0, "end": 4.0, "text": "one two",
+                      "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                {"text": "two", "start": "NaN", "end": 3.0}]},
+            "g_inf": {"start": 1.0, "end": 4.0, "text": "one two",
+                      "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                {"text": "two", "start": 2.0, "end": "Infinity"}]},
+            "g_null": {"start": 1.0, "end": 4.0, "text": "one two",
+                       "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                 {"text": "two", "start": None, "end": None}]}}
     crawl_cases = {
         "even": [
             {"id": "c1", "start": 0.0, "end": 2.0, "text": "first line here", "words": []},
@@ -313,6 +440,10 @@ def test_engines_agree():
             {"id": "o1", "start": 0.0, "end": 1.0, "text": "quick one", "words": []},
             {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
             {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
+        ],
+        "nested": [
+            {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+            {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
         ],
         "wrapped": [
             {"id": "w1", "start": 0.0, "end": 2.0, "text": "THIS IS A VERY LONG\nFIRST LINE WRAPPING", "words": []},

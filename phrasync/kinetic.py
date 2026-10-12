@@ -148,16 +148,53 @@ def syllable_weight(token: str) -> float:
     return max(1, count) + len(letters) * 0.06
 
 
+def _word_timings(word: dict[str, Any]) -> tuple[float, float] | None:
+    """Explicit finite start/end for one stored word, or None when the timing
+    is missing, empty, null, non-numeric, NaN, infinite or end <= start."""
+    raw_start = word.get("start")
+    raw_end = word.get("end")
+    if raw_start is None or raw_end is None:
+        return None
+    if isinstance(raw_start, bool) or isinstance(raw_end, bool):
+        return None
+    if isinstance(raw_start, str) and not raw_start.strip():
+        return None
+    if isinstance(raw_end, str) and not raw_end.strip():
+        return None
+    try:
+        start = float(raw_start)
+        end = float(raw_end)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(start) or not math.isfinite(end):
+        return None
+    if end <= start:
+        return None
+    return start, end
+
+
 def has_genuine_word_timing(cue: dict[str, Any]) -> bool:
-    """True only when the cue carries stored word-level timing that lines up
-    with its text tokens — the same condition ``cue_words`` uses to keep real
-    timings instead of estimating them. Phrase-only SRT cues return False, so
+    """True only when the cue carries genuine word-level timing: the stored
+    word count matches its text tokens, every stored word has explicit finite
+    numeric start/end values with end > start, and word starts are
+    monotonically non-decreasing. Phrase-only SRT cues and cues with empty,
+    null, missing, NaN, infinite or malformed word timings return False, so
     presets never present estimated timing as word-accurate."""
     tokens = str(cue.get("text", "")).replace("\n", " ").split()
     if not tokens:
         return False
     stored = [w for w in (cue.get("words") or []) if str(w.get("text", "")).strip()]
-    return len(stored) == len(tokens)
+    if len(stored) != len(tokens):
+        return False
+    previous = -math.inf
+    for word in stored:
+        timings = _word_timings(word)
+        if timings is None:
+            return False
+        if timings[0] < previous:
+            return False
+        previous = timings[0]
+    return True
 
 
 def cue_words(cue: dict[str, Any]) -> list[dict[str, Any]]:
@@ -169,12 +206,13 @@ def cue_words(cue: dict[str, Any]) -> list[dict[str, Any]]:
     start = float(cue.get("start", 0.0) or 0.0)
     end = max(start + 0.2, float(cue.get("end", start + 1) or start + 1))
 
-    if len(stored) == len(tokens):
+    if has_genuine_word_timing(cue):
         result = []
         previous = -math.inf
         for index, word in enumerate(stored):
-            ws = max(previous, float(word.get("start", start)))
-            we = max(ws + 0.06, float(word.get("end", ws + 0.25)))
+            timings = _word_timings(word) or (start, start + 0.25)
+            ws = max(previous, timings[0])
+            we = max(ws + 0.06, timings[1])
             previous = ws
             result.append({"text": tokens[index], "start": ws, "end": we, "index": index})
         return result
@@ -529,7 +567,6 @@ def credit_crawl_state(
 
     centre = 0.0
     latest_started = -1
-    latest_playing = -1
     for i, (cue, _) in enumerate(ordered):
         cue_start = float(cue.get("start", 0.0) or 0.0)
         if cue_start > t:
@@ -537,12 +574,12 @@ def credit_crawl_state(
         step = centres[0] if i == 0 else centres[i] - centres[i - 1]
         centre += ease_out_cubic(clamp((t - cue_start) / transition)) * step
         latest_started = i
-        cue_end = float(cue.get("end", cue_start + 1) or cue_start + 1)
-        if t < cue_end:
-            latest_playing = i
-    # Exactly one anchor: the most recently started cue that is still playing;
-    # during a gap, the most recently started cue holds the centre calmly.
-    active_index = latest_playing if latest_playing >= 0 else latest_started
+    # Exactly one anchor: the most recently started cue. The crawl centre moves
+    # monotonically forward through cue order — once a newer cue supersedes an
+    # older overlapping cue, the anchor never reactivates or moves backward to
+    # the older cue. If the anchor has ended and no newer cue has started, it
+    # holds the centre calmly as a completed gap-hold cue (active=False).
+    active_index = latest_started
 
     def cue_bounds(i: int) -> tuple[float, float]:
         cue_start = float(ordered[i][0].get("start", 0.0) or 0.0)

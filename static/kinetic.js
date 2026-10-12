@@ -231,14 +231,42 @@
    * When Whisper timings are missing, syllable weight distributes the cue
    * duration far more musically than equal slots do.
    */
+  function wordTimings(word) {
+    // Explicit finite start/end for one stored word, or null when the timing
+    // is missing, empty, null, non-numeric, NaN, infinite or end <= start.
+    const rawStart = word.start;
+    const rawEnd = word.end;
+    if (rawStart === null || rawStart === undefined) return null;
+    if (rawEnd === null || rawEnd === undefined) return null;
+    if (typeof rawStart === "boolean" || typeof rawEnd === "boolean") return null;
+    if (typeof rawStart === "string" && !rawStart.trim()) return null;
+    if (typeof rawEnd === "string" && !rawEnd.trim()) return null;
+    const start = Number(rawStart);
+    const end = Number(rawEnd);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+    if (end <= start) return null;
+    return [start, end];
+  }
+
   function hasGenuineWordTiming(cue) {
-    // True only when the cue carries stored word-level timing that lines up
-    // with its text tokens — the same condition cueWords uses to keep real
-    // timings instead of estimating them. Phrase-only SRT cues return false.
+    // True only when the cue carries genuine word-level timing: the stored
+    // word count matches its text tokens, every stored word has explicit
+    // finite numeric start/end values with end > start, and word starts are
+    // monotonically non-decreasing. Phrase-only SRT cues and cues with empty,
+    // null, missing, NaN, infinite or malformed word timings return false, so
+    // presets never present estimated timing as word-accurate.
     const tokens = String(cue.text || "").replace(/\n/g, " ").split(/\s+/).filter(Boolean);
     if (!tokens.length) return false;
     const stored = Array.isArray(cue.words) ? cue.words.filter(w => w && String(w.text || "").trim()) : [];
-    return stored.length === tokens.length;
+    if (stored.length !== tokens.length) return false;
+    let previous = -Infinity;
+    for (const word of stored) {
+      const timings = wordTimings(word);
+      if (!timings) return false;
+      if (timings[0] < previous) return false;
+      previous = timings[0];
+    }
+    return true;
   }
 
   function cueWords(cue) {
@@ -248,11 +276,12 @@
     const start = Number(cue.start) || 0;
     const end = Math.max(start + 0.2, Number(cue.end) || start + 1);
 
-    if (stored.length === tokens.length) {
+    if (hasGenuineWordTiming(cue)) {
       let previous = -Infinity;
       return stored.map((word, index) => {
-        const ws = Math.max(previous, Number(word.start ?? start));
-        const we = Math.max(ws + 0.06, Number(word.end ?? ws + 0.25));
+        const timings = wordTimings(word) || [start, start + 0.25];
+        const ws = Math.max(previous, timings[0]);
+        const we = Math.max(ws + 0.06, timings[1]);
         previous = ws;
         return { text: tokens[index], start: ws, end: we, index, lineBreak: false };
       });
@@ -596,19 +625,19 @@
 
     let centre = 0;
     let latestStarted = -1;
-    let latestPlaying = -1;
     for (let i = 0; i < ordered.length; i++) {
       const cueStart = ordered[i].cue.start;
       if (cueStart > t) break;
       const step = i === 0 ? centres[0] : centres[i] - centres[i - 1];
       centre += ease.outCubic(clamp((t - cueStart) / transition)) * step;
       latestStarted = i;
-      const cueEnd = ordered[i].cue.end;
-      if (t < cueEnd) latestPlaying = i;
     }
-    // Exactly one anchor: the most recently started cue that is still playing;
-    // during a gap, the most recently started cue holds the centre calmly.
-    const activeIndex = latestPlaying >= 0 ? latestPlaying : latestStarted;
+    // Exactly one anchor: the most recently started cue. The crawl centre moves
+    // monotonically forward through cue order — once a newer cue supersedes an
+    // older overlapping cue, the anchor never reactivates or moves backward to
+    // the older cue. If the anchor has ended and no newer cue has started, it
+    // holds the centre calmly as a completed gap-hold cue (active=false).
+    const activeIndex = latestStarted;
 
     const cueBounds = (i) => {
       const cue = ordered[i].cue;

@@ -56,6 +56,21 @@ GAP_CUES = [
     {"id": "g2", "start": 5.0, "end": 7.0, "text": "AFTER THE BREAK", "words": []},
 ]
 
+# Realistic default-style fixture (Issue 3): the app's own defaults — Impact,
+# fontSize 160, maxWidth 88, positionY 52, lineGap -8 — with five consecutive
+# cues that each exceed the ~24-char budget and therefore wrap to two lines.
+# Seeking to the middle cue (r3 at t=5.0) exercises previous/upcoming
+# neighbours and the viewport drop rule at full 1080p typography.
+REALISTIC_STYLE = {"preset": "credit-crawl", "fontPreset": "impact",
+                   "fontSize": 160, "maxWidth": 88, "positionY": 52, "lineGap": -8}
+REALISTIC_CUES = [
+    {"id": "r1", "start": 0.0, "end": 2.0, "text": "ALPHA BRAVO CHARLIE DELTA ECHO FOXTROT", "words": []},
+    {"id": "r2", "start": 2.0, "end": 4.0, "text": "GOLF HOTEL INDIA JULIET KILO LIMA", "words": []},
+    {"id": "r3", "start": 4.0, "end": 6.0, "text": "MIKE NOVEMBER OSCAR PAPA QUEBEC ROMEO", "words": []},
+    {"id": "r4", "start": 6.0, "end": 8.0, "text": "SIERRA TANGO UNIFORM VICTOR WHISKEY", "words": []},
+    {"id": "r5", "start": 8.0, "end": 10.0, "text": "XRAY YANKEE ZULU ALPHA BRAVO CHARLIE", "words": []},
+]
+
 
 def stage_shot(dev: DevTools) -> Image.Image:
     return dev.shot("#stage")
@@ -327,7 +342,108 @@ def main() -> int:
                 """)
                 assert preview_ids == dom_ids, f"t={t}: export/preview cue order differs {preview_ids} vs {dom_ids}"
 
-            print("PASS credit-crawl browser QA (preview stack, roll, seek, wrap, gap, save/reload, export parity)")
+            # --- 10. realistic default-style 1080p bounds QA (Codex Issue 3) ---
+            # App's own defaults at full 1080p typography: Impact, fontSize 160,
+            # maxWidth 88, positionY 52, lineGap -8. Five consecutive cues each
+            # exceed the ~24-char budget so every cue wraps to two lines. Seek to
+            # the middle cue (r3 at t=5.0) so previous/upcoming neighbours and the
+            # viewport drop rule are exercised at full size.
+            dev.eval("""
+                project.style.preset = 'credit-crawl';
+                project.style.fontPreset = 'impact';
+                project.style.fontSize = 160;
+                project.style.maxWidth = 88;
+                project.style.positionY = 52;
+                project.style.lineGap = -8;
+                document.getElementById('stylePreset').value = 'credit-crawl';
+                project.cues = JSON.parse(unescape(%s));
+                project.background = {type:'dynamic', visual:'aurora',
+                    backgroundColor:'#101018', shade:1.0, visualIntensity:0.0};
+                applyStageStyle();
+                virtualTime = 0; virtualPlaying = false;
+                renderLyric(true);
+            """ % json.dumps(json.dumps(REALISTIC_CUES)))
+            dev.eval("virtualTime = 5.0; virtualPlaying=false; renderLyric(false); updateLyricFrame(5.0);")
+            time.sleep(0.15)
+            stage_shot(dev).save(args.out / "preview_realistic_t5.0.png")
+
+            # Engine (Python) expectation for the same fixture, for parity.
+            real_spec = kinetic.resolved_preset(REALISTIC_STYLE)
+            real_budget = kinetic.char_budget(REALISTIC_STYLE, qa_canvas, real_spec)
+            real_vp = kinetic.crawl_viewport(REALISTIC_STYLE, qa_canvas, real_spec)
+            real_state = kinetic.credit_crawl_state(REALISTIC_CUES, 5.0, real_spec, real_budget, real_vp)
+            real_ids = [c["cue"]["id"] for c in real_state["cues"]]
+            assert real_budget == 24, f"realistic budget should be 24 chars, got {real_budget}"
+            assert all(len(kinetic.layout_lines(kinetic.cue_words(c), real_spec, real_budget)) == 2
+                       for c in REALISTIC_CUES), "every realistic cue must wrap to two lines"
+            assert real_ids == ["r2", "r3", "r4"], (
+                f"engine must keep middle cue + neighbours and drop distant r1/r5, got {real_ids}")
+
+            # DOM geometry at the middle cue. Cue elements carry no id attribute,
+            # so correlate DOM cues to engine cues by normalized text content.
+            real_geom = dev.eval("""
+                (() => {
+                    const stage = document.querySelector('#stage').getBoundingClientRect();
+                    const display = document.querySelector('.lyric-display').getBoundingClientRect();
+                    const preset = VFKinetic.resolvedPreset(project.style);
+                    const budget = VFKinetic.charBudget(project.style, project.canvas, preset);
+                    const state = VFKinetic.creditCrawlState(project.cues, 5.0, preset, budget,
+                      VFKinetic.crawlViewport(project.style, project.canvas, preset));
+                    const norm = s => String(s).replace(/\\s+/g, '').toUpperCase();
+                    const idByNorm = new Map(state.cues.map(c => [norm(c.cue.text), c.cue.id]));
+                    const domText = el => [...el.querySelectorAll('.lw-base')].map(s => s.textContent).join('');
+                    const dom = [...document.querySelectorAll('.lyric-display .lyric-cue')].map(el => {
+                        const r = el.getBoundingClientRect();
+                        return { id: idByNorm.get(norm(domText(el))) || null,
+                                 top: r.top, bottom: r.bottom, height: r.height,
+                                 lines: el.querySelectorAll('.lyric-line').length,
+                                 opacity: parseFloat(el.style.opacity || '1') };
+                    });
+                    const active = state.cues.find(c => c.active);
+                    return { stageTop: stage.top, stageBottom: stage.bottom,
+                             anchor: display.top + display.height / 2,
+                             domIds: dom.map(d => d.id), dom,
+                             engineIds: state.cues.map(c => c.cue.id),
+                             activeId: active ? active.cue.id : null };
+                })()
+            """)
+            # Preview DOM must match the engine cue set exactly (drop rule parity).
+            assert real_geom["domIds"] == real_ids == real_geom["engineIds"], (
+                f"realistic cue set mismatch DOM {real_geom['domIds']} vs engine {real_ids}/{real_geom['engineIds']}")
+            assert real_geom["activeId"] == "r3", f"middle cue must be active, got {real_geom['activeId']}"
+
+            # Every visible cue wraps to two lines in the DOM too.
+            for d in real_geom["dom"]:
+                assert d["lines"] == 2, f"{d['id']} should wrap to 2 DOM lines, got {d['lines']}"
+
+            # Bounds: every cue box fully inside the stage.
+            for d in real_geom["dom"]:
+                assert d["top"] >= real_geom["stageTop"] - 2.0 and d["bottom"] <= real_geom["stageBottom"] + 2.0, (
+                    f"{d['id']} box {d['top']:.0f}-{d['bottom']:.0f} clipped by stage "
+                    f"{real_geom['stageTop']:.0f}-{real_geom['stageBottom']:.0f}")
+
+            # No overlaps between adjacent cue boxes (top-to-bottom order).
+            ordered = sorted(real_geom["dom"], key=lambda d: d["top"])
+            for a, b in zip(ordered, ordered[1:]):
+                assert b["top"] >= a["bottom"] - 1.0, (
+                    f"realistic cue boxes overlap: {a['id']} bottom {a['bottom']:.0f} vs {b['id']} top {b['top']:.0f}")
+
+            # Active cue centred on the anchor after its transition completes.
+            active_box = next(d for d in real_geom["dom"] if d["id"] == "r3")
+            active_centre = (active_box["top"] + active_box["bottom"]) / 2
+            assert abs(active_centre - real_geom["anchor"]) < max(6.0, active_box["height"] * 0.06), (
+                f"active cue centre {active_centre:.0f} not at anchor {real_geom['anchor']:.0f}")
+
+            # Neighbours remain when space permits: one previous (r2) + one upcoming (r4).
+            assert "r2" in real_geom["domIds"] and "r4" in real_geom["domIds"], (
+                f"expected previous r2 + upcoming r4 neighbours, got {real_geom['domIds']}")
+            # Distant cues removed because their two-line blocks cannot fit.
+            assert "r1" not in real_geom["domIds"] and "r5" not in real_geom["domIds"], (
+                f"distant cues r1/r5 should be dropped, got {real_geom['domIds']}")
+            # Dim ordering: neighbours dimmer than the active cue.
+            assert active_box["opacity"] > next(d for d in real_geom["dom"] if d["id"] == "r2")["opacity"] + 0.05
+
+            print("PASS credit-crawl browser QA (preview stack, roll, seek, wrap, gap, save/reload, export parity, realistic 1080p bounds)")
             return 0
         finally:
             if dev:
