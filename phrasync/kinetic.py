@@ -105,19 +105,77 @@ PRESETS["credit-crawl"] = Preset(
 )
 
 
+# Crawl-control clamps: the same key set and bounds in both engines, so a
+# project's style.crawl overrides resolve identically in preview and export.
+CRAWL_LIMITS: dict[str, tuple[float, float]] = {
+    "transition": (0.15, 1.2),
+    "prevLines": (0.0, 4.0),
+    "nextLines": (0.0, 4.0),
+    "activeOpacity": (0.0, 1.0),
+    "nearOpacity": (0.0, 1.0),
+    "farOpacity": (0.0, 1.0),
+    "gapHold": (0.2, 4.0),
+    "blockGap": (0.0, 1.5),
+}
+
+# Plain decimal strings only: float() would accept "1_000" while Number()
+# rejects it, and Number() would accept "0x10" while float() rejects it.
+# Pinning both engines to one grammar keeps override resolution identical.
+CRAWL_NUMERIC_RE = re.compile(r"^\s*[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*$")
+
+
+def merge_crawl_overrides(
+    base: dict[str, float] | None, overrides: Any
+) -> dict[str, float] | None:
+    """Merge a project's crawl-control overrides onto the preset defaults.
+
+    Only finite numeric values inside the clamps are accepted; anything else
+    (missing, null, empty, non-numeric, out of range) falls back to the preset
+    default. The preset's own crawl dict is never mutated.
+    """
+    if base is None:
+        return None
+    merged = dict(base)
+    if isinstance(overrides, dict):
+        for key, (low, high) in CRAWL_LIMITS.items():
+            if key not in overrides:
+                continue
+            raw = overrides[key]
+            if isinstance(raw, bool) or raw is None:
+                continue
+            if isinstance(raw, str) and not CRAWL_NUMERIC_RE.match(raw):
+                continue
+            try:
+                value = float(raw)
+            except (TypeError, ValueError):
+                continue
+            if not math.isfinite(value):
+                continue
+            merged[key] = max(low, min(high, value))
+    return merged
+
+
 def resolved_preset(style: dict[str, Any]) -> Preset:
     """Preset with the project's own timing overrides applied.
 
     ``style["wordLead"]`` is how far ahead of the sung syllable a word may start
     its entry animation, in seconds. Zero means it appears exactly on the beat.
+    ``style["crawl"]`` overrides the credit-crawl controls (visible lines,
+    transition, spacing, fade strengths) within the clamped bounds.
     """
     base = get_preset((style or {}).get("preset"))
     lead = (style or {}).get("wordLead")
+    overrides: dict[str, Any] = {}
     try:
         value = float(lead)
     except (TypeError, ValueError):
-        return base
-    return replace(base, lead=max(0.0, min(0.5, value)))
+        pass
+    else:
+        overrides["lead"] = max(0.0, min(0.5, value))
+    if base.crawl is not None:
+        overrides["crawl"] = merge_crawl_overrides(
+            base.crawl, (style or {}).get("crawl"))
+    return replace(base, **overrides) if overrides else base
 
 
 def get_preset(preset_id: str | None) -> Preset:

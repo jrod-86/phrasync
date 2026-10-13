@@ -370,6 +370,7 @@ function init() {
   bindControls();
   initOceanControls();
   initTextOrientation();
+  initCrawlControls();
   initFootage();
   initEditorTools();
   applyProjectToControls();

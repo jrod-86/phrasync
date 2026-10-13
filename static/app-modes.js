@@ -54,6 +54,63 @@ const PRESET_HINTS_3D = {
 
 const BROWSER_VIDEO_FILE = /\.(mp4|webm)$/i;
 
+// ---------------------------------------------------------------------------
+// Credit Crawl controls (plan Phase 2): visible lines, roll speed, block gap,
+// and fade strengths live in project.style.crawl and are merged over the
+// preset defaults by resolvedPreset/resolved_preset in both engines.
+// ---------------------------------------------------------------------------
+Object.assign(rangeOutputs, {
+  crawlPrev: ["crawlPrevOut", value => `${value}`],
+  crawlNext: ["crawlNextOut", value => `${value}`],
+  crawlTransition: ["crawlTransitionOut", value => `${value} ms`],
+  crawlBlockGap: ["crawlBlockGapOut", value => (value / 100).toFixed(2)],
+  crawlNear: ["crawlNearOut", value => `${value}%`],
+  crawlFar: ["crawlFarOut", value => `${value}%`]
+});
+
+const crawlInputs = () => [
+  $("#crawlPrev"), $("#crawlNext"), $("#crawlTransition"),
+  $("#crawlBlockGap"), $("#crawlNear"), $("#crawlFar")
+];
+
+function crawlStyleFromControls() {
+  project.style.crawl = {
+    prevLines: Number($("#crawlPrev").value),
+    nextLines: Number($("#crawlNext").value),
+    transition: Number($("#crawlTransition").value) / 1000,
+    blockGap: Number($("#crawlBlockGap").value) / 100,
+    nearOpacity: Number($("#crawlNear").value) / 100,
+    farOpacity: Number($("#crawlFar").value) / 100
+  };
+}
+
+function applyCrawlControlsUI() {
+  const crawl = project.style.preset === "credit-crawl";
+  $("#crawlControls").hidden = !crawl;
+  if (!crawl) return;
+  const defaults = window.VFKinetic.PRESETS["credit-crawl"].crawl;
+  const saved = project.style.crawl || {};
+  const pick = (key, fallback) => {
+    const value = Number(saved[key]);
+    return Number.isFinite(value) ? value : fallback;
+  };
+  $("#crawlPrev").value = Math.round(pick("prevLines", defaults.prevLines));
+  $("#crawlNext").value = Math.round(pick("nextLines", defaults.nextLines));
+  $("#crawlTransition").value = Math.round(pick("transition", defaults.transition) * 1000);
+  $("#crawlBlockGap").value = Math.round(pick("blockGap", defaults.blockGap) * 100);
+  $("#crawlNear").value = Math.round(pick("nearOpacity", defaults.nearOpacity) * 100);
+  $("#crawlFar").value = Math.round(pick("farOpacity", defaults.farOpacity) * 100);
+  crawlInputs().forEach(updateRangeUI);
+}
+
+function initCrawlControls() {
+  crawlInputs().forEach(input => input.addEventListener("input", () => {
+    crawlStyleFromControls();
+    updateRangeUI(input);
+    scheduleSave();
+  }));
+}
+
 function isVideoUpload(file) {
   return file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv|avi|m4v)$/i.test(file.name);
 }
@@ -100,6 +157,7 @@ function updatePresetPresentation() {
     ? "3D typography is planted on the world floor. Switch to Flat text for screen positioning."
     : "Position the text vertically in the frame.";
   updatePresetHint();
+  applyCrawlControlsUI();
 }
 
 function applyEnvironmentUI() {

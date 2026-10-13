@@ -366,6 +366,19 @@
             <label class="toggle-row small"><input id="beatReactToggle" type="checkbox" checked /><span><b>Beat reaction</b><small>Pulse to the detected beat</small></span></label>
             <label class="range-field"><span>Outline <output id="strokeWidthOut">3</output></span><input id="strokeWidth" type="range" min="0" max="14" value="3" /></label>
             <label class="range-field"><span>Shadow <output id="shadowOut">7</output></span><input id="shadow" type="range" min="0" max="24" value="7" /></label>
+            <div id="crawlControls" hidden>
+              <div class="two-columns">
+                <label class="range-field"><span>Previous lines <output id="crawlPrevOut">2</output></span><input id="crawlPrev" type="range" min="0" max="4" step="1" value="2" /></label>
+                <label class="range-field"><span>Upcoming lines <output id="crawlNextOut">2</output></span><input id="crawlNext" type="range" min="0" max="4" step="1" value="2" /></label>
+              </div>
+              <label class="range-field"><span>Roll speed <output id="crawlTransitionOut">400 ms</output></span><input id="crawlTransition" type="range" min="150" max="1200" step="50" value="400" /></label>
+              <label class="range-field"><span>Block gap <output id="crawlBlockGapOut">0.35</output></span><input id="crawlBlockGap" type="range" min="0" max="150" step="5" value="35" /></label>
+              <div class="two-columns">
+                <label class="range-field"><span>Near fade <output id="crawlNearOut">58%</output></span><input id="crawlNear" type="range" min="10" max="100" step="1" value="58" /></label>
+                <label class="range-field"><span>Far fade <output id="crawlFarOut">28%</output></span><input id="crawlFar" type="range" min="0" max="100" step="1" value="28" /></label>
+              </div>
+              <p class="microcopy">Credit Crawl controls: how many lyric lines stay visible, how fast the stack rolls, the breathing room between lines, and how strongly distant lines fade.</p>
+            </div>
           </div>
         </details>
 

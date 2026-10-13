@@ -97,6 +97,28 @@ for (const [name, cueList] of Object.entries(input.crawlCases)) {
     ])]);
   }
 }
+// Crawl-control overrides: resolvedPreset must merge style.crawl identically
+// in both engines, and the overridden state must agree cue for cue.
+out.crawlOverridden = [];
+out.crawlMerge = [];
+const crawlMergeOrder = Object.keys(input.crawlOverrides);
+for (const name of crawlMergeOrder) {
+  const cfg = input.crawlOverrides[name];
+  const spec = K.resolvedPreset({ preset: "credit-crawl", crawl: cfg.crawl });
+  out.crawlMerge.push([
+    spec.crawl.transition, spec.crawl.prevLines, spec.crawl.nextLines,
+    spec.crawl.blockGap, spec.crawl.nearOpacity, spec.crawl.farOpacity,
+    spec.crawl.activeOpacity, spec.crawl.gapHold
+  ]);
+  const vp = K.crawlViewport(cfg.style, input.canvas, spec);
+  for (const t of input.crawlTimes) {
+    const s = K.creditCrawlState(cfg.cues, t, spec, input.budget, vp);
+    out.crawlOverridden.push([name, t, s.activeIndex, s.cues.map(c => [
+      c.index, +c.offset.toFixed(6), +c.opacity.toFixed(6), c.active ? 1 : 0
+    ])]);
+  }
+}
+out.resolvedLead = input.leadStyles.map(style => +K.resolvedPreset(style).lead.toFixed(6));
 process.stdout.write(JSON.stringify(out));
 """
 
@@ -136,6 +158,118 @@ def test_every_preset_has_a_python_and_js_twin():
     js = KINETIC_JS.read_text(encoding="utf-8")
     for preset_id in kinetic.PRESETS:
         assert f'"{preset_id}"' in js, f"{preset_id} missing from static/kinetic.js"
+
+
+def test_crawl_controls_override_defaults_and_clamp():
+    """Plan Phase 2: style.crawl overrides the preset crawl controls within
+    clamped bounds, malformed values fall back to the preset default, and the
+    preset's own crawl dict is never mutated."""
+    base = kinetic.get_preset("credit-crawl")
+    untouched = dict(base.crawl)
+
+    tuned = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 3, "nextLines": 1, "transition": 0.8,
+        "blockGap": 0.6, "nearOpacity": 0.4, "farOpacity": 0.1}})
+    assert tuned.crawl["prevLines"] == 3
+    assert tuned.crawl["nextLines"] == 1
+    assert tuned.crawl["transition"] == pytest.approx(0.8)
+    assert tuned.crawl["blockGap"] == pytest.approx(0.6)
+    assert tuned.crawl["nearOpacity"] == pytest.approx(0.4)
+    assert tuned.crawl["farOpacity"] == pytest.approx(0.1)
+    # Keys not overridden keep the preset defaults.
+    assert tuned.crawl["activeOpacity"] == base.crawl["activeOpacity"]
+    assert tuned.crawl["gapHold"] == base.crawl["gapHold"]
+
+    clamped = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 99, "nextLines": -3, "transition": 99,
+        "blockGap": -1, "nearOpacity": 2, "farOpacity": -0.5}})
+    assert clamped.crawl["prevLines"] == 4.0
+    assert clamped.crawl["nextLines"] == 0.0
+    assert clamped.crawl["transition"] == 1.2
+    assert clamped.crawl["blockGap"] == 0.0
+    assert clamped.crawl["nearOpacity"] == 1.0
+    assert clamped.crawl["farOpacity"] == 0.0
+
+    # Malformed values fall back to the preset default rather than poisoning
+    # the roll with NaN or a boolean.
+    malformed = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": None, "nextLines": "", "transition": "fast",
+        "blockGap": True, "nearOpacity": "NaN", "farOpacity": "Infinity"}})
+    for key in ("prevLines", "nextLines", "transition", "blockGap",
+                "nearOpacity", "farOpacity"):
+        assert malformed.crawl[key] == base.crawl[key], key
+
+    # Numeric-string grammar is pinned identically in both engines: Python
+    # float() would accept "1_000" and JS Number() would accept "0x10"; both
+    # engines reject them and fall back to the preset default, while plain
+    # decimal strings (with whitespace or exponent) resolve the same.
+    tricky = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": "1_000", "nextLines": "0x10",
+        "transition": " 0.5 ", "blockGap": "1e-1"}})
+    assert tricky.crawl["prevLines"] == untouched["prevLines"]
+    assert tricky.crawl["nextLines"] == untouched["nextLines"]
+    assert tricky.crawl["transition"] == pytest.approx(0.5)
+    assert tricky.crawl["blockGap"] == pytest.approx(0.1)
+
+    # A non-dict or missing crawl leaves the preset untouched, and the preset
+    # crawl dict itself is never mutated by any of the above.
+    assert kinetic.resolved_preset({"preset": "credit-crawl"}).crawl == base.crawl
+    assert kinetic.resolved_preset(
+        {"preset": "credit-crawl", "crawl": "nonsense"}).crawl == base.crawl
+    assert base.crawl == untouched
+    # Other presets have no crawl and gain none.
+    assert kinetic.resolved_preset(
+        {"preset": "kinetic-slam", "crawl": {"prevLines": 9}}).crawl is None
+
+
+def test_crawl_controls_change_the_roll():
+    """The controls must actually drive the state: fewer visible lines means
+    fewer cues in the stack, and a wider block gap spaces them further apart."""
+    cues = [
+        {"id": f"c{i}", "start": i * 2.0, "end": i * 2.0 + 2.0,
+         "text": f"line number {i}", "words": []}
+        for i in range(1, 8)
+    ]
+    viewport = {"above": 12.0, "below": 12.0}
+    default = kinetic.get_preset("credit-crawl")
+    tuned = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 1, "nextLines": 1, "blockGap": 1.5}})
+
+    at_rest = kinetic.credit_crawl_state(cues, 5.0, default, 22, viewport)
+    tight = kinetic.credit_crawl_state(cues, 5.0, tuned, 22, viewport)
+    assert len(tight["cues"]) < len(at_rest["cues"])
+    assert sum(1 for c in tight["cues"] if not c["active"]) == 2
+
+    gaps_default = [
+        b["offset"] - a["offset"]
+        for a, b in zip(at_rest["cues"], list(at_rest["cues"])[1:])
+    ]
+    gaps_tuned = [
+        b["offset"] - a["offset"]
+        for a, b in zip(tight["cues"], list(tight["cues"])[1:])
+    ]
+    assert min(gaps_tuned) > max(gaps_default)
+
+    # Fade strengths change opacity ordering too.
+    dim = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "nearOpacity": 0.1, "farOpacity": 0.05}})
+    dim_state = kinetic.credit_crawl_state(cues, 5.0, dim, 22, viewport)
+    active_item = next(c for c in dim_state["cues"] if c["active"])
+    for item in dim_state["cues"]:
+        if item is not active_item:
+            assert item["opacity"] <= active_item["opacity"]
+
+
+def test_crawl_controls_do_not_touch_other_presets():
+    """Existing presets behave exactly as before: crawl overrides are ignored
+    for them and their resolved values are unchanged."""
+    for preset_id in kinetic.PRESETS:
+        if preset_id == "credit-crawl":
+            continue
+        base = kinetic.get_preset(preset_id)
+        resolved = kinetic.resolved_preset(
+            {"preset": preset_id, "crawl": {"prevLines": 4, "transition": 1.2}})
+        assert resolved == base
 
 
 def test_credit_crawl_blocks_never_collide():
@@ -456,12 +590,46 @@ def test_engines_agree():
         {"fontSize": 160, "maxWidth": 88, "fontPreset": "impact", "lineGap": -8, "positionY": 52},
         {"fontSize": 44, "maxWidth": 88, "fontPreset": "modern", "lineGap": 0, "positionY": 52},
     ]
+    # Crawl-control override fixtures (plan Phase 2): a tuned stack, an
+    # out-of-range set that must clamp, and a malformed set that must fall
+    # back to the preset defaults.
+    override_cues = crawl_cases["even"]
+    crawl_overrides = {
+        "tuned": {
+            "crawl": {"prevLines": 3, "nextLines": 1, "transition": 0.8,
+                      "blockGap": 0.6, "nearOpacity": 0.4, "farOpacity": 0.1},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "clamped": {
+            "crawl": {"prevLines": 99, "nextLines": -3, "transition": 99,
+                      "blockGap": -1, "nearOpacity": 2, "farOpacity": -0.5},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "malformed": {
+            "crawl": {"prevLines": None, "nextLines": "", "transition": "fast",
+                      "blockGap": True, "nearOpacity": "NaN", "farOpacity": "Infinity"},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "tricky": {
+            "crawl": {"prevLines": "1_000", "nextLines": "0x10",
+                      "transition": " 0.5 ", "blockGap": "1e-1",
+                      "nearOpacity": "0.5", "farOpacity": " 0.25 "},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+    }
+    lead_styles = [
+        {"preset": "kinetic-slam", "wordLead": 0.2},
+        {"preset": "kinetic-slam", "wordLead": 9},
+        {"preset": "kinetic-slam", "wordLead": "nope"},
+        {"preset": "kinetic-slam"},
+    ]
     payload = {
         "cues": cues, "presets": presets, "times": times, "beats": beats,
         "styles": styles, "canvas": CANVAS, "tokens": tokens,
         "beatArgs": beat_args, "budget": 22,
         "crawlCases": crawl_cases, "crawlTimes": crawl_times,
         "crawlStyles": crawl_styles,
+        "crawlOverrides": crawl_overrides, "leadStyles": lead_styles,
     }
     js = _node_results(payload)
 
@@ -547,5 +715,43 @@ def test_engines_agree():
                 assert js_cue[0] == cue["index"], f"{label} index"
                 assert js_cue[1] == pytest.approx(cue["offset"], abs=1e-6), f"{label} offset"
                 assert js_cue[2] == pytest.approx(cue["opacity"], abs=1e-6), f"{label} opacity"
-                assert js_cue[3] == (1 if cue["active"] else 0), f"{label} active"
+                assert js_cue[3] == (cue["active"] and 1 or 0), f"{label} active"
     assert cursor == len(js["crawl"])
+
+    # Crawl-control overrides (plan Phase 2): the merged crawl dict and the
+    # overridden cue-stack state must resolve identically in both engines.
+    crawl_keys = ["transition", "prevLines", "nextLines", "blockGap",
+                  "nearOpacity", "farOpacity", "activeOpacity", "gapHold"]
+    merge_cursor = 0
+    state_cursor = 0
+    for name, cfg in crawl_overrides.items():
+        style = {"preset": "credit-crawl", "crawl": cfg["crawl"]}
+        spec = kinetic.resolved_preset(style)
+        row = js["crawlMerge"][merge_cursor]
+        merge_cursor += 1
+        for key, value in zip(crawl_keys, row):
+            assert value == pytest.approx(spec.crawl[key], abs=1e-6), (
+                f"crawl override {name} field {key}"
+            )
+        for t in crawl_times:
+            state = kinetic.credit_crawl_state(
+                cfg["cues"], t, spec, 22,
+                kinetic.crawl_viewport(cfg["style"], CANVAS, spec))
+            row = js["crawlOverridden"][state_cursor]
+            state_cursor += 1
+            label = f"crawl override {name} t={t}"
+            assert row[:2] == [name, t], label
+            assert row[2] == state["activeIndex"], f"{label} activeIndex"
+            assert len(row[3]) == len(state["cues"]), f"{label} cue count"
+            for js_cue, cue in zip(row[3], state["cues"]):
+                assert js_cue[0] == cue["index"], f"{label} index"
+                assert js_cue[1] == pytest.approx(cue["offset"], abs=1e-6), f"{label} offset"
+                assert js_cue[2] == pytest.approx(cue["opacity"], abs=1e-6), f"{label} opacity"
+                assert js_cue[3] == (cue["active"] and 1 or 0), f"{label} active"
+    assert merge_cursor == len(js["crawlMerge"]) == len(crawl_overrides)
+    assert state_cursor == len(js["crawlOverridden"])
+
+    # wordLead resolution stays identical (regression guard for the rewritten
+    # resolvedPreset path).
+    for row, style in zip(js["resolvedLead"], lead_styles):
+        assert row == pytest.approx(kinetic.resolved_preset(style).lead, abs=1e-6)

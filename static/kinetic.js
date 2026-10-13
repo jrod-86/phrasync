@@ -201,11 +201,58 @@
    * `style.wordLead` is how far ahead of the sung syllable a word may start its
    * entry animation, in seconds. Zero means it appears exactly on the beat.
    */
+  // Crawl-control clamps: the same key set and bounds in both engines, so a
+  // project's style.crawl overrides resolve identically in preview and export.
+  const CRAWL_LIMITS = {
+    transition: [0.15, 1.2],
+    prevLines: [0, 4],
+    nextLines: [0, 4],
+    activeOpacity: [0, 1],
+    nearOpacity: [0, 1],
+    farOpacity: [0, 1],
+    gapHold: [0.2, 4],
+    blockGap: [0, 1.5]
+  };
+
+  /**
+   * Merge a project's crawl-control overrides onto the preset defaults.
+   * Only finite numeric values inside the clamps are accepted; anything else
+   * (missing, null, empty, non-numeric, out of range) falls back to the preset
+   * default. The preset's own crawl dict is never mutated.
+   */
+  // Plain decimal strings only: float() would accept "1_000" while Number()
+  // rejects it, and Number() would accept "0x10" while float() rejects it.
+  // Pinning both engines to one grammar keeps override resolution identical.
+  const CRAWL_NUMERIC_RE = /^\s*[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*$/;
+
+  function mergeCrawlOverrides(base, overrides) {
+    if (!base) return null;
+    const merged = { ...base };
+    if (overrides && typeof overrides === "object" && !Array.isArray(overrides)) {
+      for (const [key, [low, high]] of Object.entries(CRAWL_LIMITS)) {
+        if (!(key in overrides)) continue;
+        const raw = overrides[key];
+        if (raw === null || typeof raw === "boolean") continue;
+        // Number("") is 0 and Number([]) is 0 in JS but float("")/float([])
+        // fail in Python; reject blank strings and objects/arrays in both
+        // engines so overrides resolve identically.
+        if (typeof raw === "object") continue;
+        if (typeof raw === "string" && !CRAWL_NUMERIC_RE.test(raw)) continue;
+        const value = Number(raw);
+        if (!Number.isFinite(value)) continue;
+        merged[key] = Math.max(low, Math.min(high, value));
+      }
+    }
+    return merged;
+  }
+
   function resolvedPreset(style) {
     const base = preset(style && style.preset);
+    const overrides = {};
     const lead = Number(style && style.wordLead);
-    if (!Number.isFinite(lead)) return base;
-    return { ...base, lead: Math.max(0, Math.min(0.5, lead)) };
+    if (Number.isFinite(lead)) overrides.lead = Math.max(0, Math.min(0.5, lead));
+    if (base.crawl) overrides.crawl = mergeCrawlOverrides(base.crawl, style && style.crawl);
+    return Object.keys(overrides).length ? { ...base, ...overrides } : base;
   }
 
   function preset(id) {
@@ -825,7 +872,7 @@
   }
 
   window.VFKinetic = {
-    ease, clamp, mix, PRESETS, PRESET_ORDER, LEGACY_PRESETS,
-    preset, resolvedPreset, cueWords, hasGenuineWordTiming, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues, creditCrawlState, crawlViewport
+    ease, clamp, mix, PRESETS, PRESET_ORDER, LEGACY_PRESETS, CRAWL_LIMITS,
+    preset, resolvedPreset, cueWords, hasGenuineWordTiming, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues, creditCrawlState, crawlViewport, mergeCrawlOverrides
   };
 })();
