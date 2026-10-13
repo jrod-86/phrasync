@@ -159,6 +159,29 @@ def test_transcription_progress_formats_model_download_size_and_eta():
     assert "job.eta_seconds" in i18n
 
 
+def test_crawl_controls_wiring_survives_dropdown_and_malformed_reload():
+    # Codex round-3 P1: selecting credit-crawl through the real dropdown must
+    # refresh crawl-control visibility, so the stylePreset change handler has
+    # to route through updatePresetPresentation() (which calls
+    # applyCrawlControlsUI), not just updatePresetHint().
+    app = (STATIC / "app.js").read_text(encoding="utf-8")
+    handler = app[app.index('els.stylePreset.addEventListener("change"'):]
+    handler = handler[:handler.index("});")]
+    assert "updatePresetPresentation()" in handler
+    assert "updatePresetHint(); restartLyricAnimation" not in handler
+
+    # Codex round-3 P2: the controls must hydrate from the validated merged
+    # crawl object (resolvedPreset/mergeCrawlOverrides), never from an
+    # unrestricted Number() of the raw saved values, or the sliders can show
+    # 150 ms / 4 lines while both renderers use the 400 ms / 2-line defaults.
+    modes = (STATIC / "app-modes.js").read_text(encoding="utf-8")
+    hydrate = modes[modes.index("function applyCrawlControlsUI"):]
+    hydrate = hydrate[:hydrate.index("\nfunction ")]
+    assert "VFKinetic.resolvedPreset(project.style).crawl" in hydrate
+    assert "Number(saved[" not in hydrate
+    assert "pick(" not in hydrate
+
+
 def test_desktop_preview_limits_expensive_idle_work():
     state = (STATIC / "app-state.js").read_text(encoding="utf-8")
     visuals = (STATIC / "app-visuals.js").read_text(encoding="utf-8")

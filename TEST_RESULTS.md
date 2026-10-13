@@ -28,3 +28,15 @@
 | Credit-crawl MP4 export QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl_mp4.py` | **PASS** (640×360 + realistic 1920×1080 renders) |
 | Static JS syntax | `node --check` on every `static/*.js` (absolute paths) | clean |
 | Python syntax | `.venv\Scripts\python.exe -m compileall -q phrasync scripts tests app.py` | clean |
+
+## Codex round-3 remediation — this session
+| Check | Command | Result |
+|---|---|---|
+| Full suite | `.venv\Scripts\python.exe -m pytest` | **181 passed, 0 failed** (16.38s; same 2 pre-existing warnings) |
+| Finding 1 regression test | `tests/test_frontend.py::test_style_preset_change_refreshes_crawl_controls` | passed |
+| Crawl-controls browser QA | `.venv\Scripts\python.exe scripts\qa_crawl_controls.py --origin http://127.0.0.1:5507` | **PASS** (real dropdown select/change visibility + saved-value restore, live tuning, preview/export parity, save/reload, malformed reload hydration) |
+| Credit-crawl browser QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl.py --origin http://127.0.0.1:5507` | **PASS** (preview stack, roll, seek, wrap, gap, save/reload, export parity, realistic 1080p bounds) |
+| Credit-crawl MP4 export QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl_mp4.py` | **PASS** (640×360 + realistic 1920×1080 renders) |
+| Static JS syntax | `node --check` on `static/app.js`, `static/app-modes.js`, `static/kinetic.js` | clean |
+| Python syntax | `py_compile` on `tests/test_frontend.py`, `scripts/qa_crawl_controls.py`; `compileall` phrasync/scripts/tests/app.py | clean |
+| Whitespace | `git diff --check` | clean |

@@ -9,3 +9,5 @@
 | ELYSY bridge = file-boundary converter script in `scripts/`, no ELYSY code copied | ELYSY is MIT-licensed (verified) but the plan prefers a file/API boundary; a converter keeps the fork independent of ELYSY internals | 2026-10-12 |
 | No song-specific offset workarounds anywhere in the fork | Explicit plan rule (Phase 3); the existing global offset control is the correction path | 2026-10-12 |
 | Checkpoint files committed with the feature work | They are the durable recovery mechanism for this fork and contain no copyrighted material | 2026-10-12 |
+| Preserve the previous agent's uncommitted round-3 remediation instead of re-implementing it | Working tree at required starting commit `eed85c3` already contained reviewed, coherent fixes for both Codex findings; re-implementing would risk divergence and wasted work | 2026-10-13 |
+| Preset-change UI refresh routes through `updatePresetPresentation()`; crawl UI hydration routes through `VFKinetic.resolvedPreset()` | One UI-refresh path and one crawl-resolution path — no duplicated state or third parser (Codex round-3 findings 1 and 2) | 2026-10-13 |

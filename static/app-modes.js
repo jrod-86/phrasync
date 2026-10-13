@@ -88,18 +88,20 @@ function applyCrawlControlsUI() {
   const crawl = project.style.preset === "credit-crawl";
   $("#crawlControls").hidden = !crawl;
   if (!crawl) return;
-  const defaults = window.VFKinetic.PRESETS["credit-crawl"].crawl;
-  const saved = project.style.crawl || {};
-  const pick = (key, fallback) => {
-    const value = Number(saved[key]);
-    return Number.isFinite(value) ? value : fallback;
-  };
-  $("#crawlPrev").value = Math.round(pick("prevLines", defaults.prevLines));
-  $("#crawlNext").value = Math.round(pick("nextLines", defaults.nextLines));
-  $("#crawlTransition").value = Math.round(pick("transition", defaults.transition) * 1000);
-  $("#crawlBlockGap").value = Math.round(pick("blockGap", defaults.blockGap) * 100);
-  $("#crawlNear").value = Math.round(pick("nearOpacity", defaults.nearOpacity) * 100);
-  $("#crawlFar").value = Math.round(pick("farOpacity", defaults.farOpacity) * 100);
+  // Hydrate from the SAME validated, clamped crawl object the preview and
+  // export engines resolve (mergeCrawlOverrides via resolvedPreset). Reading
+  // project.style.crawl with an unrestricted Number() here would let the UI
+  // disagree with the renderers — e.g. Number(null) is 0 (clamped to 150 ms)
+  // while both engines reject null and use the 400 ms default, and Number("0x10")
+  // is 16 (clamped to 4) while both engines reject it and use the default 2.
+  // Moving a slider would then write the wrong displayed values back.
+  const effective = window.VFKinetic.resolvedPreset(project.style).crawl;
+  $("#crawlPrev").value = Math.round(effective.prevLines);
+  $("#crawlNext").value = Math.round(effective.nextLines);
+  $("#crawlTransition").value = Math.round(effective.transition * 1000);
+  $("#crawlBlockGap").value = Math.round(effective.blockGap * 100);
+  $("#crawlNear").value = Math.round(effective.nearOpacity * 100);
+  $("#crawlFar").value = Math.round(effective.farOpacity * 100);
   crawlInputs().forEach(updateRangeUI);
 }
 
