@@ -13,6 +13,8 @@ SRT_BLOCK_RE = re.compile(
     re.DOTALL,
 )
 LRC_RE = re.compile(r"\[(?P<min>\d{1,3}):(?P<sec>\d{1,2}(?:[.:]\d{1,3})?)\](?P<text>.*)")
+LRC_WORD_RE = re.compile(r"<(?P<min>\d{1,3}):(?P<sec>\d{1,2}(?:[.:]\d{1,3})?)>")
+LRC_OFFSET_RE = re.compile(r"^\[offset:\s*(?P<ms>[+-]?\d+)\s*\]$", re.IGNORECASE)
 
 
 def parse_timestamp(value: str) -> float:
@@ -104,32 +106,148 @@ def parse_vtt(text: str) -> list[dict[str, Any]]:
     return parse_srt(stripped)
 
 
+def _lrc_seconds(minutes: str, seconds: str) -> float:
+    return int(minutes) * 60 + float(seconds.replace(":", "."))
+
+
+def _attach_punctuation(words: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Fold punctuation-only tokens (ELYSY exports "," as its own word) into
+    the word before, so the word list lines up with the text's tokens."""
+    merged: list[dict[str, Any]] = []
+    for word in words:
+        if merged and not any(ch.isalnum() for ch in word["text"]):
+            merged[-1]["text"] += word["text"]
+            merged[-1]["end"] = max(merged[-1]["end"], word["end"])
+        else:
+            merged.append(dict(word))
+    return merged
+
+
+def _lrc_words(body: str, line_start: float) -> tuple[str, list[dict[str, Any]]]:
+    """Text and word starts from an Enhanced LRC body: <mm:ss.xx>Word <mm:ss.xx>Word."""
+    pieces: list[tuple[float, str]] = []
+    cursor, at = line_start, 0
+    for match in LRC_WORD_RE.finditer(body):
+        pieces.append((cursor, body[at:match.start()]))
+        cursor, at = _lrc_seconds(match.group("min"), match.group("sec")), match.end()
+    pieces.append((cursor, body[at:]))
+    words: list[dict[str, Any]] = []
+    previous_chunk = ""
+    for begin, chunk in pieces:
+        tokens = chunk.split()
+        # "<t>Word<t>," with no space between continues the same word.
+        glued = bool(words) and not chunk[:1].isspace() and not previous_chunk[-1:].isspace()
+        previous_chunk = chunk
+        for position, token in enumerate(tokens):
+            if position == 0 and glued:
+                words[-1]["text"] += token
+                continue
+            words.append({"text": token, "start": begin})
+    words = _attach_punctuation(words) if words else words
+    return " ".join(word["text"] for word in words), words
+
+
 def parse_lrc(text: str, default_duration: float = 3.0) -> list[dict[str, Any]]:
-    points: list[tuple[float, str]] = []
+    """Standard and Enhanced LRC. Enhanced word tags become word timings
+    instead of visible text; an [offset:ms] tag shifts every time."""
+    offset = 0.0
+    points: list[tuple[float, str, list[dict[str, Any]]]] = []
     for line in text.replace("\r\n", "\n").split("\n"):
-        match = LRC_RE.match(line.strip())
+        stripped = line.strip()
+        offset_match = LRC_OFFSET_RE.match(stripped)
+        if offset_match:
+            offset = int(offset_match.group("ms")) / 1000.0
+            continue
+        match = LRC_RE.match(stripped)
         if not match:
             continue
-        seconds_text = match.group("sec").replace(":", ".")
-        start = int(match.group("min")) * 60 + float(seconds_text)
-        lyric = match.group("text").strip()
+        start = _lrc_seconds(match.group("min"), match.group("sec"))
+        lyric, words = _lrc_words(match.group("text"), start)
         if lyric:
-            points.append((start, lyric))
+            points.append((start, lyric, words))
+    # A positive LRC offset means the lyrics should appear sooner.
+    points = [(start - offset, lyric, [{**w, "start": w["start"] - offset} for w in words])
+              for start, lyric, words in points]
     points.sort(key=lambda item: item[0])
+    has_word_tags = bool(LRC_WORD_RE.search(text))
     cues: list[dict[str, Any]] = []
-    for index, (start, lyric) in enumerate(points):
+    for index, (start, lyric, words) in enumerate(points):
         next_start = points[index + 1][0] if index + 1 < len(points) else start + default_duration
-        cues.append(
-            normalize_cue(
-                {
-                    "id": f"cue-{index + 1}",
-                    "start": start,
-                    "end": max(start + 0.35, next_start - 0.03),
-                    "text": lyric,
-                },
-                index,
-            )
-        )
+        end = max(start + 0.35, next_start - 0.03)
+        timed: list[dict[str, Any]] = []
+        if has_word_tags:
+            # Each word lasts until the next tag; words sharing one tag split
+            # its time evenly; the last word holds until the line ends.
+            position = 0
+            while position < len(words):
+                run_end = position
+                while run_end + 1 < len(words) and words[run_end + 1]["start"] == words[position]["start"]:
+                    run_end += 1
+                begin = words[position]["start"]
+                finish = words[run_end + 1]["start"] if run_end + 1 < len(words) else end
+                step = max(0.01, finish - begin) / (run_end - position + 1)
+                for n in range(position, run_end + 1):
+                    offset_in_run = begin + (n - position) * step
+                    timed.append({"text": words[n]["text"], "start": offset_in_run, "end": offset_in_run + step})
+                position = run_end + 1
+            end = max(end, timed[-1]["end"]) if timed else end
+        cues.append(normalize_cue({"id": f"cue-{index + 1}", "start": start, "end": end, "text": lyric, "words": timed}, index))
+    return normalize_cues(cues)
+
+
+def group_word_cues(cues: list[dict[str, Any]], max_words: int = 10, pause: float = 0.6) -> list[dict[str, Any]]:
+    """Rebuild lines from a word-per-caption SRT (ELYSY's Enhanced SRT).
+
+    Lines break at a pause, after sentence punctuation, or at max_words, and
+    each caption's own time becomes that word's timing.
+    """
+    lines: list[list[dict[str, Any]]] = []
+    for cue in cues:
+        word = {"text": cue["text"], "start": cue["start"], "end": cue["end"]}
+        current = lines[-1] if lines else None
+        if current and not any(ch.isalnum() for ch in word["text"]):
+            current.append(word)
+            continue
+        if (not current or len(current) >= max_words or word["start"] - current[-1]["end"] >= pause
+                or current[-1]["text"][-1:] in ".!?"):
+            lines.append([word])
+        else:
+            current.append(word)
+    grouped = []
+    for index, words in enumerate(lines):
+        words = _attach_punctuation(words)
+        grouped.append(normalize_cue({
+            "id": f"cue-{index + 1}", "start": words[0]["start"], "end": words[-1]["end"],
+            "text": " ".join(word["text"] for word in words), "words": words,
+        }, index))
+    return normalize_cues(grouped)
+
+
+def is_word_per_cue(cues: list[dict[str, Any]]) -> bool:
+    return len(cues) >= 8 and all(len(cue["text"].split()) == 1 for cue in cues)
+
+
+def elysy_lines_to_cues(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """ELYSY JSON export: [{"line": "...", "words": [{"word", "start", "end"}]}]."""
+    cues = []
+    for index, line in enumerate(lines):
+        words = []
+        for word in line.get("words") or []:
+            token = str(word.get("word", word.get("text", ""))).strip()
+            if token and word.get("start") is not None:
+                start = float(word["start"])
+                end = float(word["end"]) if word.get("end") is not None else start + 0.3
+                parts = token.split()
+                step = (end - start) / len(parts)
+                words.extend({"text": part, "start": start + n * step, "end": start + (n + 1) * step}
+                             for n, part in enumerate(parts))
+        words = _attach_punctuation(words)
+        if not words:
+            continue
+        cues.append({
+            "id": f"cue-{index + 1}", "start": words[0]["start"], "end": words[-1]["end"],
+            "text": " ".join(word["text"] for word in words), "words": words,
+        })
     return normalize_cues(cues)
 
 
@@ -156,7 +274,8 @@ def parse_lyrics_file(path: Path, duration: float | None = None) -> list[dict[st
     text = path.read_text(encoding="utf-8-sig", errors="replace")
     suffix = path.suffix.lower()
     if suffix == ".srt":
-        return parse_srt(text)
+        cues = parse_srt(text)
+        return group_word_cues(cues) if is_word_per_cue(cues) else cues
     if suffix == ".vtt":
         return parse_vtt(text)
     if suffix == ".lrc":
@@ -167,6 +286,8 @@ def parse_lyrics_file(path: Path, duration: float | None = None) -> list[dict[st
             data = data.get("cues", [])
         if not isinstance(data, list):
             raise ValueError("Lyrics JSON must contain a cue list")
+        if data and all(isinstance(item, dict) and "words" in item and "start" not in item for item in data):
+            return elysy_lines_to_cues(data)
         return normalize_cues(data)
     return parse_plain(text, duration=duration)
 

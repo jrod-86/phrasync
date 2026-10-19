@@ -170,6 +170,7 @@ function inferResolution() {
 
 function applyProjectToControls() {
   normalizeCues();
+  if ($("#syncLyrics")) $("#syncLyrics").value = project.syncLyrics || "";
   els.projectTitle.value = project.title;
   els.audioName.textContent = project.audio?.name || "Add song";
   els.visualSelect.value = project.background.visual;

@@ -186,7 +186,7 @@ function applyModeUI() {
   els.audioInput.accept = mode === "subtitles"
     ? "audio/*,video/mp4,video/webm,.wav,.mp3,.m4a,.aac,.flac,.ogg,.opus,.mp4,.webm"
     : "audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg,.opus";
-  els.transcribeButton.textContent = t(copy.transcribe);
+  els.transcribeButton.textContent = typeof transcribeButtonLabel === "function" ? transcribeButtonLabel() : t(copy.transcribe);
   els.transcriptionSectionName.textContent = t(copy.section);
   els.cuePanelTitle.textContent = t(copy.panel);
   els.bulkLyricsLabel.textContent = t(copy.bulk);

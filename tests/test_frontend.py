@@ -28,6 +28,7 @@ APP_SCRIPTS = [
     "app-loop.js",
     "app-cues.js",
     "app-workflows.js",
+    "app-lyric-sync.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",

@@ -434,6 +434,7 @@ input[type="range"].volume { width: 96px; min-width: 96px; }
 .timeline-panel { display: flex; flex-direction: column; overflow: hidden; }
 .bulk-box { margin: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
 .bulk-box > label { display: block; margin-bottom: 7px; }
+.sync-lyrics-field textarea,
 .bulk-box textarea { width: 100%; resize: vertical; min-height: 74px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); font-size: 11px; line-height: 1.45; }
 .bulk-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 7px; }
 .bulk-actions button, .timeline-tools button, .project-actions button { min-height: 29px; padding: 0 9px; border: 1px solid var(--border); border-radius: 7px; background: transparent; color: var(--muted); font-size: 9px; font-weight: 700; }

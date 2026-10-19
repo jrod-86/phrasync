@@ -15,6 +15,7 @@ from .config import JOBS_DIR, RENDERS_DIR
 from .diagnostics import log_event, log_exception
 from .align import align_cues, alignment_stats
 from .audio_analysis import analyze_audio
+from .lyric_sync import apply_lyric_sync
 from .qa import postflight_render, preflight_project
 from .renderer import render_project
 from .transcribe import TranscriptionCancelled, transcribe_audio
@@ -90,6 +91,7 @@ class JobManager:
         vad_filter: bool,
         align: bool = True,
         language_spans: list[dict[str, Any]] | None = None,
+        lyrics: str = "",
     ) -> Job:
         job = Job(
             id=uuid.uuid4().hex,
@@ -102,6 +104,7 @@ class JobManager:
                 "vadFilter": bool(vad_filter),
                 "align": bool(align),
                 "languageSpans": list(language_spans or []),
+                "lyrics": bool(str(lyrics or "").strip()),
             },
         )
         log_event("info", "transcription", f"Queued job {job.id[:8]}, model {model}, language {language}")
@@ -117,6 +120,7 @@ class JobManager:
             vad_filter,
             align,
             language_spans,
+            lyrics,
         )
         return job
 
@@ -129,6 +133,7 @@ class JobManager:
         vad_filter: bool,
         align: bool,
         language_spans: list[dict[str, Any]] | None = None,
+        lyrics: str = "",
     ) -> None:
         job = self.get(job_id)
         if not job:
@@ -182,6 +187,13 @@ class JobManager:
             )
             if cancelled():
                 raise TranscriptionCancelled("Transcription cancelled")
+
+            if str(lyrics or "").strip():
+                with self.lock:
+                    job.message = "Matching your lyrics to the song"
+                    job.phase = "lyric-sync"
+                    self._save(job)
+                apply_lyric_sync(result, lyrics)
 
             if align:
                 with self.lock:

@@ -40,6 +40,7 @@ from phrasync.align import align_cues, alignment_stats, estimate_offset
 from phrasync.audio_analysis import AnalysisUnavailable, analyze_audio
 from phrasync.font_utils import font_status
 from phrasync.jobs import manager
+from phrasync.lyric_sync import apply_lyric_sync
 from phrasync.desktop_export import DesktopExportBridge
 from phrasync.media import ffmpeg_exe, probe_duration
 from phrasync.ocr import OCRUnavailable, capability_status as ocr_status, ocr_image
@@ -335,6 +336,8 @@ async def run_transcription(payload: dict[str, Any] = Body(...)) -> dict[str, An
             None,
             payload.get("languageSpans") or None,
         )
+        if str(payload.get("lyrics") or "").strip():
+            apply_lyric_sync(result, str(payload["lyrics"]))
         if payload.get("align", True):
             try:
                 analysis = await run_in_threadpool(analyze_audio, Path(asset.path), True)
@@ -365,6 +368,7 @@ def create_transcription_job(payload: dict[str, Any] = Body(...)) -> JSONRespons
         bool(payload.get("vadFilter", False)),
         bool(payload.get("align", True)),
         payload.get("languageSpans") or None,
+        str(payload.get("lyrics") or ""),
     )
     return JSONResponse(job.public(), status_code=202)
 

@@ -139,7 +139,7 @@ function finishTranscriptionControls() {
   transcriptionPollTimer = null;
   currentTranscriptionJob = null;
   els.transcribeButton.disabled = false;
-  els.transcribeButton.textContent = t(MODE_COPY[project.mode]?.transcribe || "Transcribe locally");
+  els.transcribeButton.textContent = transcribeButtonLabel();
   els.cancelTranscription.disabled = false;
   els.cancelTranscription.hidden = true;
 }
@@ -160,6 +160,10 @@ function applyTranscriptionResult(result) {
   const review = unstable
     ? ` · review ${unstable} unstable segment${unstable === 1 ? "" : "s"}`
     : (retries ? ` · gauntlet recovered ${retries} segment${retries === 1 ? "" : "s"}` : "");
+  if (result.lyricSync) {
+    setAssetStatus(lyricSyncStatus(result), "success");
+    return toast("Your lyrics are synced to the song.", "success");
+  }
   setAssetStatus(`Transcribed ${project.cues.length} phrases in ${result.languageMode || result.language || "auto language"} on ${result.device}${drift}${review}.`, "success");
   const languages = result.languages || [];
   toast(languages.length > 1
@@ -222,6 +226,7 @@ async function transcribeSong() {
         model: els.whisperModel.value,
         language: els.whisperLanguage.value.trim() || "auto",
         vadFilter: els.vadFilter.checked,
+        lyrics: pastedSyncLyrics(),
         align: true
       })
     });
