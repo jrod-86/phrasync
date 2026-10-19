@@ -130,6 +130,8 @@ def _render_kinetic(
     max_width: int,
     center_y: int,
     beat: float,
+    crawl_shift: float = 0.0,
+    crawl_opacity: float = 1.0,
 ) -> Image.Image | None:
     layer = Image.new("RGBA", (ctx.width, ctx.height), (0, 0, 0, 0))
     words = kinetic.cue_words(cue)
@@ -241,11 +243,14 @@ def _render_kinetic(
         if state.opacity < 0.998:
             alpha = image.getchannel("A").point(lambda value: int(value * state.opacity))
             image.putalpha(alpha)
+        if crawl_opacity < 0.998:
+            alpha = image.getchannel("A").point(lambda value: int(value * crawl_opacity))
+            image.putalpha(alpha)
 
         # Anchor on the word's static centre so scaling grows outward evenly.
         anchor_x = word_x + text_w / 2
         dest_x = int(anchor_x - image.width / 2 + dx)
-        dest_y = int(word_center_y - image.height / 2 + dy)
+        dest_y = int(word_center_y - image.height / 2 + dy + crawl_shift)
         layer.alpha_composite(image, (dest_x, dest_y))
         drew = True
 
@@ -258,7 +263,19 @@ def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
     lyric_t = t - float(timing.get("offset", 0.0) or 0.0)
 
     spec = kinetic.resolved_preset(style)
-    cues = kinetic.active_cues(ctx.cues, lyric_t, spec)
+    crawl_state = None
+    if spec.crawl is not None:
+        # Credit Crawl drives its own cue window: the sung line stays centred
+        # while neighbours roll above/below it. Same function the browser
+        # preview runs, so export and preview stacks agree exactly.
+        crawl_state = kinetic.credit_crawl_state(
+            ctx.cues, lyric_t, spec,
+            kinetic.char_budget(style, ctx.project.get("canvas") or {}, spec),
+            kinetic.crawl_viewport(style, ctx.project.get("canvas") or {}, spec),
+        )
+        cues = [item["cue"] for item in crawl_state["cues"]]
+    else:
+        cues = kinetic.active_cues(ctx.cues, lyric_t, spec)
     if not cues:
         return None
 
@@ -290,10 +307,24 @@ def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
         )
 
     layer: Image.Image | None = None
+    crawl_items = {id(item["cue"]): item for item in (crawl_state["cues"] if crawl_state else [])}
+    # One crawl "line unit" in export pixels: a rendered line's height plus the
+    # Line gap — the same pitch the preview stacks blocks with.
+    crawl_line_unit = base_size * spec.line_height + int(
+        scale_for_canvas(float(style.get("lineGap", 0) or 0), ctx.height, ctx.width)
+    )
     for cue in cues:
-        rendered = _render_kinetic(
-            ctx, cue, lyric_t, style, spec, fonts, max_width, center_y, beat
-        )
+        item = crawl_items.get(id(cue))
+        if item is None:
+            rendered = _render_kinetic(
+                ctx, cue, lyric_t, style, spec, fonts, max_width, center_y, beat
+            )
+        else:
+            rendered = _render_kinetic(
+                ctx, cue, lyric_t, style, spec, fonts, max_width, center_y, beat,
+                crawl_shift=item["offset"] * crawl_line_unit,
+                crawl_opacity=item["opacity"],
+            )
         if rendered is None:
             continue
         layer = rendered if layer is None else Image.alpha_composite(layer, rendered)

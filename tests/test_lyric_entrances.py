@@ -58,6 +58,15 @@ def test_flat_export_has_no_glyph_pixels_before_phrase_onset(preset, lead):
     project = {"style": {"preset": preset, "wordLead": lead, "fontSize": 110},
                "timing": {"offset": 0}, "canvas": {"width": 640, "height": 360}}
     ctx = RenderContext(project, 640, 360, 30, 3, 90, [cue], None, None, None, np.zeros(90))
+    if preset == "credit-crawl":
+        # The crawl is a rolling stack: a line is readable from its cue start,
+        # before its first timed word, exactly as the plan requires ("readable
+        # in advance"). Its words still fill only on their own timing.
+        before = render_text_layer(ctx, .999)
+        assert before is not None and before.getchannel("A").getbbox() is not None
+        after = render_text_layer(ctx, 1.12)
+        assert after is not None and after.getchannel("A").getbbox() is not None
+        return
     before = render_text_layer(ctx, .999)
     assert before is None or before.getchannel("A").getbbox() is None
     after = render_text_layer(ctx, 1.12)

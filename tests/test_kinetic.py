@@ -78,6 +78,47 @@ for (const presetId of input.presets) {
   out.lines[presetId] = K.layoutLines(words, K.preset(presetId), input.budget)
     .map(line => line.map(w => w.text));
 }
+out.genuine = {};
+for (const [name, cue] of Object.entries(input.cues)) {
+  out.genuine[name] = K.hasGenuineWordTiming(cue) ? 1 : 0;
+}
+out.viewport = input.crawlStyles.map(style => {
+  const v = K.crawlViewport(style, input.canvas, K.preset("credit-crawl"));
+  return [+v.above.toFixed(6), +v.below.toFixed(6)];
+});
+const crawlSpec = K.preset("credit-crawl");
+const crawlViewport = K.crawlViewport(input.crawlStyles[0], input.canvas, crawlSpec);
+out.crawl = [];
+for (const [name, cueList] of Object.entries(input.crawlCases)) {
+  for (const t of input.crawlTimes) {
+    const s = K.creditCrawlState(cueList, t, crawlSpec, input.budget, crawlViewport);
+    out.crawl.push([name, t, s.activeIndex, s.cues.map(c => [
+      c.index, +c.offset.toFixed(6), +c.opacity.toFixed(6), c.active ? 1 : 0
+    ])]);
+  }
+}
+// Crawl-control overrides: resolvedPreset must merge style.crawl identically
+// in both engines, and the overridden state must agree cue for cue.
+out.crawlOverridden = [];
+out.crawlMerge = [];
+const crawlMergeOrder = Object.keys(input.crawlOverrides);
+for (const name of crawlMergeOrder) {
+  const cfg = input.crawlOverrides[name];
+  const spec = K.resolvedPreset({ preset: "credit-crawl", crawl: cfg.crawl });
+  out.crawlMerge.push([
+    spec.crawl.transition, spec.crawl.prevLines, spec.crawl.nextLines,
+    spec.crawl.blockGap, spec.crawl.nearOpacity, spec.crawl.farOpacity,
+    spec.crawl.activeOpacity, spec.crawl.gapHold
+  ]);
+  const vp = K.crawlViewport(cfg.style, input.canvas, spec);
+  for (const t of input.crawlTimes) {
+    const s = K.creditCrawlState(cfg.cues, t, spec, input.budget, vp);
+    out.crawlOverridden.push([name, t, s.activeIndex, s.cues.map(c => [
+      c.index, +c.offset.toFixed(6), +c.opacity.toFixed(6), c.active ? 1 : 0
+    ])]);
+  }
+}
+out.resolvedLead = input.leadStyles.map(style => +K.resolvedPreset(style).lead.toFixed(6));
 process.stdout.write(JSON.stringify(out));
 """
 
@@ -119,6 +160,360 @@ def test_every_preset_has_a_python_and_js_twin():
         assert f'"{preset_id}"' in js, f"{preset_id} missing from static/kinetic.js"
 
 
+def test_crawl_controls_override_defaults_and_clamp():
+    """Plan Phase 2: style.crawl overrides the preset crawl controls within
+    clamped bounds, malformed values fall back to the preset default, and the
+    preset's own crawl dict is never mutated."""
+    base = kinetic.get_preset("credit-crawl")
+    untouched = dict(base.crawl)
+
+    tuned = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 3, "nextLines": 1, "transition": 0.8,
+        "blockGap": 0.6, "nearOpacity": 0.4, "farOpacity": 0.1}})
+    assert tuned.crawl["prevLines"] == 3
+    assert tuned.crawl["nextLines"] == 1
+    assert tuned.crawl["transition"] == pytest.approx(0.8)
+    assert tuned.crawl["blockGap"] == pytest.approx(0.6)
+    assert tuned.crawl["nearOpacity"] == pytest.approx(0.4)
+    assert tuned.crawl["farOpacity"] == pytest.approx(0.1)
+    # Keys not overridden keep the preset defaults.
+    assert tuned.crawl["activeOpacity"] == base.crawl["activeOpacity"]
+    assert tuned.crawl["gapHold"] == base.crawl["gapHold"]
+
+    clamped = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 99, "nextLines": -3, "transition": 99,
+        "blockGap": -1, "nearOpacity": 2, "farOpacity": -0.5}})
+    assert clamped.crawl["prevLines"] == 4.0
+    assert clamped.crawl["nextLines"] == 0.0
+    assert clamped.crawl["transition"] == 1.2
+    assert clamped.crawl["blockGap"] == 0.0
+    assert clamped.crawl["nearOpacity"] == 1.0
+    assert clamped.crawl["farOpacity"] == 0.0
+
+    # Malformed values fall back to the preset default rather than poisoning
+    # the roll with NaN or a boolean.
+    malformed = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": None, "nextLines": "", "transition": "fast",
+        "blockGap": True, "nearOpacity": "NaN", "farOpacity": "Infinity"}})
+    for key in ("prevLines", "nextLines", "transition", "blockGap",
+                "nearOpacity", "farOpacity"):
+        assert malformed.crawl[key] == base.crawl[key], key
+
+    # Numeric-string grammar is pinned identically in both engines: Python
+    # float() would accept "1_000" and JS Number() would accept "0x10"; both
+    # engines reject them and fall back to the preset default, while plain
+    # decimal strings (with whitespace or exponent) resolve the same.
+    tricky = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": "1_000", "nextLines": "0x10",
+        "transition": " 0.5 ", "blockGap": "1e-1"}})
+    assert tricky.crawl["prevLines"] == untouched["prevLines"]
+    assert tricky.crawl["nextLines"] == untouched["nextLines"]
+    assert tricky.crawl["transition"] == pytest.approx(0.5)
+    assert tricky.crawl["blockGap"] == pytest.approx(0.1)
+
+    # A non-dict or missing crawl leaves the preset untouched, and the preset
+    # crawl dict itself is never mutated by any of the above.
+    assert kinetic.resolved_preset({"preset": "credit-crawl"}).crawl == base.crawl
+    assert kinetic.resolved_preset(
+        {"preset": "credit-crawl", "crawl": "nonsense"}).crawl == base.crawl
+    assert base.crawl == untouched
+    # Other presets have no crawl and gain none.
+    assert kinetic.resolved_preset(
+        {"preset": "kinetic-slam", "crawl": {"prevLines": 9}}).crawl is None
+
+
+def test_crawl_controls_change_the_roll():
+    """The controls must actually drive the state: fewer visible lines means
+    fewer cues in the stack, and a wider block gap spaces them further apart."""
+    cues = [
+        {"id": f"c{i}", "start": i * 2.0, "end": i * 2.0 + 2.0,
+         "text": f"line number {i}", "words": []}
+        for i in range(1, 8)
+    ]
+    viewport = {"above": 12.0, "below": 12.0}
+    default = kinetic.get_preset("credit-crawl")
+    tuned = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "prevLines": 1, "nextLines": 1, "blockGap": 1.5}})
+
+    at_rest = kinetic.credit_crawl_state(cues, 5.0, default, 22, viewport)
+    tight = kinetic.credit_crawl_state(cues, 5.0, tuned, 22, viewport)
+    assert len(tight["cues"]) < len(at_rest["cues"])
+    assert sum(1 for c in tight["cues"] if not c["active"]) == 2
+
+    gaps_default = [
+        b["offset"] - a["offset"]
+        for a, b in zip(at_rest["cues"], list(at_rest["cues"])[1:])
+    ]
+    gaps_tuned = [
+        b["offset"] - a["offset"]
+        for a, b in zip(tight["cues"], list(tight["cues"])[1:])
+    ]
+    assert min(gaps_tuned) > max(gaps_default)
+
+    # Fade strengths change opacity ordering too.
+    dim = kinetic.resolved_preset({"preset": "credit-crawl", "crawl": {
+        "nearOpacity": 0.1, "farOpacity": 0.05}})
+    dim_state = kinetic.credit_crawl_state(cues, 5.0, dim, 22, viewport)
+    active_item = next(c for c in dim_state["cues"] if c["active"])
+    for item in dim_state["cues"]:
+        if item is not active_item:
+            assert item["opacity"] <= active_item["opacity"]
+
+
+def test_crawl_controls_do_not_touch_other_presets():
+    """Existing presets behave exactly as before: crawl overrides are ignored
+    for them and their resolved values are unchanged."""
+    for preset_id in kinetic.PRESETS:
+        if preset_id == "credit-crawl":
+            continue
+        base = kinetic.get_preset(preset_id)
+        resolved = kinetic.resolved_preset(
+            {"preset": preset_id, "crawl": {"prevLines": 4, "transition": 1.2}})
+        assert resolved == base
+
+
+def test_credit_crawl_blocks_never_collide():
+    """Wrapped cues occupy their true height in stack space, so neighbours
+    never collide at any time: offset_j - offset_i == c_j - c_i >=
+    lines_i/2 + blockGap + lines_j/2, and the centre term cancels."""
+    spec = kinetic.get_preset("credit-crawl")
+    cases = {
+        "wrapped": [
+            {"id": "w1", "start": 0.0, "end": 2.0, "text": "THIS IS A VERY LONG\nFIRST LINE WRAPPING", "words": []},
+            {"id": "w2", "start": 2.0, "end": 4.0, "text": "SECOND LINE AFTER IT", "words": []},
+            {"id": "w3", "start": 4.0, "end": 6.0, "text": "THIRD LINE HERE", "words": []},
+        ],
+        "overlap": [
+            {"id": "o1", "start": 0.0, "end": 1.0, "text": "quick one", "words": []},
+            {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
+            {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
+        ],
+        "nested": [
+            {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+            {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
+        ],
+    }
+    for name, cue_list in cases.items():
+        for t in [0.0, 0.4, 1.0, 1.9, 2.0, 2.2, 3.0, 4.0, 5.0]:
+            state = kinetic.credit_crawl_state(cue_list, t, spec, 24)
+            heights = [
+                max(1, len(kinetic.layout_lines(kinetic.cue_words(item["cue"]), spec, 24)))
+                for item in state["cues"]
+            ]
+            for (a, ha), (b, hb) in zip(zip(state["cues"], heights), list(zip(state["cues"], heights))[1:]):
+                assert b["offset"] - a["offset"] >= ha / 2 + hb / 2 - 1e-9, (
+                    f"{name} t={t} blocks {a['cue']['id']}/{b['cue']['id']} collide"
+                )
+
+
+def test_phrase_only_cues_have_no_estimated_word_wipe():
+    """Phrase-only SRT cues must not present estimated word
+    timing as word-accurate. has_genuine_word_timing is False for them, and
+    the crawl word state fills the whole phrase together over the step ease
+    instead of wiping word by word."""
+    spec = kinetic.get_preset("credit-crawl")
+    phrase_cue = {"id": "p1", "start": 2.0, "end": 6.0,
+                  "text": "hold the line tonight", "words": []}
+    timed_cue = {
+        "id": "p2", "start": 1.0, "end": 4.0, "text": "one two three",
+        "words": [
+            {"text": "one", "start": 1.0, "end": 1.6},
+            {"text": "two", "start": 1.8, "end": 2.4},
+            {"text": "three", "start": 2.6, "end": 3.9},
+        ],
+    }
+    assert kinetic.has_genuine_word_timing(phrase_cue) is False
+    assert kinetic.has_genuine_word_timing(timed_cue) is True
+    # A words array that does not line up with the tokens is not genuine either.
+    mismatched = {"id": "p3", "start": 0.0, "end": 2.0, "text": "a b c",
+                  "words": [{"text": "a", "start": 0.0, "end": 1.0}]}
+    assert kinetic.has_genuine_word_timing(mismatched) is False
+
+    words = kinetic.cue_words(phrase_cue)
+    # Every word of the phrase shares the same fill at any instant: the phrase
+    # switches to the accent colour together, no per-word wipe.
+    for t in [1.0, 2.0, 2.1, 3.0, 5.99, 6.0, 7.0]:
+        fills = {kinetic.word_state(w, phrase_cue, t, spec).fill for w in words}
+        assert len(fills) == 1, f"t={t} produced a per-word wipe: {fills}"
+    # Pending before the cue, filled after it, eased during it.
+    assert kinetic.word_state(words[0], phrase_cue, 1.0, spec).role == "pending"
+    assert kinetic.word_state(words[0], phrase_cue, 1.0, spec).fill == 0.0
+    mid = kinetic.word_state(words[0], phrase_cue, 2.1, spec)
+    assert mid.role == "active" and 0.0 < mid.fill < 1.0
+    assert kinetic.word_state(words[0], phrase_cue, 6.5, spec).fill == 1.0
+
+    # Genuine word timing still wipes word by word.
+    timed_words = kinetic.cue_words(timed_cue)
+    fills_at_2_0 = {kinetic.word_state(w, timed_cue, 2.0, spec).fill for w in timed_words}
+    assert len(fills_at_2_0) > 1, "genuine word timings collapsed into a phrase fill"
+
+
+def test_overlap_keeps_exactly_one_active_cue():
+    """When cues overlap in time, exactly one cue — the most
+    recently started one that is still playing — is active; older overlapping
+    cues are treated as completed/previous."""
+    spec = kinetic.get_preset("credit-crawl")
+    cues = [
+        {"id": "o1", "start": 0.0, "end": 3.0, "text": "first long cue", "words": []},
+        {"id": "o2", "start": 1.0, "end": 4.0, "text": "second cue", "words": []},
+        {"id": "o3", "start": 2.0, "end": 5.0, "text": "third cue", "words": []},
+    ]
+    for t in [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.5, 5.5]:
+        state = kinetic.credit_crawl_state(cues, t, spec, 22)
+        active = [c for c in state["cues"] if c["active"]]
+        assert len(active) <= 1, f"t={t} has {len(active)} active cues"
+        if active:
+            expected_id = {0.5: "o1", 1.0: "o2", 1.5: "o2", 2.0: "o3",
+                           2.5: "o3", 3.0: "o3", 3.5: "o3", 4.5: "o3"}[t]
+            assert active[0]["cue"]["id"] == expected_id, (
+                f"t={t} active cue is {active[0]['cue']['id']}, expected {expected_id}")
+            # The active cue owns offset 0 at rest (transition passed).
+            if t >= 3.0:
+                assert abs(active[0]["offset"]) < 1e-9
+        else:
+            # t=5.5: every cue has ended, so nothing is active; the last cue
+            # still holds the centre as a completed cue.
+            assert t == 5.5
+            assert state["activeIndex"] == 2
+            assert state["cues"], "gap after the last cue left a blank frame"
+            anchor = next(c for c in state["cues"] if c["index"] == state["activeIndex"])
+            assert abs(anchor["offset"]) < 1e-9
+
+
+def test_nested_overlap_anchor_moves_forward_only():
+    """A long older cue with a short newer cue nested inside it.
+    Once the newer cue starts, the anchor moves forward to it and never moves
+    back to the older cue — even though the older cue is technically still
+    playing after the short cue ends."""
+    spec = kinetic.get_preset("credit-crawl")
+    cues = [
+        {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+        {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
+    ]
+
+    # Before the short cue: the older cue owns the centre and is active.
+    state = kinetic.credit_crawl_state(cues, 0.5, spec, 22)
+    active = [c for c in state["cues"] if c["active"]]
+    assert len(active) == 1 and active[0]["cue"]["id"] == "nA"
+    assert abs(active[0]["offset"]) < 1e-9
+
+    # During the short cue: the newer cue owns the centre and is active; the
+    # older cue is a dimmed previous cue above it.
+    state = kinetic.credit_crawl_state(cues, 1.5, spec, 22)
+    active = [c for c in state["cues"] if c["active"]]
+    assert len(active) == 1 and active[0]["cue"]["id"] == "nB"
+    assert abs(active[0]["offset"]) < 1e-9
+    older = next(c for c in state["cues"] if c["cue"]["id"] == "nA")
+    assert older["offset"] < 0 and not older["active"]
+    assert older["opacity"] < active[0]["opacity"]
+
+    # After the short cue ends (t=3.0): the anchor stays on the newer cue as a
+    # completed gap-hold at centre with active=false. The older cue must NOT
+    # reactivate or scroll the centre backward.
+    state = kinetic.credit_crawl_state(cues, 3.0, spec, 22)
+    assert state["activeIndex"] == 1, "anchor must remain the newer short cue"
+    assert not any(c["active"] for c in state["cues"]), "no cue may be active after the short cue ends"
+    anchor = next(c for c in state["cues"] if c["index"] == state["activeIndex"])
+    assert anchor["cue"]["id"] == "nB"
+    assert abs(anchor["offset"]) < 1e-9, "gap anchor must sit at offset zero"
+    older = next(c for c in state["cues"] if c["cue"]["id"] == "nA")
+    assert older["offset"] < 0, "older cue must remain above the anchor"
+    assert older["opacity"] < anchor["opacity"], "older cue must stay dimmed"
+
+    # Monotonic: the anchor never moves backward for the rest of the long cue.
+    for t in [2.0, 2.5, 3.0, 5.0, 9.0, 9.9]:
+        state = kinetic.credit_crawl_state(cues, t, spec, 22)
+        assert state["activeIndex"] == 1, f"anchor regressed at t={t}"
+        assert not any(c["active"] for c in state["cues"]), f"cue reactivated at t={t}"
+        anchor = next(c for c in state["cues"] if c["index"] == 1)
+        assert abs(anchor["offset"]) < 1e-9, f"centre scrolled backward at t={t}"
+
+
+def test_genuine_word_timing_requires_valid_timings():
+    """Word count alone does not establish genuine timing. A cue
+    is genuine only when every stored word has explicit finite numeric
+    start/end with end > start and starts are monotonically non-decreasing.
+    Rejected/malformed arrays fall back to the static phrase treatment."""
+    spec = kinetic.get_preset("credit-crawl")
+    valid = {"start": 1.0, "end": 4.0, "text": "one two",
+             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": 1.8, "end": 2.4}]}
+    assert kinetic.has_genuine_word_timing(valid) is True
+
+    rejected = {
+        "missing": [{"text": "one", "start": 1.0, "end": 1.6}, {"text": "two"}],
+        "empty": [{"text": "one", "start": 1.0, "end": 1.6},
+                  {"text": "two", "start": "", "end": ""}],
+        "nonnumeric": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": "later", "end": "soon"}],
+        "end_before": [{"text": "one", "start": 1.0, "end": 1.6},
+                       {"text": "two", "start": 2.0, "end": 1.5}],
+        "equal": [{"text": "one", "start": 1.0, "end": 1.6},
+                  {"text": "two", "start": 2.0, "end": 2.0}],
+        "nonmono": [{"text": "one", "start": 2.5, "end": 3.0},
+                    {"text": "two", "start": 1.2, "end": 2.0}],
+        "nan": [{"text": "one", "start": 1.0, "end": 1.6},
+                {"text": "two", "start": float("nan"), "end": 3.0}],
+        "inf": [{"text": "one", "start": 1.0, "end": 1.6},
+                {"text": "two", "start": 2.0, "end": float("inf")}],
+        "null": [{"text": "one", "start": 1.0, "end": 1.6},
+                 {"text": "two", "start": None, "end": None}],
+        "count": [{"text": "one", "start": 1.0, "end": 1.6}],
+    }
+    for name, word_list in rejected.items():
+        cue = {"start": 1.0, "end": 4.0, "text": "one two", "words": word_list}
+        assert kinetic.has_genuine_word_timing(cue) is False, f"{name} must be rejected"
+        # Rejected timing must not fabricate word-accurate highlighting: the
+        # cue falls back to the static phrase fill (all words share one fill).
+        cue_words = kinetic.cue_words(cue)
+        for t in [1.0, 1.5, 2.5, 3.9]:
+            fills = {kinetic.word_state(w, cue, t, spec).fill for w in cue_words}
+            assert len(fills) == 1, f"{name} at t={t} produced a per-word wipe: {fills}"
+
+
+def test_viewport_keeps_wrapped_blocks_inside():
+    """With a viewport supplied, a previous/upcoming cue is
+    shown only while its COMPLETE wrapped block fits inside the frame; the
+    most distant cue is dropped first and prevLines/nextLines stay hard caps."""
+    spec = kinetic.get_preset("credit-crawl")
+    cues = [
+        {"id": "w1", "start": 0.0, "end": 2.0,
+         "text": "THIS IS A VERY LONG WRAPPING FIRST LINE THAT BREAKS INTO TWO LINES",
+         "words": []},
+        {"id": "w2", "start": 2.0, "end": 4.0, "text": "SECOND LINE HERE", "words": []},
+        {"id": "w3", "start": 4.0, "end": 6.0, "text": "THIRD LINE HERE", "words": []},
+        {"id": "w4", "start": 6.0, "end": 8.0, "text": "FOURTH LINE HERE", "words": []},
+    ]
+    budget = 24
+    # A viewport that only fits ~2 line units above/below: a 2-line wrapped
+    # block cannot be a neighbour, but it is never shrunk when it is the active cue.
+    tight = {"above": 2.0, "below": 2.0}
+    state = kinetic.credit_crawl_state(cues, 3.0, spec, budget, tight)
+    ids = [c["cue"]["id"] for c in state["cues"]]
+    assert "w1" not in ids, f"wrapped w1 block left outside the viewport: {ids}"
+    assert "w2" in ids and "w3" in ids
+    for item in state["cues"]:
+        lines = max(1, len(kinetic.layout_lines(kinetic.cue_words(item["cue"]), spec, budget)))
+        half = lines / 2
+        assert item["offset"] - half >= -2.0 - 0.02 or item["active"], (
+            f"{item['cue']['id']} block pokes above the viewport")
+        assert item["offset"] + half <= 2.0 + 0.02 or item["active"], (
+            f"{item['cue']['id']} block pokes below the viewport")
+    # The active cue is never dropped to fit neighbours.
+    state = kinetic.credit_crawl_state(cues, 1.0, spec, budget, tight)
+    active = [c for c in state["cues"] if c["active"]]
+    assert len(active) == 1 and active[0]["cue"]["id"] == "w1"
+    # prevLines/nextLines remain hard caps even with a generous viewport.
+    wide = {"above": 50.0, "below": 50.0}
+    state = kinetic.credit_crawl_state(cues, 3.0, spec, budget, wide)
+    crawl_cfg = spec.crawl or {}
+    assert len(state["cues"]) <= 1 + crawl_cfg.get("prevLines", 2) + crawl_cfg.get("nextLines", 2)
+    # Without a viewport the old behaviour stands: neighbours are capped only
+    # by prevLines/nextLines (parity with callers that pass none).
+    state = kinetic.credit_crawl_state(cues, 3.0, spec, budget)
+    assert "w1" in [c["cue"]["id"] for c in state["cues"]]
+
+
 def test_engines_agree():
     presets = list(kinetic.PRESETS)
     times = [0.5, 1.9, 2.0, 2.05, 2.3, 3.0, 4.4, 5.9, 6.0, 6.15, 6.4, 7.5]
@@ -130,11 +525,111 @@ def test_engines_agree():
         {"fontSize": 90, "maxWidth": 70, "fontPreset": "modern"},
         {"fontSize": 240, "maxWidth": 96, "fontPreset": "mono"},
     ]
-    cues = {"plain": CUE, "timed": TIMED_CUE}
+    cues = {"plain": CUE, "timed": TIMED_CUE,
+            # Genuine-timing fixtures for the strict validator (Issue 2).
+            "g_valid": {"start": 1.0, "end": 4.0, "text": "one two three",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": 1.8, "end": 2.4},
+                                  {"text": "three", "start": 2.6, "end": 3.9}]},
+            "g_missing": {"start": 1.0, "end": 4.0, "text": "one two",
+                          "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                    {"text": "two"}]},
+            "g_empty": {"start": 1.0, "end": 4.0, "text": "one two",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": "", "end": ""}]},
+            "g_nonnumeric": {"start": 1.0, "end": 4.0, "text": "one two",
+                             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                       {"text": "two", "start": "later", "end": "soon"}]},
+            "g_end_before": {"start": 1.0, "end": 4.0, "text": "one two",
+                             "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                       {"text": "two", "start": 2.0, "end": 1.5}]},
+            "g_equal": {"start": 1.0, "end": 4.0, "text": "one two",
+                        "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                  {"text": "two", "start": 2.0, "end": 2.0}]},
+            "g_nonmono": {"start": 1.0, "end": 4.0, "text": "one two",
+                          "words": [{"text": "one", "start": 2.5, "end": 3.0},
+                                    {"text": "two", "start": 1.2, "end": 2.0}]},
+            "g_nan": {"start": 1.0, "end": 4.0, "text": "one two",
+                      "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                {"text": "two", "start": "NaN", "end": 3.0}]},
+            "g_inf": {"start": 1.0, "end": 4.0, "text": "one two",
+                      "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                {"text": "two", "start": 2.0, "end": "Infinity"}]},
+            "g_null": {"start": 1.0, "end": 4.0, "text": "one two",
+                       "words": [{"text": "one", "start": 1.0, "end": 1.6},
+                                 {"text": "two", "start": None, "end": None}]}}
+    crawl_cases = {
+        "even": [
+            {"id": "c1", "start": 0.0, "end": 2.0, "text": "first line here", "words": []},
+            {"id": "c2", "start": 2.0, "end": 4.0, "text": "second line here", "words": []},
+            {"id": "c3", "start": 4.0, "end": 6.0, "text": "third line here", "words": []},
+            {"id": "c4", "start": 6.0, "end": 8.0, "text": "fourth line here", "words": []},
+            {"id": "c5", "start": 8.0, "end": 10.0, "text": "fifth line here", "words": []},
+        ],
+        "gap": [
+            {"id": "g1", "start": 0.0, "end": 1.5, "text": "before the break", "words": []},
+            {"id": "g2", "start": 5.0, "end": 7.0, "text": "after the break", "words": []},
+        ],
+        "overlap": [
+            {"id": "o1", "start": 0.0, "end": 1.0, "text": "quick one", "words": []},
+            {"id": "o2", "start": 1.2, "end": 2.2, "text": "quick two", "words": []},
+            {"id": "o3", "start": 1.4, "end": 2.6, "text": "quick three", "words": []},
+        ],
+        "nested": [
+            {"id": "nA", "start": 0.0, "end": 10.0, "text": "long older cue", "words": []},
+            {"id": "nB", "start": 1.0, "end": 2.0, "text": "short newer cue", "words": []},
+        ],
+        "wrapped": [
+            {"id": "w1", "start": 0.0, "end": 2.0, "text": "THIS IS A VERY LONG\nFIRST LINE WRAPPING", "words": []},
+            {"id": "w2", "start": 2.0, "end": 4.0, "text": "SECOND LINE AFTER IT", "words": []},
+            {"id": "w3", "start": 4.0, "end": 6.0, "text": "THIRD LINE HERE", "words": []},
+        ],
+    }
+    crawl_times = [-1.0, 0.0, 0.2, 1.0, 1.9, 2.0, 2.2, 3.0, 4.0, 5.5, 6.0, 7.9, 8.0, 9.5, 12.0]
+    crawl_styles = [
+        {"fontSize": 160, "maxWidth": 88, "fontPreset": "impact", "lineGap": -8, "positionY": 52},
+        {"fontSize": 44, "maxWidth": 88, "fontPreset": "modern", "lineGap": 0, "positionY": 52},
+    ]
+    # Crawl-control override fixtures (plan Phase 2): a tuned stack, an
+    # out-of-range set that must clamp, and a malformed set that must fall
+    # back to the preset defaults.
+    override_cues = crawl_cases["even"]
+    crawl_overrides = {
+        "tuned": {
+            "crawl": {"prevLines": 3, "nextLines": 1, "transition": 0.8,
+                      "blockGap": 0.6, "nearOpacity": 0.4, "farOpacity": 0.1},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "clamped": {
+            "crawl": {"prevLines": 99, "nextLines": -3, "transition": 99,
+                      "blockGap": -1, "nearOpacity": 2, "farOpacity": -0.5},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "malformed": {
+            "crawl": {"prevLines": None, "nextLines": "", "transition": "fast",
+                      "blockGap": True, "nearOpacity": "NaN", "farOpacity": "Infinity"},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+        "tricky": {
+            "crawl": {"prevLines": "1_000", "nextLines": "0x10",
+                      "transition": " 0.5 ", "blockGap": "1e-1",
+                      "nearOpacity": "0.5", "farOpacity": " 0.25 "},
+            "style": crawl_styles[0], "cues": override_cues,
+        },
+    }
+    lead_styles = [
+        {"preset": "kinetic-slam", "wordLead": 0.2},
+        {"preset": "kinetic-slam", "wordLead": 9},
+        {"preset": "kinetic-slam", "wordLead": "nope"},
+        {"preset": "kinetic-slam"},
+    ]
     payload = {
         "cues": cues, "presets": presets, "times": times, "beats": beats,
         "styles": styles, "canvas": CANVAS, "tokens": tokens,
         "beatArgs": beat_args, "budget": 22,
+        "crawlCases": crawl_cases, "crawlTimes": crawl_times,
+        "crawlStyles": crawl_styles,
+        "crawlOverrides": crawl_overrides, "leadStyles": lead_styles,
     }
     js = _node_results(payload)
 
@@ -186,3 +681,77 @@ def test_engines_agree():
         spec = kinetic.get_preset(preset_id)
         expected = [[word["text"] for word in line] for line in kinetic.layout_lines(words, spec, 22)]
         assert js["lines"][preset_id] == expected, f"layout mismatch for {preset_id}"
+
+    # Genuine word timing: phrase-only SRT cues must report False, cues with
+    # stored word arrays that line up with their tokens must report True.
+    for name, cue in cues.items():
+        expected = kinetic.has_genuine_word_timing(cue)
+        assert bool(js["genuine"][name]) is expected, f"hasGenuineWordTiming mismatch for {name}"
+
+    # Viewport bounds: identical from style + canvas in both engines.
+    crawl_spec = kinetic.get_preset("credit-crawl")
+    cursor = 0
+    for style in crawl_styles:
+        viewport = kinetic.crawl_viewport(style, CANVAS, crawl_spec)
+        row = js["viewport"][cursor]
+        cursor += 1
+        assert row[0] == pytest.approx(viewport["above"], abs=1e-6), f"viewport above mismatch {style}"
+        assert row[1] == pytest.approx(viewport["below"], abs=1e-6), f"viewport below mismatch {style}"
+
+    # Credit Crawl cue-stack state: the roll the preview shows must be the roll
+    # the exporter composites, cue for cue, frame for frame.
+    crawl_viewport = kinetic.crawl_viewport(crawl_styles[0], CANVAS, crawl_spec)
+    cursor = 0
+    for name, cue_list in crawl_cases.items():
+        for t in crawl_times:
+            state = kinetic.credit_crawl_state(cue_list, t, crawl_spec, 22, crawl_viewport)
+            row = js["crawl"][cursor]
+            cursor += 1
+            label = f"crawl {name} t={t}"
+            assert row[:2] == [name, t], label
+            assert row[2] == state["activeIndex"], f"{label} activeIndex"
+            assert len(row[3]) == len(state["cues"]), f"{label} cue count"
+            for js_cue, cue in zip(row[3], state["cues"]):
+                assert js_cue[0] == cue["index"], f"{label} index"
+                assert js_cue[1] == pytest.approx(cue["offset"], abs=1e-6), f"{label} offset"
+                assert js_cue[2] == pytest.approx(cue["opacity"], abs=1e-6), f"{label} opacity"
+                assert js_cue[3] == (cue["active"] and 1 or 0), f"{label} active"
+    assert cursor == len(js["crawl"])
+
+    # Crawl-control overrides (plan Phase 2): the merged crawl dict and the
+    # overridden cue-stack state must resolve identically in both engines.
+    crawl_keys = ["transition", "prevLines", "nextLines", "blockGap",
+                  "nearOpacity", "farOpacity", "activeOpacity", "gapHold"]
+    merge_cursor = 0
+    state_cursor = 0
+    for name, cfg in crawl_overrides.items():
+        style = {"preset": "credit-crawl", "crawl": cfg["crawl"]}
+        spec = kinetic.resolved_preset(style)
+        row = js["crawlMerge"][merge_cursor]
+        merge_cursor += 1
+        for key, value in zip(crawl_keys, row):
+            assert value == pytest.approx(spec.crawl[key], abs=1e-6), (
+                f"crawl override {name} field {key}"
+            )
+        for t in crawl_times:
+            state = kinetic.credit_crawl_state(
+                cfg["cues"], t, spec, 22,
+                kinetic.crawl_viewport(cfg["style"], CANVAS, spec))
+            row = js["crawlOverridden"][state_cursor]
+            state_cursor += 1
+            label = f"crawl override {name} t={t}"
+            assert row[:2] == [name, t], label
+            assert row[2] == state["activeIndex"], f"{label} activeIndex"
+            assert len(row[3]) == len(state["cues"]), f"{label} cue count"
+            for js_cue, cue in zip(row[3], state["cues"]):
+                assert js_cue[0] == cue["index"], f"{label} index"
+                assert js_cue[1] == pytest.approx(cue["offset"], abs=1e-6), f"{label} offset"
+                assert js_cue[2] == pytest.approx(cue["opacity"], abs=1e-6), f"{label} opacity"
+                assert js_cue[3] == (cue["active"] and 1 or 0), f"{label} active"
+    assert merge_cursor == len(js["crawlMerge"]) == len(crawl_overrides)
+    assert state_cursor == len(js["crawlOverridden"])
+
+    # wordLead resolution stays identical (regression guard for the rewritten
+    # resolvedPreset path).
+    for row, style in zip(js["resolvedLead"], lead_styles):
+        assert row == pytest.approx(kinetic.resolved_preset(style).lead, abs=1e-6)

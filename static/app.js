@@ -116,7 +116,8 @@ function bindControls() {
     // Set it here too: "change" can arrive without the generic "input" binding
     // having run, and the preset drives the whole layout.
     project.style.preset = els.stylePreset.value;
-    updatePresetHint(); restartLyricAnimation(); scheduleSave();
+    // Presentation refresh = hint + preset-specific panels (crawl visibility).
+    updatePresetPresentation(); restartLyricAnimation(); scheduleSave();
   });
 
   els.analyzeButton.addEventListener("click", () => ensureAnalysis(true));
@@ -370,6 +371,7 @@ function init() {
   bindControls();
   initOceanControls();
   initTextOrientation();
+  initCrawlControls();
   initFootage();
   initEditorTools();
   applyProjectToControls();

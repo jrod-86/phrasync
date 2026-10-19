@@ -69,6 +69,7 @@ class Preset:
     word_gap: float
     beat_react: float
     size_scale: float = 1.0
+    crawl: dict[str, float] | None = None
 
 
 PRESETS: dict[str, Preset] = {
@@ -84,6 +85,74 @@ PRESETS: dict[str, Preset] = {
 LEGACY_PRESETS = {"center-punch": "kinetic-slam", "karaoke": "wipe-fill", "neon": "neon-flux"}
 PRESETS["spiral"] = replace(PRESETS["focus-word"], id="spiral", label="Spiral Flight", enter="fade", lead=0, tail=.25)
 PRESETS["constellation"] = replace(PRESETS["neon-flux"], id="constellation", label="Word Constellation", layout="focus", pending_alpha=.18, lead=0)
+# Karaoke Credit Crawl: a step-based vertical lyric roll. The sung cue stays
+# centred while completed cues roll up and fade and upcoming cues rise from
+# below. Cue timestamps are never rewritten; the roll is pure in t so seeking
+# reconstructs the exact stack. Vertical motion is independent of word fill.
+PRESETS["credit-crawl"] = Preset(
+    "credit-crawl", "Karaoke Credit Crawl", "inline", 0.0, 0.0, "cue", 0.0,
+    "none", "wipe", "none", "none", 1.0, 0.22, 0.0, 1.0,
+    crawl={
+        "transition": 0.4,      # step ease, seconds
+        "prevLines": 2,         # completed cues visible above
+        "nextLines": 2,         # upcoming cues visible below
+        "activeOpacity": 1.0,
+        "nearOpacity": 0.58,    # immediate previous/next
+        "farOpacity": 0.28,     # distant lines
+        "gapHold": 1.2,         # keep the last line through a short instrumental gap
+        "blockGap": 0.35,       # breathing room between cue blocks, line units
+    },
+)
+
+
+# Crawl-control clamps: the same key set and bounds in both engines, so a
+# project's style.crawl overrides resolve identically in preview and export.
+CRAWL_LIMITS: dict[str, tuple[float, float]] = {
+    "transition": (0.15, 1.2),
+    "prevLines": (0.0, 4.0),
+    "nextLines": (0.0, 4.0),
+    "activeOpacity": (0.0, 1.0),
+    "nearOpacity": (0.0, 1.0),
+    "farOpacity": (0.0, 1.0),
+    "gapHold": (0.2, 4.0),
+    "blockGap": (0.0, 1.5),
+}
+
+# Plain decimal strings only: float() would accept "1_000" while Number()
+# rejects it, and Number() would accept "0x10" while float() rejects it.
+# Pinning both engines to one grammar keeps override resolution identical.
+CRAWL_NUMERIC_RE = re.compile(r"^\s*[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?\s*$")
+
+
+def merge_crawl_overrides(
+    base: dict[str, float] | None, overrides: Any
+) -> dict[str, float] | None:
+    """Merge a project's crawl-control overrides onto the preset defaults.
+
+    Only finite numeric values inside the clamps are accepted; anything else
+    (missing, null, empty, non-numeric, out of range) falls back to the preset
+    default. The preset's own crawl dict is never mutated.
+    """
+    if base is None:
+        return None
+    merged = dict(base)
+    if isinstance(overrides, dict):
+        for key, (low, high) in CRAWL_LIMITS.items():
+            if key not in overrides:
+                continue
+            raw = overrides[key]
+            if isinstance(raw, bool) or raw is None:
+                continue
+            if isinstance(raw, str) and not CRAWL_NUMERIC_RE.match(raw):
+                continue
+            try:
+                value = float(raw)
+            except (TypeError, ValueError):
+                continue
+            if not math.isfinite(value):
+                continue
+            merged[key] = max(low, min(high, value))
+    return merged
 
 
 def resolved_preset(style: dict[str, Any]) -> Preset:
@@ -91,14 +160,22 @@ def resolved_preset(style: dict[str, Any]) -> Preset:
 
     ``style["wordLead"]`` is how far ahead of the sung syllable a word may start
     its entry animation, in seconds. Zero means it appears exactly on the beat.
+    ``style["crawl"]`` overrides the credit-crawl controls (visible lines,
+    transition, spacing, fade strengths) within the clamped bounds.
     """
     base = get_preset((style or {}).get("preset"))
     lead = (style or {}).get("wordLead")
+    overrides: dict[str, Any] = {}
     try:
         value = float(lead)
     except (TypeError, ValueError):
-        return base
-    return replace(base, lead=max(0.0, min(0.5, value)))
+        pass
+    else:
+        overrides["lead"] = max(0.0, min(0.5, value))
+    if base.crawl is not None:
+        overrides["crawl"] = merge_crawl_overrides(
+            base.crawl, (style or {}).get("crawl"))
+    return replace(base, **overrides) if overrides else base
 
 
 def get_preset(preset_id: str | None) -> Preset:
@@ -129,6 +206,55 @@ def syllable_weight(token: str) -> float:
     return max(1, count) + len(letters) * 0.06
 
 
+def _word_timings(word: dict[str, Any]) -> tuple[float, float] | None:
+    """Explicit finite start/end for one stored word, or None when the timing
+    is missing, empty, null, non-numeric, NaN, infinite or end <= start."""
+    raw_start = word.get("start")
+    raw_end = word.get("end")
+    if raw_start is None or raw_end is None:
+        return None
+    if isinstance(raw_start, bool) or isinstance(raw_end, bool):
+        return None
+    if isinstance(raw_start, str) and not raw_start.strip():
+        return None
+    if isinstance(raw_end, str) and not raw_end.strip():
+        return None
+    try:
+        start = float(raw_start)
+        end = float(raw_end)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(start) or not math.isfinite(end):
+        return None
+    if end <= start:
+        return None
+    return start, end
+
+
+def has_genuine_word_timing(cue: dict[str, Any]) -> bool:
+    """True only when the cue carries genuine word-level timing: the stored
+    word count matches its text tokens, every stored word has explicit finite
+    numeric start/end values with end > start, and word starts are
+    monotonically non-decreasing. Phrase-only SRT cues and cues with empty,
+    null, missing, NaN, infinite or malformed word timings return False, so
+    presets never present estimated timing as word-accurate."""
+    tokens = str(cue.get("text", "")).replace("\n", " ").split()
+    if not tokens:
+        return False
+    stored = [w for w in (cue.get("words") or []) if str(w.get("text", "")).strip()]
+    if len(stored) != len(tokens):
+        return False
+    previous = -math.inf
+    for word in stored:
+        timings = _word_timings(word)
+        if timings is None:
+            return False
+        if timings[0] < previous:
+            return False
+        previous = timings[0]
+    return True
+
+
 def cue_words(cue: dict[str, Any]) -> list[dict[str, Any]]:
     """Word list for a cue, always timed and monotonic."""
     tokens = str(cue.get("text", "")).replace("\n", " ").split()
@@ -138,12 +264,13 @@ def cue_words(cue: dict[str, Any]) -> list[dict[str, Any]]:
     start = float(cue.get("start", 0.0) or 0.0)
     end = max(start + 0.2, float(cue.get("end", start + 1) or start + 1))
 
-    if len(stored) == len(tokens):
+    if has_genuine_word_timing(cue):
         result = []
         previous = -math.inf
         for index, word in enumerate(stored):
-            ws = max(previous, float(word.get("start", start)))
-            we = max(ws + 0.06, float(word.get("end", ws + 0.25)))
+            timings = _word_timings(word) or (start, start + 0.25)
+            ws = max(previous, timings[0])
+            we = max(ws + 0.06, timings[1])
             previous = ws
             result.append({"text": tokens[index], "start": ws, "end": we, "index": index})
         return result
@@ -194,6 +321,28 @@ def word_state(
 ) -> WordState:
     start = float(word["start"])
     end = max(start + 0.06, float(word["end"]))
+    if (spec.crawl is not None):
+        # The cue block owns visibility, dimming and vertical motion
+        # (credit_crawl_state); words only own the karaoke fill, so the roll is
+        # independent of highlighting and seeking reconstructs both exactly.
+        if not has_genuine_word_timing(cue):
+            # Phrase-only SRT: no stored word timings, so a moving word-by-word
+            # wipe would present estimated syllable timing as word-accurate.
+            # The whole active phrase switches to the accent colour together;
+            # upcoming phrases stay readable but unfilled.
+            cue_start = float(cue.get("start", 0.0) or 0.0)
+            cue_end = float(cue.get("end", cue_start + 1) or cue_start + 1)
+            if t < cue_start:
+                return WordState(role="pending", fill=0.0)
+            if t >= cue_end:
+                return WordState(role="active", fill=1.0)
+            # Active phrase fills as a complete phrase over the step ease.
+            crawl = spec.crawl or PRESETS["credit-crawl"].crawl or {}
+            transition = max(0.05, crawl["transition"])
+            return WordState(role="active",
+                             fill=ease_out_cubic(clamp((t - cue_start) / transition)))
+        p = clamp((t - start) / max(0.001, end - start))
+        return WordState(role="pending" if t < start else "active", fill=p)
     cue_start = float(cue["start"])
     cue_end = float(cue["end"])
     pending = spec.pending_alpha
@@ -385,6 +534,183 @@ def active_cues(
 def focus_scale(text: str) -> float:
     """Per-word size multiplier for the one-word-at-a-time layout."""
     return clamp(7 / max(2, len(str(text))), 0.62, 1.5)
+
+
+def crawl_viewport(style: dict[str, Any], canvas: dict[str, Any],
+                   spec: Preset | None = None) -> dict[str, float]:
+    """Visible crawl viewport in line units, above/below the centred cue.
+
+    Deterministic from style + canvas alone, so the browser preview and the
+    MP4 export compute the exact same bounds. The line pitch is the design
+    line height (type size x line height + line gap) scaled to the frame the
+    same way both engines scale type — by the short edge — and the room
+    above/below is positionY% of the frame height divided by that pitch.
+    """
+    height = float(canvas.get("height", 1080) or 1080)
+    width = float(canvas.get("width", 1920) or 1920)
+    reference = min(height, width)
+    scale = spec.size_scale if spec else 1.0
+    # Both engines clamp the scaled type to an 18px floor (--lyric-size in the
+    # preview, base_size in the export), so the pitch must use the same floor.
+    font_px = max(18.0, float(style.get("fontSize", 160) or 160) * (reference / 1080.0) * scale)
+    line_gap = float(style.get("lineGap", 0) or 0) * (reference / 1080.0)
+    line_height = spec.line_height if spec else 1.0
+    line_unit = max(1.0, font_px * line_height + line_gap)
+    position_y = float(style.get("positionY", 52) or 52) / 100.0
+    return {"above": height * position_y / line_unit,
+            "below": height * (1.0 - position_y) / line_unit}
+
+
+def credit_crawl_state(
+    cues: list[dict[str, Any]], t: float, spec: Preset, chars_per_line: int = 22,
+    viewport: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """Karaoke Credit Crawl cue-stack state — the single source of truth shared
+    by the browser preview (``VFKinetic.creditCrawlState``) and the MP4 export.
+
+    Each cue block occupies its own wrapped line count in "line units", blocks
+    separated by blockGap. c_i is cue i's centre in stack space. The screen
+    centre advances through stack space as eased cumulative steps, one per cue
+    boundary that has passed:
+
+        centre(t) = Σ_{start_i ≤ t} easeOutCubic(clamp((t - start_i) / transition)) · (c_i − c_{i−1})
+        offset_i  = c_i − centre(t)
+
+    At rest the active cue's offset is exactly 0 (centred); completed cues roll
+    toward negative offsets and upcoming cues rise from positive ones. The
+    function is pure in t: seeking reconstructs the exact stack without replaying
+    missed transitions, and centre(t) stays continuous when cues are closer
+    together than the transition, so closely spaced cues converge instead of
+    jumping. Wrapped cues occupy their true height, so neighbours never collide.
+    Cue timestamps are never rewritten.
+
+    Exactly one cue may be active: when timed cues overlap, the most recently
+    started applicable cue owns the centre and older overlapping cues are
+    treated as completed/previous cues.
+
+    When a ``viewport`` ({"above", "below"} in line units, from
+    ``crawl_viewport``) is supplied, neighbours are selected by their actual
+    rendered block heights: a previous/upcoming cue is included only while its
+    complete block stays inside the visible frame, walking outward from the
+    active cue so the most distant cue is dropped first. prevLines/nextLines
+    remain hard caps. The active cue is never shrunk or moved to fit
+    neighbours.
+
+    Returns ``{activeIndex, cues: [{index, cue, offset, opacity, active}]}``
+    ordered top to bottom. ``index`` is the position in the input cue list.
+    """
+    crawl = spec.crawl or PRESETS["credit-crawl"].crawl or {}
+    transition = max(0.05, crawl["transition"])
+    prev_cues = max(0, crawl["prevLines"])
+    next_cues = max(0, crawl["nextLines"])
+    gap_hold = max(0.2, crawl["gapHold"])
+    block_gap = max(0, crawl["blockGap"])
+    above = float((viewport or {}).get("above", float("inf")))
+    below = float((viewport or {}).get("below", float("inf")))
+
+    ordered = sorted(
+        ((cue, index) for index, cue in enumerate(cues)),
+        key=lambda pair: (float(pair[0].get("start", 0.0) or 0.0), pair[1]),
+    )
+    line_counts = [
+        max(1, len(layout_lines(cue_words(cue), spec, chars_per_line)))
+        for cue, _ in ordered
+    ]
+
+    centres: list[float] = []
+    cursor = 0.0
+    for i in range(len(ordered)):
+        centres.append(cursor + line_counts[i] / 2)
+        cursor += line_counts[i] + block_gap
+
+    centre = 0.0
+    latest_started = -1
+    for i, (cue, _) in enumerate(ordered):
+        cue_start = float(cue.get("start", 0.0) or 0.0)
+        if cue_start > t:
+            break
+        step = centres[0] if i == 0 else centres[i] - centres[i - 1]
+        centre += ease_out_cubic(clamp((t - cue_start) / transition)) * step
+        latest_started = i
+    # Exactly one anchor: the most recently started cue. The crawl centre moves
+    # monotonically forward through cue order — once a newer cue supersedes an
+    # older overlapping cue, the anchor never reactivates or moves backward to
+    # the older cue. If the anchor has ended and no newer cue has started, it
+    # holds the centre calmly as a completed gap-hold cue (active=False).
+    active_index = latest_started
+
+    def cue_bounds(i: int) -> tuple[float, float]:
+        cue_start = float(ordered[i][0].get("start", 0.0) or 0.0)
+        cue_end = float(ordered[i][0].get("end", cue_start + 1) or cue_start + 1)
+        return cue_start, cue_end
+
+    def completed_opacity(i: int) -> float:
+        cue_start, cue_end = cue_bounds(i)
+        last_played = i == active_index
+        rank = abs(i - active_index)
+        base = crawl["nearOpacity"] if (last_played or rank <= 1) else crawl["farOpacity"]
+        # A cue stops being the current line at whichever comes first: its own
+        # end, or the active cue starting over it. An older cue that overlaps
+        # the active one is therefore superseded the moment the newer cue starts.
+        superseded_at = cue_end
+        if active_index >= 0 and i != active_index:
+            active_start = cue_bounds(active_index)[0]
+            if cue_end > active_start:
+                superseded_at = active_start
+        window = gap_hold if last_played else transition
+        return mix(crawl["activeOpacity"], base,
+                   ease_out_cubic(clamp((t - superseded_at) / window)))
+
+    visible: list[dict[str, Any]] = []
+
+    # The anchor cue owns the centre. Only the most recently started applicable
+    # cue is active; during a gap it holds the centre calmly at reduced opacity.
+    if active_index >= 0:
+        cue, index = ordered[active_index]
+        cue_start, cue_end = cue_bounds(active_index)
+        is_active = cue_start <= t < cue_end
+        if is_active:
+            opacity = mix(crawl["nearOpacity"], crawl["activeOpacity"],
+                          ease_out_cubic(clamp((t - cue_start) / transition)))
+        else:
+            opacity = completed_opacity(active_index)
+        if opacity > 0.004:
+            visible.append({"index": index, "cue": cue,
+                            "offset": centres[active_index] - centre,
+                            "opacity": opacity, "active": is_active})
+
+    # Previous cues: walk outward, include while the whole block fits above.
+    count = 0
+    i = active_index - 1
+    while i >= 0 and count < prev_cues:
+        offset = centres[i] - centre
+        if offset - line_counts[i] / 2 < -above - 0.02:
+            break
+        opacity = completed_opacity(i)
+        if opacity > 0.004:
+            visible.append({"index": ordered[i][1], "cue": ordered[i][0],
+                            "offset": offset, "opacity": opacity, "active": False})
+        count += 1
+        i -= 1
+
+    # Upcoming cues: walk outward, include while the whole block fits below.
+    count = 0
+    i = active_index + 1
+    while i < len(ordered) and count < next_cues:
+        offset = centres[i] - centre
+        if offset + line_counts[i] / 2 > below + 0.02:
+            break
+        cue_start, _ = cue_bounds(i)
+        rank = i - (active_index if active_index >= 0 else -1)
+        opacity = crawl["nearOpacity"] if rank <= 1 else crawl["farOpacity"]
+        if opacity > 0.004:
+            visible.append({"index": ordered[i][1], "cue": ordered[i][0],
+                            "offset": offset, "opacity": opacity, "active": False})
+        count += 1
+        i += 1
+
+    visible.sort(key=lambda item: item["offset"])
+    return {"activeIndex": active_index, "cues": visible}
 
 
 def beat_pulse(t: float, bpm: float, offset: float, decay: float = 0.22) -> float:

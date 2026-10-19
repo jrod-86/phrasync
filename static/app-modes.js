@@ -27,7 +27,8 @@ const PRESET_LABELS_2D = {
   cascade: "Cascade: stacked words",
   "wipe-fill": "Wipe Fill: karaoke fill",
   "bold-stack": "Bold Stack: poster",
-  minimal: "Minimal Caption"
+  minimal: "Minimal Caption",
+  "credit-crawl": "Karaoke Credit Crawl: rolling credits"
 };
 
 const PRESET_LABELS_3D = {
@@ -52,6 +53,65 @@ const PRESET_HINTS_3D = {
 };
 
 const BROWSER_VIDEO_FILE = /\.(mp4|webm)$/i;
+
+// ---------------------------------------------------------------------------
+// Credit Crawl controls (plan Phase 2): visible lines, roll speed, block gap,
+// and fade strengths live in project.style.crawl and are merged over the
+// preset defaults by resolvedPreset/resolved_preset in both engines.
+// ---------------------------------------------------------------------------
+Object.assign(rangeOutputs, {
+  crawlPrev: ["crawlPrevOut", value => `${value}`],
+  crawlNext: ["crawlNextOut", value => `${value}`],
+  crawlTransition: ["crawlTransitionOut", value => `${value} ms`],
+  crawlBlockGap: ["crawlBlockGapOut", value => (value / 100).toFixed(2)],
+  crawlNear: ["crawlNearOut", value => `${value}%`],
+  crawlFar: ["crawlFarOut", value => `${value}%`]
+});
+
+const crawlInputs = () => [
+  $("#crawlPrev"), $("#crawlNext"), $("#crawlTransition"),
+  $("#crawlBlockGap"), $("#crawlNear"), $("#crawlFar")
+];
+
+function crawlStyleFromControls() {
+  project.style.crawl = {
+    prevLines: Number($("#crawlPrev").value),
+    nextLines: Number($("#crawlNext").value),
+    transition: Number($("#crawlTransition").value) / 1000,
+    blockGap: Number($("#crawlBlockGap").value) / 100,
+    nearOpacity: Number($("#crawlNear").value) / 100,
+    farOpacity: Number($("#crawlFar").value) / 100
+  };
+}
+
+function applyCrawlControlsUI() {
+  const crawl = project.style.preset === "credit-crawl";
+  $("#crawlControls").hidden = !crawl;
+  if (!crawl) return;
+  // Hydrate from the SAME validated, clamped crawl object the preview and
+  // export engines resolve (mergeCrawlOverrides via resolvedPreset). Reading
+  // project.style.crawl with an unrestricted Number() here would let the UI
+  // disagree with the renderers — e.g. Number(null) is 0 (clamped to 150 ms)
+  // while both engines reject null and use the 400 ms default, and Number("0x10")
+  // is 16 (clamped to 4) while both engines reject it and use the default 2.
+  // Moving a slider would then write the wrong displayed values back.
+  const effective = window.VFKinetic.resolvedPreset(project.style).crawl;
+  $("#crawlPrev").value = Math.round(effective.prevLines);
+  $("#crawlNext").value = Math.round(effective.nextLines);
+  $("#crawlTransition").value = Math.round(effective.transition * 1000);
+  $("#crawlBlockGap").value = Math.round(effective.blockGap * 100);
+  $("#crawlNear").value = Math.round(effective.nearOpacity * 100);
+  $("#crawlFar").value = Math.round(effective.farOpacity * 100);
+  crawlInputs().forEach(updateRangeUI);
+}
+
+function initCrawlControls() {
+  crawlInputs().forEach(input => input.addEventListener("input", () => {
+    crawlStyleFromControls();
+    updateRangeUI(input);
+    scheduleSave();
+  }));
+}
 
 function isVideoUpload(file) {
   return file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv|avi|m4v)$/i.test(file.name);
@@ -99,6 +159,7 @@ function updatePresetPresentation() {
     ? "3D typography is planted on the world floor. Switch to Flat text for screen positioning."
     : "Position the text vertically in the frame.";
   updatePresetHint();
+  applyCrawlControlsUI();
 }
 
 function applyEnvironmentUI() {

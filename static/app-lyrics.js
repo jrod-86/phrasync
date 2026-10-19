@@ -86,7 +86,14 @@ function buildCueDOM(cue, spec, signature) {
 function renderLyric(force = false) {
   const spec = activePreset();
   const time = lyricTime();
-  const active = K().activeCues(project.cues, time, lyricIsIn3D() ? preset3D(spec, true) : spec);
+  // Credit Crawl drives its own cue window; 3D scene text keeps the standard one.
+  const crawlMode = spec.id === "credit-crawl" && !lyricIsIn3D();
+  const crawlState = crawlMode ? K().creditCrawlState(
+    project.cues, time, spec, K().charBudget(project.style, project.canvas, spec),
+    K().crawlViewport(project.style, project.canvas, spec)) : null;
+  const crawlByCueId = crawlState ? new Map(crawlState.cues.map(item => [item.cue.id, item])) : null;
+  const active = crawlState ? crawlState.cues.map(item => item.cue)
+    : K().activeCues(project.cues, time, lyricIsIn3D() ? preset3D(spec, true) : spec);
 
   if (force || els.lyricDisplay.dataset.preset !== project.style.preset) {
     els.lyricDisplay.className = "lyric-display";
@@ -107,11 +114,19 @@ function renderLyric(force = false) {
   for (const cue of active) {
     const signature = cueSignature(cue, spec);
     const existing = lyricCues.get(cue.id);
-    if (existing && existing.signature === signature) continue;
+    if (existing && existing.signature === signature) {
+      existing.crawl = crawlByCueId?.get(cue.id) || null;
+      continue;
+    }
     if (existing) existing.root.remove();
-    lyricCues.set(cue.id, buildCueDOM(cue, spec, signature));
+    const entry = buildCueDOM(cue, spec, signature);
+    entry.crawl = crawlByCueId?.get(cue.id) || null;
+    lyricCues.set(cue.id, entry);
   }
-
+  if (crawlMode) {
+    // Cues that rolled out of the crawl window leave the DOM entirely.
+    for (const [id, entry] of lyricCues) if (!crawlByCueId.has(id)) { entry.root.remove(); lyricCues.delete(id); }
+  }
   const primary = active.find(cue => time >= cue.start && time < cue.end) || active[active.length - 1] || null;
   const primaryId = primary?.id || null;
   if (primaryId !== currentCueId) {
@@ -169,7 +184,7 @@ function preset3D(spec, preload = false) {
   // Allocate boards early to spread mesh creation over several frames, but
   // keep visible text on the user's word timing. Geometry preloading must not
   // turn the first sung word into a 600 ms anticipation on every phrase.
-  return { ...spec, lead: preload ? Math.max(spec.lead, 0.6) : spec.lead, tail };
+  return { ...spec, lead: preload ? Math.max(spec.lead, 0.6) : spec.lead, tail, crawl: undefined };
 }
 
 function updateLyricFrame(time) {
@@ -185,6 +200,15 @@ function updateLyricFrame(time) {
   const beat = beatValue(time);
   const kinetic = K();
 
+  // Credit Crawl line pitch: one "line unit" equals one rendered line — type
+  // size × line height plus the Line gap, both already scaled to this stage.
+  let crawlLineUnit = 0;
+  if (spec.crawl && !in3D) {
+    const size = parseFloat(els.stage.style.getPropertyValue("--lyric-size")) || 100;
+    const gap = parseFloat(els.stage.style.getPropertyValue("--lyric-gap")) || 0;
+    crawlLineUnit = size * spec.lineHeight + gap;
+  }
+
   // Odyssey 3D draws the lyric inside the scene, so the flat DOM layer steps
   // aside rather than doubling every word on screen.
   const entries3D = [];
@@ -192,6 +216,14 @@ function updateLyricFrame(time) {
   if (els.lyricDisplay.style.visibility !== wanted) els.lyricDisplay.style.visibility = wanted;
 
   for (const entry of lyricCues.values()) {
+    if (entry.crawl) {
+      // The block owns the roll: offset in line units, dimming by distance.
+      entry.root.style.transform = `translate3d(0, ${(entry.crawl.offset * crawlLineUnit).toFixed(2)}px, 0) translateY(-50%)`;
+      entry.root.style.opacity = entry.crawl.opacity.toFixed(3);
+    } else if (entry.root.style.transform) {
+      entry.root.style.transform = "";
+      entry.root.style.opacity = "";
+    }
     for (const node of entry.nodes) {
       const state = kinetic.wordState(node.word, entry.cue, time, in3D ? preset3D(spec) : spec, beat);
       // wordState reuses a frozen singleton for hidden words. Keep its result
