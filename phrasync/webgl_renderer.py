@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from websockets.sync.client import connect
 from .media import ffmpeg_exe
 from .processes import background_flags
-from .encoding import bitrate_bps, codec_args, rate_control_args, video_codec
+from .encoding import bitrate_bps, encoder_args, gpu_encoder, video_codec
 from .diagnostics import log_event
 from .footage import effects_enabled
 from .audio_spectrum import SpectrumSource
@@ -115,9 +115,7 @@ def _encode_canvas_ffmpeg(devtools, project, path, *, width, height, fps, frame_
     with tempfile.TemporaryFile() as errors:
         encoder = subprocess.Popen([
             ffmpeg_exe(), "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgba",
-            "-s:v", f"{width}x{height}", "-framerate", str(fps), "-i", "pipe:0", "-an", *codec_args(project),
-            "-preset", str(project.get("export", {}).get("preset", "medium")),
-            *rate_control_args(project), "-pix_fmt", "yuv420p", "-f", "matroska", str(path),
+            "-s:v", f"{width}x{height}", "-framerate", str(fps), "-i", "pipe:0", "-an", *encoder_args(project), "-pix_fmt", "yuv420p", "-f", "matroska", str(path),
         ], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=errors, creationflags=background_flags())
         try:
             def consume(data, index):
@@ -273,7 +271,7 @@ def render_webgl_video(
                 "frames": frame_count,
                 "bitrate": bitrate,
                 "ffmpeg": frame_transform is not None or custom_bitrate is not None or effects_enabled(project)
-                          or video_codec(project) == "hevc",
+                          or video_codec(project) == "hevc" or gpu_encoder(project) is not None,
                 "keyInterval": key_interval,
                 "envelope": envelope,
             }

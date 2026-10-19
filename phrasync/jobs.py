@@ -20,7 +20,7 @@ from .lyric_sync import apply_lyric_sync
 from .qa import postflight_render, preflight_project
 from .renderer import render_project
 from .stems import StemsCancelled, separate_file
-from .encoding import container, video_enabled
+from .encoding import container, encoder_label, nvenc_problem, video_enabled
 from .export_extras import export_audio, export_captions, reserve_path
 from .storage import store_path
 from .media import probe_duration
@@ -352,7 +352,15 @@ class JobManager:
             postflight = None
             if want_video:
                 output_path = reserve_path(output_dir, base, container(project))
+                encoder_note = encoder_label(project)
+                problem = nvenc_problem(project)
+                if problem:
+                    # No NVENC in this FFmpeg or driver: still deliver the video.
+                    log_event("warning", "render", f"NVIDIA encoding unavailable, using CPU: {problem}")
+                    project = {**project, "export": {**(project.get("export") or {}), "encoder": "cpu"}}
+                    encoder_note = "CPU (NVIDIA encoding unavailable)"
                 result = render_project(project, output_path, progress=update, cancel_check=cancelled)
+                result["encoder"] = encoder_note
                 postflight = postflight_render(output_path, expected_duration=result.get("duration"))
                 result["filename"] = output_path.name
                 result["downloadUrl"] = f"/api/render/{job.id}/download"

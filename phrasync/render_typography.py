@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import threading
+from collections import OrderedDict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -51,7 +53,32 @@ def _motion_strength(style: dict[str, Any]) -> float:
         return 1.0
 
 
-def _word_image(
+_WORD_CACHE: "OrderedDict[tuple, tuple[Image.Image, int, int, tuple[int, int]]]" = OrderedDict()
+_WORD_CACHE_SIZE = 512
+_WORD_CACHE_LOCK = threading.Lock()
+
+
+def _word_image(token: str, font, *args) -> tuple[Image.Image, int, int, tuple[int, int]]:
+    """Cached _draw_word_image. In a lyric video most words look the same from
+    one frame to the next (only the word being sung changes), so redrawing
+    their text, stroke and blurred shadow every frame wasted most of the export.
+    Callers must copy the image before changing it in place."""
+    rounded = tuple(round(value, 4) if isinstance(value, float) else value for value in args)
+    key = (token, getattr(font, "path", None), font.size, getattr(font, "index", 0), rounded)
+    with _WORD_CACHE_LOCK:
+        hit = _WORD_CACHE.get(key)
+        if hit is not None:
+            _WORD_CACHE.move_to_end(key)
+            return hit
+    result = _draw_word_image(token, font, *args)
+    with _WORD_CACHE_LOCK:
+        _WORD_CACHE[key] = result
+        while len(_WORD_CACHE) > _WORD_CACHE_SIZE:
+            _WORD_CACHE.popitem(last=False)
+    return result
+
+
+def _draw_word_image(
     token: str,
     font,
     base_color: tuple[int, int, int],
@@ -243,9 +270,11 @@ def _render_kinetic(
             )
         if state.opacity < 0.998:
             alpha = image.getchannel("A").point(lambda value: int(value * state.opacity))
+            image = image.copy()
             image.putalpha(alpha)
         if crawl_opacity < 0.998:
             alpha = image.getchannel("A").point(lambda value: int(value * crawl_opacity))
+            image = image.copy()
             image.putalpha(alpha)
 
         # Anchor on the word's static centre so scaling grows outward evenly.

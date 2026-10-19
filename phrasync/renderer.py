@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import math
+import os
 import subprocess
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 import tempfile
 import time
 from dataclasses import dataclass
@@ -20,7 +23,7 @@ from .render_typography import render_text_layer
 from .render_utils import apply_dim, cover, scale_for_canvas
 from .subtitles import normalize_cues
 from .webgl_renderer import render_webgl_video
-from .encoding import codec_args, rate_control_args, video_codec
+from .encoding import encoder_args, video_codec
 from .footage import prepare_footage, effects_enabled
 
 ProgressCallback = Callable[[float, str], None]
@@ -270,6 +273,14 @@ def _build_context(project: dict[str, Any], progress: ProgressCallback | None = 
     )
 
 
+def frame_workers(composer: "FrameComposer") -> int:
+    """Threads that draw frames in parallel. A video background is read
+    sequentially from one decoder, so it keeps a single drawing thread."""
+    if composer.video_source is not None:
+        return 1
+    return max(1, min(12, (os.cpu_count() or 2) - 1))
+
+
 def render_project(
     project: dict[str, Any],
     output_path: Path,
@@ -374,10 +385,7 @@ def render_project(
         command.extend(["-map", "1:a:0", "-c:a", "aac", "-b:a", "192k"])
     command.extend(
         [
-            *codec_args(project),
-            "-preset",
-            str(project.get("export", {}).get("preset", "medium")),
-            *rate_control_args(project),
+            *encoder_args(project),
             "-pix_fmt",
             "yuv420p",
             "-t",
@@ -390,13 +398,26 @@ def render_project(
     encoder = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, creationflags=background_flags())
     assert encoder.stdin is not None
     try:
-        for frame_index in range(ctx.frame_count):
-            if cancel_check and cancel_check():
-                raise RuntimeError("Render cancelled")
-            t = ctx.start_time + frame_index / ctx.fps
-            encoder.stdin.write(composer.frame(t, frame_index).tobytes())
-            if progress and frame_index % max(1, ctx.frame_count // 200) == 0:
-                progress(0.06 + 0.90 * (frame_index / ctx.frame_count), f"Rendering frame {frame_index + 1}/{ctx.frame_count}")
+        def draw(frame_index: int) -> bytes:
+            return composer.frame(ctx.start_time + frame_index / ctx.fps, frame_index).tobytes()
+
+        workers = frame_workers(composer)
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="phrasync-frame") as pool:
+            # Frames are pure in t, so several are drawn at once (PIL and NumPy
+            # release the GIL) and written to the encoder strictly in order.
+            pending: deque = deque()
+            next_frame = 0
+            for frame_index in range(ctx.frame_count):
+                while next_frame < ctx.frame_count and len(pending) < workers * 2:
+                    pending.append(pool.submit(draw, next_frame))
+                    next_frame += 1
+                if cancel_check and cancel_check():
+                    for future in pending:
+                        future.cancel()
+                    raise RuntimeError("Render cancelled")
+                encoder.stdin.write(pending.popleft().result())
+                if progress and frame_index % max(1, ctx.frame_count // 200) == 0:
+                    progress(0.06 + 0.90 * (frame_index / ctx.frame_count), f"Rendering frame {frame_index + 1}/{ctx.frame_count}")
         encoder.stdin.close()
         stderr = encoder.stderr.read().decode("utf-8", errors="replace") if encoder.stderr else ""
         return_code = encoder.wait()

@@ -90,3 +90,48 @@ def test_audio_only_export_skips_the_video(tmp_path, monkeypatch):
     finally:
         delete_asset(asset.id)
         manager.executor.shutdown()
+
+
+def test_gpu_encoder_uses_nvenc_on_the_chosen_card():
+    from phrasync.encoding import encoder_args, gpu_encoder
+    assert gpu_encoder({}) is None and gpu_encoder({"export": {"encoder": "gpu:1"}}) == 1
+    args = encoder_args({"export": {"encoder": "gpu:1", "codec": "hevc", "crf": 18}})
+    assert args[:4] == ["-c:v", "hevc_nvenc", "-gpu", "1"] and "hvc1" in args
+    assert args[-6:] == ["-rc", "vbr", "-cq", "18", "-b:v", "0"]
+    assert encoder_args({"export": {"preset": "fast"}})[:4] == ["-c:v", "libx264", "-preset", "fast"]
+
+
+def test_missing_nvenc_falls_back_to_the_cpu(tmp_path, monkeypatch):
+    manager = jobs.JobManager()
+    monkeypatch.setattr(manager, "_save", lambda job: None)
+    report = SimpleNamespace(ok=True, public=lambda: {"ok": True})
+    monkeypatch.setattr(jobs, "preflight_project", lambda _: report)
+    monkeypatch.setattr(jobs, "postflight_render", lambda *a, **k: report)
+    monkeypatch.setattr(jobs, "nvenc_problem", lambda project: "No NVENC capable devices found")
+    used = []
+
+    def render(project, path, **kwargs):
+        used.append(project["export"]["encoder"])
+        path.write_bytes(b"video")
+        return {"path": str(path), "duration": 1}
+
+    monkeypatch.setattr(jobs, "render_project", render)
+    manager.jobs["one"] = jobs.Job(id="one", kind="render")
+    manager._run_render("one", {"export": {"encoder": "gpu:0"}}, "Song", tmp_path)
+    job = manager.jobs["one"]
+    assert job.state == "complete" and used == ["cpu"]
+    assert job.result["encoder"] == "CPU (NVIDIA encoding unavailable)"
+    manager.executor.shutdown()
+
+
+def test_parallel_frames_match_sequential_frames():
+    from phrasync.renderer import FrameComposer, _build_context
+    project = make_project(duration=1.0, background={"type": "dynamic", "visual": "aurora"})
+    project["style"]["preset"] = "credit-crawl"
+    ctx = _build_context(project)
+    composer = FrameComposer(ctx)
+    sequential = [composer.frame(i / 12, i).tobytes() for i in range(6)]
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(4) as pool:
+        parallel = list(pool.map(lambda i: composer.frame(i / 12, i).tobytes(), range(6)))
+    assert parallel == sequential

@@ -8,6 +8,7 @@
 function exportSettings() {
   const settings = project.export;
   settings.codec ||= "h264";
+  settings.encoder ||= "cpu";
   settings.format ||= "mp4";
   if (typeof settings.video !== "boolean") settings.video = true;
   settings.audio = { enabled: false, format: "mp3", ...(settings.audio || {}) };
@@ -51,8 +52,22 @@ function refreshExportSummary() {
   });
 }
 
+/** CPU, plus one choice per NVIDIA GPU the computer reports. */
+async function loadExportEncoders() {
+  const select = $("#exportEncoder");
+  const wanted = exportSettings().encoder;
+  try {
+    const { gpus } = await api("/api/gpus");
+    select.replaceChildren(new Option("CPU", "cpu"),
+      ...gpus.map(gpu => new Option(`GPU ${gpu.index}: ${gpu.name}`, `gpu:${gpu.index}`)));
+  } catch { /* keep CPU */ }
+  select.value = [...select.options].some(option => option.value === wanted) ? wanted : "cpu";
+  exportSettings().encoder = select.value;
+}
+
 function syncExportDialog() {
   const settings = exportSettings();
+  loadExportEncoders();
   $("#exportName").value = project.title || "";
   $("#exportVideo").checked = settings.video;
   $("#exportCodec").value = settings.codec;
@@ -75,13 +90,16 @@ function showExportStage(stage) {
 
 function exportResultSummary(result) {
   const names = (result.files || [result.path]).map(path => path.replace(/^.*[\\/]/, ""));
-  const video = result.width ? `${result.width} × ${result.height} · ${result.fps} fps · ${result.duration.toFixed(2)}s · ` : "";
+  const video = result.width
+    ? `${result.width} × ${result.height} · ${result.fps} fps · ${result.duration.toFixed(2)}s · ${result.encoder || "CPU"} · ${Math.round(result.elapsed || 0)}s to export · `
+    : "";
   return `${video}${names.join(", ")}`;
 }
 
 const exportBindings = [
   ["#exportVideo", "change", target => { exportSettings().video = target.checked; }],
   ["#exportCodec", "change", target => { exportSettings().codec = target.value; }],
+  ["#exportEncoder", "change", target => { exportSettings().encoder = target.value; }],
   ["#exportContainer", "change", target => { exportSettings().format = target.value; }],
   ["#exportAudio", "change", target => { exportSettings().audio.enabled = target.checked; }],
   ["#exportAudioFormat", "change", target => { exportSettings().audio.format = target.value; }],
