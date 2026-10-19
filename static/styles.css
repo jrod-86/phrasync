@@ -425,6 +425,15 @@ html[data-theme="light"] .stage-shell { background: #ddd9e1; }
   background: color-mix(in srgb, var(--bg-elevated) 82%, transparent); backdrop-filter: blur(10px);
   transition: opacity .35s ease;
 }
+.stage > .exit-fullscreen {
+  position: absolute; top: 24px; right: 24px; z-index: 60; width: 52px; height: 52px; padding: 0;
+  display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, .16); border-radius: 14px;
+  color: #ffffff; background: rgba(28, 30, 35, .78); backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35); transition: opacity .35s ease, transform .16s ease, background .2s ease;
+}
+.stage > .exit-fullscreen svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.stage > .exit-fullscreen:hover { transform: scale(1.06); background: rgba(44, 47, 54, .9); }
+.stage.controls-idle > .exit-fullscreen,
 .stage.controls-idle > .transport.fullscreen-transport { opacity: 0; pointer-events: none; }
 .stage.controls-idle { cursor: none; }
 .play-button {
