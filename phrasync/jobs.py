@@ -20,6 +20,8 @@ from .lyric_sync import apply_lyric_sync
 from .qa import postflight_render, preflight_project
 from .renderer import render_project
 from .stems import StemsCancelled, separate_file
+from .encoding import container, video_enabled
+from .export_extras import export_audio, export_captions, reserve_path
 from .storage import store_path
 from .media import probe_duration
 from .config import TMP_DIR
@@ -309,36 +311,32 @@ class JobManager:
         if not job:
             return
         output_path = None
-        output_reserved = False
+        settings = project.get("export") or {}
+        want_video = video_enabled(project)
+        audio_format = str((settings.get("audio") or {}).get("format") or "") if (settings.get("audio") or {}).get("enabled") else ""
+        caption_format = str((settings.get("captions") or {}).get("format") or "") if (settings.get("captions") or {}).get("enabled") else ""
         try:
-            report = preflight_project(project)
+            if not (want_video or audio_format or caption_format):
+                raise ValueError("Turn on video, audio or captions to export something.")
+            if want_video:
+                report = preflight_project(project)
+                with self.lock:
+                    job.preflight = report.public()
+                    if not report.ok:
+                        job.state = "failed"
+                        job.error = "Preflight critic found blocking errors."
+                        job.progress = 1.0
+                        job.message = "Preflight failed"
+                        self._save(job)
+                        log_event("error", "render", f"Job {job.id[:8]} failed preflight")
+                        return
             with self.lock:
-                job.preflight = report.public()
-                if not report.ok:
-                    job.state = "failed"
-                    job.error = "Preflight critic found blocking errors."
-                    job.progress = 1.0
-                    job.message = "Preflight failed"
-                    self._save(job)
-                    log_event("error", "render", f"Job {job.id[:8]} failed preflight")
-                    return
                 job.state = "running"
                 job.progress = 0.01
-                job.message = "Starting renderer"
+                job.message = "Starting renderer" if want_video else "Exporting"
                 self._save(job)
 
             base = _safe_title(title)
-            index = 1
-            while True:
-                output_name = f"{base}{f' ({index})' if index > 1 else ''}.mp4"
-                output_path = output_dir / output_name
-                try:
-                    with output_path.open("xb"):
-                        pass
-                    output_reserved = True
-                    break
-                except FileExistsError:
-                    index += 1
 
             def update(value: float, message: str) -> None:
                 with self.lock:
@@ -350,25 +348,40 @@ class JobManager:
                 with self.lock:
                     return job.cancel_requested
 
-            result = render_project(project, output_path, progress=update, cancel_check=cancelled)
-            postflight = postflight_render(output_path, expected_duration=result.get("duration"))
-            result["filename"] = output_name
-            result["downloadUrl"] = f"/api/render/{job.id}/download"
+            result: dict[str, Any] = {}
+            postflight = None
+            if want_video:
+                output_path = reserve_path(output_dir, base, container(project))
+                result = render_project(project, output_path, progress=update, cancel_check=cancelled)
+                postflight = postflight_render(output_path, expected_duration=result.get("duration"))
+                result["filename"] = output_path.name
+                result["downloadUrl"] = f"/api/render/{job.id}/download"
+            files = [result["path"]] if want_video else []
+            if audio_format and (postflight is None or postflight.ok):
+                update(job.progress, "Exporting audio")
+                files.append(str(export_audio(project, output_dir, base, audio_format)))
+            if caption_format and (postflight is None or postflight.ok):
+                files.append(str(export_captions(project, output_dir, base, caption_format)))
+            result["files"] = files
+            if not want_video:
+                result["path"] = files[0]
+                result["filename"] = Path(files[0]).name
             with self.lock:
                 job.result = result
-                job.postflight = postflight.public()
+                job.postflight = postflight.public() if postflight else None
                 job.progress = 1.0
-                if postflight.ok:
+                if postflight is None or postflight.ok:
                     job.state = "complete"
-                    job.message = "Render complete"
+                    job.message = "Export complete"
                 else:
                     job.state = "failed"
                     job.error = "Post-render critic found a blocking error."
                     job.message = "Postflight failed"
                 self._save(job)
-            log_event("info" if postflight.ok else "error", "render", f"Job {job.id[:8]} {'complete' if postflight.ok else 'failed postflight'}")
+            ok = postflight is None or postflight.ok
+            log_event("info" if ok else "error", "render", f"Job {job.id[:8]} {'complete' if ok else 'failed postflight'}")
         except Exception as exc:
-            if output_reserved and output_path is not None and output_path.exists() and output_path.stat().st_size == 0:
+            if output_path is not None and output_path.exists() and output_path.stat().st_size == 0:
                 output_path.unlink()
             log_exception("render", exc)
             with self.lock:

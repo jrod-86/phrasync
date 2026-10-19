@@ -32,7 +32,7 @@
           <svg class="sun" viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
         </button>
         <button class="button secondary" id="criticButton" type="button">Check project</button>
-        <button class="button primary" id="renderButton" type="button"><span>Render MP4</span><kbd>Ctrl ↵</kbd></button>
+        <button class="button primary" id="renderButton" type="button"><span>Export</span><kbd>Ctrl ↵</kbd></button>
       </div>
     </header>
 
@@ -430,24 +430,7 @@
                 <option value="1:1">1:1 square</option>
               </select>
             </label>
-            <div class="two-columns">
-              <label class="field"><span>Resolution</span>
-                <select id="resolutionSelect">
-                  <option value="720">720p</option>
-                  <option value="1080" selected>1080p</option>
-                  <option value="1440">1440p</option>
-                  <option value="2160">2160p / 4K</option>
-                </select>
-              </label>
-              <label class="field"><span>FPS</span>
-                <select id="fpsSelect"><option>24</option><option>25</option><option selected>30</option><option>50</option><option>60</option></select>
-              </label>
-            </div>
-            <label class="field"><span>Quality</span>
-              <select id="qualitySelect"><option value="18">High / CRF 18</option><option value="21">Balanced / CRF 21</option><option value="15">Very high / CRF 15</option></select>
-            </label>
-            <label class="field"><span>Video rate control</span><select id="rateControlSelect"><option value="auto">Automatic quality (CRF)</option><option value="bitrate">Custom bitrate (Mbps)</option></select></label>
-            <label class="field" id="bitrateField" hidden><span>Video bitrate (Mbps)</span><input id="bitrateInput" type="number" min="0.001" step="any" value="50" /><small>For example: 50 or 150 Mbps. Higher rates create larger files.</small></label>
+            <p class="microcopy">Resolution, frame rate, quality and file type are chosen in the Export window.</p>
             <label class="toggle-row"><input id="safeAreaToggle" type="checkbox" /><span><b>Show title-safe guide</b></span></label>
           </div>
         </details>
@@ -665,28 +648,75 @@
     </div>
   </dialog>
 
-  <dialog id="renderDialog" class="modal render-modal">
+  <dialog id="renderDialog" class="modal render-modal export-modal">
     <div class="modal-card">
-      <header><div><span class="eyebrow">LOCAL RENDER</span><h2 id="renderTitle">Building your lyric video</h2></div><button class="icon-button" id="renderClose" aria-label="Close">×</button></header>
-      <div class="render-destination">
-        <strong>Save video to</strong>
-        <span id="renderDirectory">Loading export folder…</span>
-        <input id="renderDirectoryInput" type="text" hidden aria-label="Export folder path" placeholder="Enter an existing absolute folder path" />
-        <div class="render-destination-actions">
-          <button class="button secondary" id="chooseRenderDirectory" type="button">Choose folder</button>
-          <button class="button secondary" id="openRenderDirectory" type="button">Open renders folder</button>
-          <button class="button secondary" id="openDefaultRenderDirectory" type="button">Open Phrasync default folder</button>
+      <header><div><span class="eyebrow">EXPORT</span><h2 id="renderTitle">Export</h2></div><button class="icon-button" id="renderClose" aria-label="Close">×</button></header>
+      <div class="export-setup" id="exportSetup">
+        <label class="field export-name"><span>Name</span><input id="exportName" type="text" maxlength="80" /></label>
+        <div class="render-destination">
+          <strong>Export to</strong>
+          <span id="renderDirectory">Loading export folder…</span>
+          <input id="renderDirectoryInput" type="text" hidden aria-label="Export folder path" placeholder="Enter an existing absolute folder path" />
+          <div class="render-destination-actions">
+            <button class="button secondary" id="chooseRenderDirectory" type="button">Choose folder</button>
+            <button class="button secondary" id="openRenderDirectory" type="button">Open renders folder</button>
+            <button class="button secondary" id="openDefaultRenderDirectory" type="button">Open Phrasync default folder</button>
+          </div>
         </div>
+        <section class="export-group">
+          <label class="export-toggle"><input id="exportVideo" type="checkbox" checked /><b>Video</b></label>
+          <div class="export-grid">
+            <label class="field"><span>Resolution</span>
+              <select id="resolutionSelect">
+                <option value="720">720p</option>
+                <option value="1080" selected>1080p</option>
+                <option value="1440">2K</option>
+                <option value="2160">4K</option>
+              </select>
+            </label>
+            <label class="field"><span>Bitrate</span>
+              <select id="qualitySelect"><option value="23">Lower</option><option value="18">Recommended</option><option value="15">Higher</option><option value="custom">Custom</option></select>
+            </label>
+            <label class="field" id="bitrateField" hidden><span>Custom bitrate (Mbps)</span><input id="bitrateInput" type="number" min="0.001" step="any" value="50" /></label>
+            <label class="field"><span>Codec</span>
+              <select id="exportCodec"><option value="h264">H.264</option><option value="hevc">HEVC (H.265)</option></select>
+            </label>
+            <label class="field"><span>Format</span>
+              <select id="exportContainer"><option value="mp4">MP4</option><option value="mov">MOV</option></select>
+            </label>
+            <label class="field"><span>Frame rate</span>
+              <select id="fpsSelect"><option value="24">24 fps</option><option value="25">25 fps</option><option value="30" selected>30 fps</option><option value="50">50 fps</option><option value="60">60 fps</option></select>
+            </label>
+          </div>
+        </section>
+        <section class="export-group">
+          <label class="export-toggle"><input id="exportAudio" type="checkbox" /><b>Audio</b><small>The selected song track as its own file</small></label>
+          <div class="export-grid">
+            <label class="field"><span>Format</span>
+              <select id="exportAudioFormat"><option value="mp3">MP3</option><option value="wav">WAV</option><option value="aac">AAC (M4A)</option></select>
+            </label>
+          </div>
+        </section>
+        <section class="export-group">
+          <label class="export-toggle"><input id="exportCaptions" type="checkbox" /><b>Captions</b><small>The lyrics as a subtitle file</small></label>
+          <div class="export-grid">
+            <label class="field"><span>Format</span>
+              <select id="exportCaptionFormat"><option value="srt">SRT</option><option value="vtt">VTT</option><option value="lrc">LRC</option><option value="ass">ASS (word timing)</option></select>
+            </label>
+          </div>
+        </section>
       </div>
-      <div class="render-visual"><div class="render-pulse"></div><strong id="renderPercent">0%</strong></div>
-      <div class="progress-track"><span id="renderProgress"></span></div>
-      <p id="renderMessage">Preparing critic pass…</p>
+      <div class="export-running" id="exportRunning" hidden>
+        <div class="render-visual"><div class="render-pulse"></div><strong id="renderPercent">0%</strong></div>
+        <div class="progress-track"><span id="renderProgress"></span></div>
+        <p id="renderMessage">Preparing critic pass…</p>
+      </div>
       <div class="render-result" id="renderResult" hidden>
-        <strong>MP4 is ready.</strong><span id="renderMeta"></span>
-        <a class="button primary" id="downloadRender" href="#">Download MP4</a>
+        <strong>Export complete.</strong><span id="renderMeta"></span>
+        <a class="button primary" id="downloadRender" href="#">Show in folder</a>
       </div>
       <div class="render-error" id="renderError" hidden></div>
-      <footer><button class="button primary" id="confirmRender" type="button">Start export</button><button class="button secondary" id="cancelRender" type="button">Cancel render</button></footer>
+      <footer><span class="export-summary" id="exportSummary"></span><button class="button primary" id="confirmRender" type="button">Export</button><button class="button secondary" id="cancelRender" type="button">Cancel</button></footer>
     </div>
   </dialog>
 
@@ -720,6 +750,7 @@
   <script src="/static/app-fullscreen.js" defer></script>
   <script src="/static/app-crawl-countdown.js" defer></script>
   <script src="/static/app-stems.js" defer></script>
+  <script src="/static/app-export-dialog.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

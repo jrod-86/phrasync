@@ -34,6 +34,7 @@ APP_SCRIPTS = [
     "app-fullscreen.js",
     "app-crawl-countdown.js",
     "app-stems.js",
+    "app-export-dialog.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",

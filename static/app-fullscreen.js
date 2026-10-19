@@ -47,3 +47,28 @@ document.addEventListener("fullscreenchange", () => {
 document.addEventListener("keydown", () => {
   if (document.fullscreenElement === els.stage) wakeFullscreenControls();
 });
+
+// Click the picture to play or pause; double-click to enter or leave full
+// screen. The single click waits a moment so a double-click never also
+// toggles playback. Clicks on the controls themselves are left alone.
+const STAGE_CLICK_DELAY_MS = 250;
+let stageClickTimer = null;
+
+function stageControlClick(event) {
+  return Boolean(event.target.closest("button, input, select, textarea, a, label, .transport"));
+}
+
+els.stage.addEventListener("click", event => {
+  if (event.button !== 0 || stageControlClick(event)) return;
+  clearTimeout(stageClickTimer);
+  if (event.detail > 1) return;
+  stageClickTimer = setTimeout(() => togglePlay(), STAGE_CLICK_DELAY_MS);
+});
+
+els.stage.addEventListener("dblclick", event => {
+  if (stageControlClick(event)) return;
+  clearTimeout(stageClickTimer);
+  event.preventDefault();
+  if (document.fullscreenElement === els.stage) document.exitFullscreen?.();
+  else els.stage.requestFullscreen?.();
+});

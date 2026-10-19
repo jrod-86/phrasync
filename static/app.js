@@ -162,15 +162,15 @@ function bindControls() {
   els.aspectSelect.addEventListener("change", () => { project.canvas.aspect = els.aspectSelect.value; setCanvasDimensions(); });
   els.resolutionSelect.addEventListener("change", setCanvasDimensions);
   els.fpsSelect.addEventListener("change", setCanvasDimensions);
-  els.qualitySelect.addEventListener("change", () => { project.export.crf = Number(els.qualitySelect.value); scheduleSave(); });
+  // Bitrate: Lower / Recommended / Higher map to a CRF; Custom is a fixed Mbps rate.
   const updateBitrate = () => {
-    const custom = els.rateControlSelect.value === "bitrate";
-    els.bitrateField.hidden = !custom; els.qualitySelect.disabled = custom;
+    const custom = els.qualitySelect.value === "custom";
+    if (!custom) project.export.crf = Number(els.qualitySelect.value);
+    els.bitrateField.hidden = !custom;
     project.export.bitrateMbps = custom ? Number(els.bitrateInput.value) : null;
-    scheduleSave();
+    scheduleSave(); refreshExportSummary();
   };
-  els.rateControlSelect.addEventListener("change", updateBitrate);
-  els.bitrateInput.addEventListener("input", updateBitrate);
+  els.qualitySelect.addEventListener("change", updateBitrate); els.bitrateInput.addEventListener("input", updateBitrate);
   els.safeAreaToggle.addEventListener("change", applyStageStyle);
 
   els.playButton.addEventListener("click", togglePlay);

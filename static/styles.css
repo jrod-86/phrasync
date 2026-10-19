@@ -670,3 +670,21 @@ input[type="range"].volume { width: 96px; min-width: 96px; }
 /* Vocal remover, under the song tile */
 #removeVocalsButton, #stemsProgress, .song-track { margin-top: 8px; }
 .song-track .microcopy { margin-top: 6px; }
+
+/* The preview picture is a play/pause target; double-click toggles full screen. */
+#stage { cursor: pointer; user-select: none; -webkit-user-select: none; }
+
+/* Export window (CapCut-style sections) */
+.export-modal { width: min(640px, calc(100vw - 32px)); }
+.export-setup { max-height: min(68vh, 640px); overflow-y: auto; padding-bottom: 6px; }
+.export-setup .export-name { margin: 16px 20px 0; }
+.export-group { margin: 12px 20px 0; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.export-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.export-toggle b { font-size: 12px; }
+.export-toggle small { margin-left: auto; color: var(--muted); font-size: 10px; }
+.export-grid { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 10px; }
+.export-group.is-off .export-grid { opacity: .45; }
+.export-running { padding-bottom: 6px; }
+.export-modal .modal-card > footer { align-items: center; gap: 8px; }
+.export-summary { margin-right: auto; color: var(--muted); font-size: 11px; }
+@media (max-width: 520px) { .export-toggle small { display: none; } }

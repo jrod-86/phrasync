@@ -271,7 +271,6 @@ const els = {
   resolutionSelect: $("#resolutionSelect"),
   fpsSelect: $("#fpsSelect"),
   qualitySelect: $("#qualitySelect"),
-  rateControlSelect: $("#rateControlSelect"),
   bitrateInput: $("#bitrateInput"),
   bitrateField: $("#bitrateField"),
   renderDirectoryInput: $("#renderDirectoryInput"),

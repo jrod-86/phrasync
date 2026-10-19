@@ -20,7 +20,7 @@ from .render_typography import render_text_layer
 from .render_utils import apply_dim, cover, scale_for_canvas
 from .subtitles import normalize_cues
 from .webgl_renderer import render_webgl_video
-from .encoding import rate_control_args
+from .encoding import codec_args, rate_control_args, video_codec
 from .footage import prepare_footage, effects_enabled
 
 ProgressCallback = Callable[[float, str], None]
@@ -280,7 +280,7 @@ def render_project(
     project = prepare_footage(project)
     ctx = _build_context(project, progress)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output_path.with_suffix(".partial.mp4")
+    temporary = output_path.with_suffix(f".partial{output_path.suffix or '.mp4'}")
     temporary.unlink(missing_ok=True)
 
     background = project.get("background") or {}
@@ -321,6 +321,8 @@ def render_project(
             command.extend(["-map", "0:v:0"])
             if ctx.audio:
                 command.extend(["-map", "1:a:0", "-c:a", "aac", "-b:a", "192k"])
+            if video_codec(project) == "hevc":
+                command.extend(["-tag:v", "hvc1"])
             command.extend(["-c:v", "copy", "-t", f"{ctx.duration:.6f}",
                             "-movflags", "+faststart", str(temporary)])
             if progress:
@@ -372,8 +374,7 @@ def render_project(
         command.extend(["-map", "1:a:0", "-c:a", "aac", "-b:a", "192k"])
     command.extend(
         [
-            "-c:v",
-            "libx264",
+            *codec_args(project),
             "-preset",
             str(project.get("export", {}).get("preset", "medium")),
             *rate_control_args(project),

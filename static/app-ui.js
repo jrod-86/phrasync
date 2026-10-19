@@ -232,11 +232,10 @@ function applyProjectToControls() {
     els.resolutionSelect.value = "1080";
   }
   els.fpsSelect.value = String(project.canvas.fps);
-  els.qualitySelect.value = String(project.export.crf);
-  els.rateControlSelect.value = project.export.bitrateMbps != null ? "bitrate" : "auto";
+  const crfChoice = [...els.qualitySelect.options].some(option => option.value === String(project.export.crf));
+  els.qualitySelect.value = project.export.bitrateMbps != null ? "custom" : (crfChoice ? String(project.export.crf) : "18");
   els.bitrateInput.value = String(project.export.bitrateMbps ?? 50);
-  els.bitrateField.hidden = els.rateControlSelect.value !== "bitrate";
-  els.qualitySelect.disabled = !els.bitrateField.hidden;
+  els.bitrateField.hidden = els.qualitySelect.value !== "custom";
   $$("input[type=range]").forEach(updateRangeUI);
   applyBackgroundTypeUI();
   applyModeUI();

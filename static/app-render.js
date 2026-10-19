@@ -14,6 +14,7 @@ async function openRenderDialog() {
     return;
   }
   resetRenderModal();
+  syncExportDialog();
   els.renderMessage.textContent = project.exportRange
     ? `Export: ${formatTime(project.exportRange.in)} → ${formatTime(project.exportRange.out)}`
     : t("Full timeline");
@@ -23,7 +24,7 @@ async function openRenderDialog() {
   els.openRenderDirectory.hidden = !IS_DESKTOP_HOST;
   els.openDefaultRenderDirectory.hidden = !IS_DESKTOP_HOST;
   els.renderDirectoryInput.hidden = IS_DESKTOP_HOST;
-  els.downloadRender.textContent = t("Show exported MP4");
+  els.downloadRender.textContent = t("Show in folder");
   if (IS_DESKTOP_HOST) {
     try {
       selectedRenderDirectory = await desktopExportApi().get_selected_render_directory();
@@ -68,7 +69,7 @@ async function downloadRender(event) {
   try {
     const saved = IS_DESKTOP_HOST ? await desktopExportApi().show_render_file(completedRenderJob)
       : (await api(`/api/render/${completedRenderJob}/show`, { method: "POST" })).path;
-    if (saved) toast(`${t("MP4 saved to")} ${saved}`, "success");
+    if (saved) toast(`${t("Saved to")} ${saved}`, "success");
   } catch (error) {
     toast(error.message, "error");
   }
@@ -93,6 +94,7 @@ async function startRender() {
     toast(t("Choose where to save your exports before starting a render."), "error"); return;
   }
   renderStarting = true;
+  showExportStage("running");
   els.confirmRender.hidden = true;
   els.cancelRender.hidden = false;
   els.chooseRenderDirectory.disabled = true;
@@ -113,7 +115,8 @@ async function startRender() {
     els.chooseRenderDirectory.disabled = false;
     els.renderError.hidden = false;
     els.renderError.textContent = error.message;
-    els.renderMessage.textContent = "Could not start render.";
+    els.renderMessage.textContent = "Could not start the export.";
+    showExportStage("setup");
   } finally { renderStarting = false; }
 }
 
@@ -135,9 +138,10 @@ async function pollRender() {
       els.downloadRender.href = "#";
       els.downloadRender.removeAttribute("download");
       if (job.result.path) els.renderDirectory.textContent = job.result.path.replace(/[\\/][^\\/]+$/, "");
-      els.renderMeta.textContent = `${job.result.width} × ${job.result.height} · ${job.result.fps} fps · ${job.result.duration.toFixed(2)}s · rendered in ${job.result.elapsed.toFixed(1)}s`;
+      showExportStage("done");
+      els.renderMeta.textContent = exportResultSummary(job.result);
       if (job.postflight && !job.postflight.ok) showReport(job.postflight, "Post-render critic");
-      toast("MP4 render complete.", "success");
+      toast("Export complete.", "success");
       return;
     }
     if (job.state === "failed" || job.state === "cancelled") {
@@ -146,7 +150,8 @@ async function pollRender() {
       els.confirmRender.hidden = false;
       els.chooseRenderDirectory.disabled = false;
       els.renderError.hidden = false;
-      els.renderError.textContent = job.error || `Render ${job.state}.`;
+      els.renderError.textContent = job.error || `Export ${job.state}.`;
+      showExportStage("setup");
       if (job.preflight && !job.preflight.ok) showReport(job.preflight, "Blocking preflight report");
       return;
     }
