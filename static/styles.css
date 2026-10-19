@@ -428,16 +428,20 @@ html[data-theme="light"] .stage-shell { background: #ddd9e1; }
 .stage.controls-idle > .transport.fullscreen-transport { opacity: 0; pointer-events: none; }
 .stage.controls-idle { cursor: none; }
 .play-button {
-  width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%;
-  display: grid; place-items: center; color: var(--bg);
-  background: linear-gradient(180deg, var(--text), color-mix(in srgb, var(--text) 84%, var(--bg)));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 0 0 1px color-mix(in srgb, var(--text) 22%, transparent), 0 6px 18px rgba(0, 0, 0, .32);
+  width: 46px; height: 46px; padding: 0; border: 4px solid transparent; border-radius: 50%;
+  display: grid; place-items: center; color: #ffffff;
+  /* Dark centre inside an orange-to-purple ring: the ring is the border box
+     showing a gradient behind the padding-box fill. */
+  background:
+    linear-gradient(#2a2d33, #23252a) padding-box,
+    linear-gradient(90deg, #ff7a1a 0%, #e0458f 55%, #7d3fc2 100%) border-box;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
   transition: transform .16s ease, box-shadow .2s ease;
 }
-.play-button svg { grid-area: 1 / 1; width: 18px; height: 18px; fill: currentColor; transition: opacity .16s ease, transform .16s ease; }
+.play-button svg { grid-area: 1 / 1; width: 20px; height: 20px; fill: currentColor; transition: opacity .16s ease, transform .16s ease; }
 .play-button .icon-pause, .play-button.is-playing .icon-play { opacity: 0; transform: scale(.55); }
 .play-button.is-playing .icon-pause { opacity: 1; transform: none; }
-.play-button:hover { transform: scale(1.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 0 0 4px var(--accent-soft), 0 8px 22px rgba(0, 0, 0, .38); }
+.play-button:hover { transform: scale(1.06); box-shadow: 0 0 16px rgba(224, 69, 143, .45), 0 6px 18px rgba(0, 0, 0, .35); }
 .play-button:active { transform: scale(.95); }
 .timecode { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* The element+attribute selector for ranges outranks a bare class, so the
