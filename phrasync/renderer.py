@@ -278,7 +278,7 @@ def frame_workers(composer: "FrameComposer") -> int:
     sequentially from one decoder, so it keeps a single drawing thread."""
     if composer.video_source is not None:
         return 1
-    return max(1, min(12, (os.cpu_count() or 2) - 1))
+    return max(1, min(32, (os.cpu_count() or 2) - 1))
 
 
 def render_project(
