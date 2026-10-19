@@ -406,6 +406,31 @@ def cancel_transcription(job_id: str) -> dict[str, bool]:
     return {"cancelled": manager.cancel(job_id)}
 
 
+@app.post("/api/stems")
+def create_stems_job(payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    asset = get_av_asset(payload.get("assetId"))
+    if not asset:
+        raise HTTPException(status_code=404, detail="Song not found")
+    job = manager.create_stems(Path(asset.path), asset.name, _gpu_choice(payload))
+    return JSONResponse(job.public(), status_code=202)
+
+
+@app.get("/api/stems/{job_id}")
+def get_stems_job(job_id: str) -> dict[str, Any]:
+    job = manager.get(job_id)
+    if not job or job.kind != "stems":
+        raise HTTPException(status_code=404, detail="Vocal removal job not found")
+    return job.public()
+
+
+@app.post("/api/stems/{job_id}/cancel")
+def cancel_stems(job_id: str) -> dict[str, bool]:
+    job = manager.get(job_id)
+    if not job or job.kind != "stems":
+        raise HTTPException(status_code=404, detail="Vocal removal job not found")
+    return {"cancelled": manager.cancel(job_id)}
+
+
 @app.post("/api/analyze")
 async def analyze(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
     asset = get_av_asset(payload.get("assetId"))

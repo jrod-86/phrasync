@@ -666,3 +666,7 @@ input[type="range"].volume { width: 96px; min-width: 96px; }
 .export-range-controls { display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:6px 12px; font-size:11px; }
 .export-range-controls input { width:85px; }
 .export-range-controls button { padding:5px 8px; }
+
+/* Vocal remover, under the song tile */
+#removeVocalsButton, #stemsProgress, .song-track { margin-top: 8px; }
+.song-track .microcopy { margin-top: 6px; }

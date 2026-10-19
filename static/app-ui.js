@@ -173,6 +173,7 @@ function applyProjectToControls() {
   if ($("#syncLyrics")) $("#syncLyrics").value = project.syncLyrics || "";
   els.projectTitle.value = project.title;
   els.audioName.textContent = project.audio?.name || "Add song";
+  if (typeof refreshStemsControls === "function") refreshStemsControls();
   els.visualSelect.value = project.background.visual;
   els.stylePreset.value = project.style.preset;
   els.fontPreset.value = project.style.fontPreset;

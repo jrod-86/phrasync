@@ -57,6 +57,21 @@
               <span><strong id="audioName">Add song</strong><small id="audioHint">WAV, MP3, FLAC, M4A…</small></span>
               <em>Choose</em>
             </button>
+            <button class="button secondary wide" id="removeVocalsButton" type="button" disabled>Remove vocals (karaoke track)</button>
+            <div class="transcription-progress" id="stemsProgress" hidden>
+              <div><span id="stemsMessage">Removing vocals…</span><output id="stemsPercent">0%</output></div>
+              <div class="transcription-track" role="progressbar" aria-label="Vocal removal progress"><span id="stemsProgressBar"></span></div>
+              <button class="button secondary wide" id="cancelStems" type="button">Stop vocal removal</button>
+            </div>
+            <div class="song-track" id="songTrackBox" hidden>
+              <span class="field-label">Song audio</span>
+              <div class="segmented" id="songTrack">
+                <button type="button" data-value="original" class="active">Full song</button>
+                <button type="button" data-value="instrumental">Instrumental</button>
+                <button type="button" data-value="vocals">Vocals only</button>
+              </div>
+              <p class="microcopy">The track you pick plays in the preview and goes into the exported video. Transcription always listens to the vocals.</p>
+            </div>
 
             <label class="field-label">Background</label>
             <div class="segmented" id="backgroundType">
@@ -704,6 +719,7 @@
   <script src="/static/app-color-themes.js" defer></script>
   <script src="/static/app-fullscreen.js" defer></script>
   <script src="/static/app-crawl-countdown.js" defer></script>
+  <script src="/static/app-stems.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

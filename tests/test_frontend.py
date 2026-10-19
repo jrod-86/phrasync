@@ -33,6 +33,7 @@ APP_SCRIPTS = [
     "app-color-themes.js",
     "app-fullscreen.js",
     "app-crawl-countdown.js",
+    "app-stems.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",

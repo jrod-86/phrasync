@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import threading
 import traceback
 import uuid
@@ -18,6 +19,10 @@ from .audio_analysis import analyze_audio
 from .lyric_sync import apply_lyric_sync
 from .qa import postflight_render, preflight_project
 from .renderer import render_project
+from .stems import StemsCancelled, separate_file
+from .storage import store_path
+from .media import probe_duration
+from .config import TMP_DIR
 from .transcribe import TranscriptionCancelled, transcribe_audio
 
 
@@ -236,6 +241,68 @@ class JobManager:
                 job.traceback = traceback.format_exc()
                 job.message = "Transcription cancelled" if job.cancel_requested else "Transcription failed"
                 self._save(job)
+
+    def create_stems(self, path: Path, name: str, gpu: int | None = None) -> Job:
+        job = Job(id=uuid.uuid4().hex, kind="stems", message="Waiting to remove vocals",
+                  request={"gpu": gpu})
+        log_event("info", "stems", f"Queued job {job.id[:8]}")
+        with self.lock:
+            self.jobs[job.id] = job
+            self._save(job)
+        self.executor.submit(self._run_stems, job.id, path, name, gpu)
+        return job
+
+    def _run_stems(self, job_id: str, path: Path, name: str, gpu: int | None) -> None:
+        job = self.get(job_id)
+        if not job:
+            return
+
+        def cancelled() -> bool:
+            with self.lock:
+                return job.cancel_requested
+
+        def update(value: float, message: str) -> None:
+            with self.lock:
+                job.progress = max(job.progress, min(0.97, float(value)))
+                job.message = message
+                self._save(job)
+
+        work = TMP_DIR / f"stems-{job_id}"
+        try:
+            with self.lock:
+                job.state = "running"
+                job.message = "Preparing the vocal remover"
+                self._save(job)
+            outputs = separate_file(path, work, gpu, update, cancelled)
+            result: dict[str, Any] = {}
+            stem = Path(name).stem or "song"
+            for key, label in (("instrumental", "Instrumental"), ("vocals", "Vocals")):
+                asset = store_path("audio", outputs[key], f"{stem} - {label}.wav")
+                public = asset.public()
+                public["duration"] = probe_duration(Path(asset.path))
+                result[key] = public
+            with self.lock:
+                job.result = result
+                job.state = "complete"
+                job.progress = 1.0
+                job.message = "Vocals removed"
+                self._save(job)
+            log_event("info", "stems", f"Completed job {job.id[:8]}")
+        except StemsCancelled:
+            with self.lock:
+                job.state = "cancelled"
+                job.message = "Vocal removal cancelled"
+                self._save(job)
+        except Exception as exc:
+            log_exception("stems", exc)
+            with self.lock:
+                job.state = "cancelled" if job.cancel_requested else "failed"
+                job.error = None if job.cancel_requested else str(exc)
+                job.traceback = traceback.format_exc()
+                job.message = "Vocal removal cancelled" if job.cancel_requested else "Vocal removal failed"
+                self._save(job)
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
 
     def _run_render(self, job_id: str, project: dict[str, Any], title: str, output_dir: Path) -> None:
         job = self.get(job_id)

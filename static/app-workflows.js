@@ -23,7 +23,7 @@ async function handleAudioFile(file) {
     analysis = null;
     if (asset.duration) project.duration = asset.duration;
     els.audioName.textContent = asset.name;
-    applyAudioPreview(); applyBackgroundPreview(); updateDurationUI(); scheduleSave();
+    applyAudioPreview(); applyBackgroundPreview(); updateDurationUI(); refreshStemsControls(); scheduleSave();
     const mediaLabel = video ? "Video" : (project.mode === "subtitles" ? "Audio" : "Song");
     setAssetStatus(`${mediaLabel} ready · ${asset.duration ? formatTime(asset.duration) : "loading duration"}`, "success");
     toast(`${mediaLabel} loaded.`, "success");
@@ -222,7 +222,7 @@ async function transcribeSong() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        assetId: project.audioAssetId,
+        assetId: transcriptionAssetId(),
         model: els.whisperModel.value,
         language: els.whisperLanguage.value.trim() || "auto",
         vadFilter: els.vadFilter.checked,

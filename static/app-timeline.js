@@ -19,7 +19,7 @@ async function ensureAnalysis(force = false) {
     analysis = await api("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetId: project.audioAssetId, refresh: force })
+      body: JSON.stringify({ assetId: project.sourceAssetId || project.audioAssetId, refresh: force })
     });
     project.timing.bpm = analysis.bpm || 0;
     project.timing.beatOffset = analysis.beatOffset || 0;
