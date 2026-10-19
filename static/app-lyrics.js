@@ -359,8 +359,8 @@ async function togglePlay() {
 
 function updatePlayButton() {
   const playing = project.audio?.url ? !els.audioPlayer.paused : virtualPlaying;
-  els.playButton.textContent = playing ? "❚❚" : "▶";
-  els.playButton.style.paddingLeft = playing ? "0" : "3px";
+  els.playButton.classList.toggle("is-playing", playing);
+  els.playButton.setAttribute("aria-label", playing ? "Pause" : "Play");
 }
 
 function syncBackgroundVideo(time) {
