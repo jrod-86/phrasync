@@ -188,6 +188,7 @@ function applyProjectToControls() {
   els.accentColor.value = project.style.accentColor;
   els.accentColor2.value = project.style.accentColor2;
   els.strokeColor.value = project.style.strokeColor;
+  if (typeof syncColorTheme === "function") syncColorTheme();
   els.animationSelect.value = String(project.style.animation);
   els.uppercaseToggle.checked = project.style.uppercase;
   els.beatReactToggle.checked = project.style.beatReact !== false;

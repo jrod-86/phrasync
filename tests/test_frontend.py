@@ -30,6 +30,7 @@ APP_SCRIPTS = [
     "app-workflows.js",
     "app-lyric-sync.js",
     "app-gpu.js",
+    "app-color-themes.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",
