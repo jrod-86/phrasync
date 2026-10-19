@@ -396,6 +396,21 @@ html[data-theme="light"] .stage-shell { background: #ddd9e1; }
   clip-path: inset(0 calc(100% - var(--fill, 0) * 100%) 0 0);
   opacity: var(--fill-alpha, 1);
 }
+/* Credit Crawl countdown: three dots left of the returning line's first word.
+   Geometry in em matches phrasync/render_typography.py: dots 0.24em wide,
+   centres 0.38em apart, the nearest centre 0.34em from the word. */
+.lyric-word > i.crawl-countdown {
+  position: absolute; right: 100%; top: 50%; margin-right: .22em;
+  display: flex; gap: .14em; transform: translateY(-50%); pointer-events: none;
+}
+.crawl-countdown b {
+  width: .24em; height: .24em; border-radius: 50%;
+  background: linear-gradient(175deg, var(--lyric-accent), var(--lyric-accent2));
+  box-shadow: 0 0 0 calc(var(--lyric-stroke-width) * .5) var(--lyric-stroke);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.crawl-countdown[data-count="2"] b:nth-child(1),
+.crawl-countdown[data-count="1"] b:nth-child(-n+2) { opacity: 0; transform: scale(.4); }
 .lyric-display[data-layout="focus"] { }
 .lyric-display[data-layout="focus"] .lyric-line {
   position: absolute; left: 0; right: 0; top: 0; transform: translateY(-50%);

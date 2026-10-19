@@ -101,6 +101,8 @@ PRESETS["credit-crawl"] = Preset(
         "farOpacity": 0.28,     # distant lines
         "gapHold": 1.2,         # keep the last line through a short instrumental gap
         "blockGap": 0.35,       # breathing room between cue blocks, line units
+        "countdownGap": 10.0,   # a silence at least this long earns a 3-2-1 countdown
+        "countdownLead": 3.0,   # seconds of countdown before the singing returns
     },
 )
 
@@ -711,6 +713,36 @@ def credit_crawl_state(
 
     visible.sort(key=lambda item: item["offset"])
     return {"activeIndex": active_index, "cues": visible}
+
+
+def crawl_countdown(
+    cues: list[dict[str, Any]], t: float, spec: Preset
+) -> dict[str, Any] | None:
+    """Karaoke countdown after a long silence.
+
+    When at least countdownGap seconds pass with no vocals (the song intro
+    counts), the countdownLead seconds before the next cue show 3, 2, 1 dots
+    beside it. Pure in t, like the crawl. Returns {cue, index, count} or None.
+    """
+    crawl = spec.crawl or PRESETS["credit-crawl"].crawl or {}
+    min_gap = float(crawl.get("countdownGap", 10))
+    lead = float(crawl.get("countdownLead", 3))
+    if min_gap <= 0 or lead <= 0:
+        return None
+    ordered = sorted(
+        ((cue, index) for index, cue in enumerate(cues)),
+        key=lambda item: (float(item[0].get("start", 0) or 0), item[1]),
+    )
+    sung_until = 0.0
+    for cue, index in ordered:
+        start = float(cue.get("start", 0) or 0)
+        if start > t:
+            if start - sung_until >= min_gap and t >= start - lead:
+                count = min(math.ceil(lead), max(1, math.ceil(start - t - 1e-9)))
+                return {"cue": cue, "index": index, "count": count}
+            return None
+        sung_until = max(sung_until, float(cue.get("end", start) or start))
+    return None
 
 
 def beat_pulse(t: float, bpm: float, offset: float, decay: float = 0.22) -> float:

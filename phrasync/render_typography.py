@@ -132,6 +132,7 @@ def _render_kinetic(
     beat: float,
     crawl_shift: float = 0.0,
     crawl_opacity: float = 1.0,
+    countdown: int = 0,
 ) -> Image.Image | None:
     layer = Image.new("RGBA", (ctx.width, ctx.height), (0, 0, 0, 0))
     words = kinetic.cue_words(cue)
@@ -254,7 +255,53 @@ def _render_kinetic(
         layer.alpha_composite(image, (dest_x, dest_y))
         drew = True
 
+    if countdown > 0 and placed:
+        _, font, word_x, word_center_y, _ = placed[0]
+        _draw_countdown(layer, countdown, font.size, word_x, word_center_y + crawl_shift,
+                        accent, stroke_color, stroke, crawl_opacity)
+        drew = True
+
     return layer if drew else None
+
+
+def _draw_countdown(
+    layer: Image.Image,
+    count: int,
+    size: float,
+    word_x: float,
+    center_y: float,
+    accent: tuple[int, int, int],
+    stroke_color: tuple[int, int, int],
+    stroke: int,
+    opacity: float,
+) -> None:
+    """Credit Crawl countdown dots left of the returning line's first word.
+
+    Same em geometry as .crawl-countdown in static/styles.css: dots 0.24em
+    wide, centres 0.38em apart, the nearest centre 0.34em from the word. The
+    nearest `count` dots show, so the last one left sits beside the word.
+    """
+    radius = 0.12 * size
+    ring = stroke * 0.5
+    sample = 4  # supersample for smooth edges
+    for k in range(min(3, count)):
+        cx = word_x - (0.34 + 0.38 * k) * size
+        outer = radius + ring
+        box = int(outer * 2) + 4
+        dot = Image.new("RGBA", (box * sample, box * sample), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(dot)
+        mid = box * sample / 2
+        if ring > 0:
+            r = outer * sample
+            draw.ellipse((mid - r, mid - r, mid + r, mid + r), fill=stroke_color + (255,))
+        r = radius * sample
+        draw.ellipse((mid - r, mid - r, mid + r, mid + r), fill=accent + (255,))
+        dot = dot.resize((box, box), Image.Resampling.LANCZOS)
+        if opacity < 0.998:
+            dot.putalpha(dot.getchannel("A").point(lambda value: int(value * opacity)))
+        x, y = int(round(cx - box / 2)), int(round(center_y - box / 2))
+        if x + box > 0 and y + box > 0:
+            layer.alpha_composite(dot, (max(0, x), max(0, y)), (max(0, -x), max(0, -y)))
 
 
 def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
@@ -313,6 +360,7 @@ def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
     crawl_line_unit = base_size * spec.line_height + int(
         scale_for_canvas(float(style.get("lineGap", 0) or 0), ctx.height, ctx.width)
     )
+    countdown = kinetic.crawl_countdown(ctx.cues, lyric_t, spec) if crawl_state else None
     for cue in cues:
         item = crawl_items.get(id(cue))
         if item is None:
@@ -324,6 +372,7 @@ def render_text_layer(ctx: RenderContext, t: float) -> Image.Image | None:
                 ctx, cue, lyric_t, style, spec, fonts, max_width, center_y, beat,
                 crawl_shift=item["offset"] * crawl_line_unit,
                 crawl_opacity=item["opacity"],
+                countdown=countdown["count"] if countdown and countdown["cue"] is cue else 0,
             )
         if rendered is None:
             continue

@@ -35,6 +35,24 @@ TIMED_CUE = {
 STYLE = {"fontSize": 160, "maxWidth": 88, "fontPreset": "impact"}
 CANVAS = {"width": 1920, "height": 1080}
 
+# Countdown fixtures: a 12 s intro, a 10.5 s instrumental break, a short 4 s
+# gap that earns nothing, and an overlapping pair whose later end decides.
+COUNTDOWN_CASES = {
+    "breaks": [
+        {"id": "k1", "start": 12.0, "end": 15.0, "text": "first verse", "words": []},
+        {"id": "k2", "start": 15.0, "end": 18.0, "text": "still singing", "words": []},
+        {"id": "k3", "start": 28.5, "end": 31.0, "text": "back again", "words": []},
+        {"id": "k4", "start": 35.0, "end": 37.0, "text": "short gap", "words": []},
+    ],
+    "overlap": [
+        {"id": "v1", "start": 0.0, "end": 9.0, "text": "long note", "words": []},
+        {"id": "v2", "start": 1.0, "end": 2.0, "text": "under it", "words": []},
+        {"id": "v3", "start": 15.0, "end": 17.0, "text": "too soon", "words": []},
+    ],
+}
+COUNTDOWN_TIMES = [0.0, 8.9, 9.0, 9.5, 10.0, 10.01, 11.0, 11.99, 12.0, 25.0, 25.5,
+                   26.2, 27.6, 28.49, 28.5, 32.5, 34.9, 14.0]
+
 HARNESS = r"""
 const fs = require("fs");
 global.window = {};
@@ -116,6 +134,13 @@ for (const name of crawlMergeOrder) {
     out.crawlOverridden.push([name, t, s.activeIndex, s.cues.map(c => [
       c.index, +c.offset.toFixed(6), +c.opacity.toFixed(6), c.active ? 1 : 0
     ])]);
+  }
+}
+out.countdown = [];
+for (const [name, cueList] of Object.entries(input.countdownCases)) {
+  for (const t of input.countdownTimes) {
+    const c = K.crawlCountdown(cueList, t, crawlSpec);
+    out.countdown.push([name, t, c ? c.index : -1, c ? c.count : 0]);
   }
 }
 out.resolvedLead = input.leadStyles.map(style => +K.resolvedPreset(style).lead.toFixed(6));
@@ -630,6 +655,7 @@ def test_engines_agree():
         "crawlCases": crawl_cases, "crawlTimes": crawl_times,
         "crawlStyles": crawl_styles,
         "crawlOverrides": crawl_overrides, "leadStyles": lead_styles,
+        "countdownCases": COUNTDOWN_CASES, "countdownTimes": COUNTDOWN_TIMES,
     }
     js = _node_results(payload)
 
@@ -755,3 +781,45 @@ def test_engines_agree():
     # resolvedPreset path).
     for row, style in zip(js["resolvedLead"], lead_styles):
         assert row == pytest.approx(kinetic.resolved_preset(style).lead, abs=1e-6)
+
+    # Countdown dots after a long silence: same cue and count in both engines.
+    cursor = 0
+    for name, cue_list in COUNTDOWN_CASES.items():
+        for t in COUNTDOWN_TIMES:
+            countdown = kinetic.crawl_countdown(cue_list, t, crawl_spec)
+            expected = [name, t, countdown["index"] if countdown else -1,
+                        countdown["count"] if countdown else 0]
+            assert js["countdown"][cursor] == expected, f"countdown mismatch {name} t={t}"
+            cursor += 1
+
+
+def test_countdown_counts_down_before_singing_returns():
+    spec = kinetic.get_preset("credit-crawl")
+    cues = COUNTDOWN_CASES["breaks"]
+
+    def count(t):
+        found = kinetic.crawl_countdown(cues, t, spec)
+        return (found["cue"]["id"], found["count"]) if found else None
+
+    # The 12 s intro counts down into the first line.
+    assert count(8.9) is None
+    assert count(9.0) == ("k1", 3)
+    assert count(10.5) == ("k1", 2)
+    assert count(11.5) == ("k1", 1)
+    assert count(12.0) is None
+    # A 10.5 s instrumental break earns a countdown; a 4 s gap does not.
+    assert count(25.6) == ("k3", 3)
+    assert count(28.0) == ("k3", 1)
+    assert count(33.0) is None
+    # Overlapping cues: the silence starts when the last voice stops.
+    assert kinetic.crawl_countdown(COUNTDOWN_CASES["overlap"], 13.0, spec) is None
+
+
+def test_countdown_honours_its_settings():
+    cues = COUNTDOWN_CASES["breaks"]
+    off = kinetic.resolved_preset({"preset": "credit-crawl"})
+    assert off.crawl["countdownGap"] == 10 and off.crawl["countdownLead"] == 3
+    shorter = kinetic.replace(off, crawl={**off.crawl, "countdownGap": 3.5})
+    assert kinetic.crawl_countdown(cues, 33.0, shorter)["cue"]["id"] == "k4"
+    disabled = kinetic.replace(off, crawl={**off.crawl, "countdownGap": 0})
+    assert kinetic.crawl_countdown(cues, 10.0, disabled) is None

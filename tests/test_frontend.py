@@ -32,6 +32,7 @@ APP_SCRIPTS = [
     "app-gpu.js",
     "app-color-themes.js",
     "app-fullscreen.js",
+    "app-crawl-countdown.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",

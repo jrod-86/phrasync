@@ -136,7 +136,7 @@ function renderLyric(force = false) {
       ? `Cue ${project.cues.findIndex(item => item.id === primary.id) + 1} · ${primary.start.toFixed(2)}–${primary.end.toFixed(2)}`
       : "No active cue";
   }
-  updateLyricFrame(time);
+  updateLyricFrame(time); updateCrawlCountdown(time, crawlMode, spec);
 }
 
 /** Per-frame pass: writes the transform of every visible word. */

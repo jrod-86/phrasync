@@ -185,7 +185,9 @@
       nearOpacity: 0.58,    // immediate previous/next
       farOpacity: 0.28,     // distant lines
       gapHold: 1.2,         // keep the last line through a short instrumental gap
-      blockGap: 0.35        // breathing room between cue blocks, line units
+      blockGap: 0.35,       // breathing room between cue blocks, line units
+      countdownGap: 10,     // a silence at least this long earns a 3-2-1 countdown
+      countdownLead: 3      // seconds of countdown before the singing returns
     },
     description: "The sung line stays centred while lyrics roll upward like film credits."
   };
@@ -763,6 +765,34 @@
   }
 
   /**
+   * Karaoke countdown after a long silence. When at least countdownGap seconds
+   * pass with no vocals (the song intro counts), the countdownLead seconds
+   * before the next cue show 3, 2, 1 dots beside it. Pure in t, like the crawl.
+   * Returns { cue, index, count } or null.
+   */
+  function crawlCountdown(cues, t, spec) {
+    const crawl = (spec && spec.crawl) || PRESETS["credit-crawl"].crawl;
+    const minGap = Number(crawl.countdownGap ?? 10);
+    const lead = Number(crawl.countdownLead ?? 3);
+    if (!(minGap > 0) || !(lead > 0)) return null;
+    const ordered = cues.map((cue, index) => ({ cue, index }))
+      .sort((a, b) => (a.cue.start - b.cue.start) || (a.index - b.index));
+    let sungUntil = 0;
+    for (const item of ordered) {
+      const start = Number(item.cue.start) || 0;
+      if (start > t) {
+        if (start - sungUntil >= minGap && t >= start - lead) {
+          const count = Math.min(Math.ceil(lead), Math.max(1, Math.ceil(start - t - 1e-9)));
+          return { cue: item.cue, index: item.index, count };
+        }
+        return null;
+      }
+      sungUntil = Math.max(sungUntil, Number(item.cue.end) || start);
+    }
+    return null;
+  }
+
+  /**
    * Per-word size multiplier for the one-word-at-a-time layout, so a short word
    * fills the frame and a long one still fits. Deterministic from the token
    * length alone, which keeps the browser and the exporter in agreement.
@@ -873,6 +903,6 @@
 
   window.VFKinetic = {
     ease, clamp, mix, PRESETS, PRESET_ORDER, LEGACY_PRESETS, CRAWL_LIMITS,
-    preset, resolvedPreset, cueWords, hasGenuineWordTiming, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues, creditCrawlState, crawlViewport, mergeCrawlOverrides
+    preset, resolvedPreset, cueWords, hasGenuineWordTiming, wordState, beatPulse, layoutLines, syllableWeight, focusScale, charBudget, activeCues, creditCrawlState, crawlCountdown, crawlViewport, mergeCrawlOverrides
   };
 })();
