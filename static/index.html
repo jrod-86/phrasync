@@ -242,6 +242,9 @@
                 <option value="pt">Portuguese</option><option value="ja">Japanese</option>
               </datalist>
             </div>
+            <label class="field"><span>GPU</span>
+              <select id="whisperGpu"><option value="auto">Auto: first GPU</option></select>
+            </label>
             <label class="toggle-row"><input id="vadFilter" type="checkbox" /><span><b>Speech VAD</b><small>Leave off for sung vocals</small></span></label>
             <label class="field sync-lyrics-field"><span>Your lyrics (optional)</span>
               <textarea id="syncLyrics" rows="4" placeholder="Paste the real lyrics, one sung line per line…"></textarea>
@@ -696,6 +699,7 @@
   <script src="/static/app-cues.js" defer></script>
   <script src="/static/app-workflows.js" defer></script>
   <script src="/static/app-lyric-sync.js" defer></script>
+  <script src="/static/app-gpu.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

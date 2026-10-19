@@ -80,8 +80,21 @@ def _device_config() -> tuple[str, str]:
     return "cpu", "int8"
 
 
+def _device_index(device: str, gpu: int | None) -> int:
+    """The CUDA device to use: the chosen GPU when it exists, else the first."""
+    if device != "cuda" or gpu is None:
+        return 0
+    try:
+        import ctranslate2
+
+        count = int(ctranslate2.get_cuda_device_count())
+    except Exception:
+        return 0
+    return gpu if 0 <= gpu < count else 0
+
+
 @lru_cache(maxsize=3)
-def _load_model(model_source: str, device: str, compute_type: str):
+def _load_model(model_source: str, device: str, compute_type: str, device_index: int = 0):
     try:
         from faster_whisper import WhisperModel
     except Exception as exc:  # pragma: no cover - tested via capability endpoint
@@ -91,6 +104,7 @@ def _load_model(model_source: str, device: str, compute_type: str):
     model = WhisperModel(
         model_source,
         device=device,
+        device_index=device_index,
         compute_type=compute_type,
     )
     from .long_audio import BoundedFeatureExtractor
@@ -550,6 +564,7 @@ def transcribe_audio(
     progress: Callable[..., None] | None = None,
     cancel_check: Callable[[], bool] | None = None,
     language_spans: list[dict[str, Any]] | None = None,
+    gpu: int | None = None,
 ) -> dict[str, Any]:
     if not capability_status()["available"]:
         raise TranscriptionUnavailable(
@@ -576,14 +591,15 @@ def transcribe_audio(
     )
     _guard(cancel_check)
     device, compute_type = _device_config()
+    device_index = _device_index(device, gpu)
     if progress:
-        accelerator = "NVIDIA GPU" if device == "cuda" else "CPU"
+        accelerator = f"NVIDIA GPU {device_index}" if device == "cuda" else "CPU"
         progress(
             0.14,
             f"Loading Whisper {model_name} on {accelerator}",
             {"phase": "model-load", "device": device, "etaSeconds": None},
         )
-    model = _load_model(str(model_source), device, compute_type)
+    model = _load_model(str(model_source), device, compute_type, device_index)
     _guard(cancel_check)
     duration = probe_duration(path) or 0.0
 
@@ -738,6 +754,7 @@ def transcribe_audio(
         },
         "duration": duration,
         "device": device,
+        "gpu": device_index if device == "cuda" else None,
         "computeType": compute_type,
         "model": model_name,
     }

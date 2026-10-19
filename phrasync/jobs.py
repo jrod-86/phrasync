@@ -92,6 +92,7 @@ class JobManager:
         align: bool = True,
         language_spans: list[dict[str, Any]] | None = None,
         lyrics: str = "",
+        gpu: int | None = None,
     ) -> Job:
         job = Job(
             id=uuid.uuid4().hex,
@@ -105,6 +106,7 @@ class JobManager:
                 "align": bool(align),
                 "languageSpans": list(language_spans or []),
                 "lyrics": bool(str(lyrics or "").strip()),
+                "gpu": gpu,
             },
         )
         log_event("info", "transcription", f"Queued job {job.id[:8]}, model {model}, language {language}")
@@ -121,6 +123,7 @@ class JobManager:
             align,
             language_spans,
             lyrics,
+            gpu,
         )
         return job
 
@@ -134,6 +137,7 @@ class JobManager:
         align: bool,
         language_spans: list[dict[str, Any]] | None = None,
         lyrics: str = "",
+        gpu: int | None = None,
     ) -> None:
         job = self.get(job_id)
         if not job:
@@ -184,6 +188,7 @@ class JobManager:
                 progress=update,
                 cancel_check=cancelled,
                 language_spans=language_spans,
+                **({"gpu": gpu} if gpu is not None else {}),
             )
             if cancelled():
                 raise TranscriptionCancelled("Transcription cancelled")

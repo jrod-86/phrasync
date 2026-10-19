@@ -22,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
 from phrasync import APP_NAME, APP_VERSION
-from phrasync.cuda import configure_cuda_paths, cuda_diagnostics
+from phrasync.cuda import configure_cuda_paths, cuda_diagnostics, list_gpus
 from phrasync.diagnostics import install_exception_hooks, log_event, log_exception, support_report
 
 CUDA_PATHS = configure_cuda_paths()
@@ -320,6 +320,21 @@ async def run_ocr(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"OCR failed: {exc}") from exc
 
 
+def _gpu_choice(payload: dict[str, Any]) -> int | None:
+    value = payload.get("gpu")
+    if value is None or value == "" or value == "auto":
+        return None
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return None
+
+
+@app.get("/api/gpus")
+def gpus() -> dict[str, Any]:
+    return {"gpus": list_gpus(), "pinned": os.environ.get("CUDA_VISIBLE_DEVICES")}
+
+
 @app.post("/api/transcribe")
 async def run_transcription(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
     asset = get_av_asset(payload.get("assetId"))
@@ -335,6 +350,7 @@ async def run_transcription(payload: dict[str, Any] = Body(...)) -> dict[str, An
             None,
             None,
             payload.get("languageSpans") or None,
+            gpu=_gpu_choice(payload),
         )
         if str(payload.get("lyrics") or "").strip():
             apply_lyric_sync(result, str(payload["lyrics"]))
@@ -369,6 +385,7 @@ def create_transcription_job(payload: dict[str, Any] = Body(...)) -> JSONRespons
         bool(payload.get("align", True)),
         payload.get("languageSpans") or None,
         str(payload.get("lyrics") or ""),
+        _gpu_choice(payload),
     )
     return JSONResponse(job.public(), status_code=202)
 

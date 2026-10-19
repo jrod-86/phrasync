@@ -2,10 +2,18 @@ from __future__ import annotations
 
 import ctypes
 import os
+import shutil
 import site
+import subprocess
 import sys
 from importlib import import_module
 from pathlib import Path
+
+from .processes import background_flags
+
+# Number GPUs by PCI bus, the order nvidia-smi uses, so a GPU picked in the
+# UI is the same card CUDA opens. Must be set before CUDA initialises.
+os.environ.setdefault("CUDA_DEVICE_ORDER", "PCI_BUS_ID")
 
 _DLL_HANDLES: list[object] = []
 _CONFIGURED_PATHS: list[str] = []
@@ -138,3 +146,42 @@ def cuda_diagnostics() -> dict[str, object]:
         "reason": reason,
         "error": error,
     }
+
+
+def list_gpus() -> list[dict[str, object]]:
+    """NVIDIA GPUs with name and memory in use, indexed as CUDA sees them.
+
+    Empty when nvidia-smi is missing, or when CUDA_VISIBLE_DEVICES already
+    restricts this process (its indices would no longer match).
+    """
+    if os.environ.get("CUDA_VISIBLE_DEVICES") is not None:
+        return []
+    smi = shutil.which("nvidia-smi")
+    if not smi:
+        return []
+    try:
+        output = subprocess.run(
+            [smi, "--query-gpu=index,name,memory.used,memory.total,utilization.gpu",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=5, creationflags=background_flags(),
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    gpus = []
+    for line in output.splitlines():
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) < 5 or not parts[0].isdigit():
+            continue
+        def number(value: str) -> float | None:
+            try:
+                return float(value)
+            except ValueError:
+                return None
+        gpus.append({
+            "index": int(parts[0]),
+            "name": parts[1],
+            "memoryUsedMb": number(parts[2]),
+            "memoryTotalMb": number(parts[3]),
+            "utilization": number(parts[4]),
+        })
+    return gpus

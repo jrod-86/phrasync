@@ -227,6 +227,7 @@ async function transcribeSong() {
         language: els.whisperLanguage.value.trim() || "auto",
         vadFilter: els.vadFilter.checked,
         lyrics: pastedSyncLyrics(),
+        gpu: chosenGpu(),
         align: true
       })
     });
