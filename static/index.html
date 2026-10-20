@@ -494,7 +494,10 @@
                 <option value="1:1">1:1 square</option>
               </select>
             </label>
-            <p class="microcopy">Resolution, frame rate, quality and file type are chosen in the Export window.</p>
+            <div class="field timeline-length"><span>Timeline length</span>
+              <div><select id="timelineDurationMode" aria-label="Timeline length"><option value="auto">Auto (fit the song)</option><option value="custom">Custom</option></select><input id="timelineDurationInput" type="number" min="0.5" step="0.1" aria-label="Timeline duration seconds"><small>s</small></div>
+            </div>
+            <p class="microcopy">Resolution, frame rate, quality, file type and which part of the song to export are chosen in the Export window.</p>
             <label class="toggle-row"><input id="safeAreaToggle" type="checkbox" /><span><b>Show title-safe guide</b></span></label>
           </div>
         </details>
@@ -606,13 +609,6 @@
       <div class="timeline-canvas-wrap" id="timelineWrap"><canvas id="timelineCanvas"></canvas></div>
       <div class="footage-lane-title"><strong>Background footage</strong><span>Drag = move · edges = trim · double click = edit</span><div id="footageTools" class="footage-tools" hidden><button id="footageSplit" type="button">Split at playhead</button><button id="footageDuplicate" type="button">Duplicate clip</button><button id="footageRemove" type="button">Remove clip</button></div></div>
       <div id="footageLane" class="footage-lane" role="region" aria-label="Background footage"></div>
-      <div class="export-range-controls">
-        <button id="markExportIn" type="button">Set IN (I)</button><input id="exportIn" type="number" min="0" step="0.01" aria-label="Export IN seconds">
-        <button id="markExportOut" type="button">Set OUT (O)</button><input id="exportOut" type="number" min="0" step="0.01" aria-label="Export OUT seconds">
-        <button id="clearExportRange" type="button">Full timeline</button><span id="exportRangeSummary"></span>
-        <label>Timeline <select id="timelineDurationMode"><option value="auto">Auto</option><option value="custom">Custom</option></select></label>
-        <input id="timelineDurationInput" type="number" min="0.5" step="0.1" aria-label="Timeline duration seconds"><span>s</span>
-      </div>
       <div id="timelineScroll" class="timeline-scrollbar" tabindex="0" role="region" aria-label="Scroll timeline"><div id="timelineScrollTrack"></div></div>
       <div class="dock-foot">
         <div class="word-nudge">
@@ -783,6 +779,20 @@
             <button class="button secondary" id="openDefaultRenderDirectory" type="button">Open Phrasync default folder</button>
           </div>
         </div>
+        <section class="export-group export-range">
+          <div class="export-toggle"><b>Range</b><small id="exportRangeSummary"></small></div>
+          <div class="range-choice" role="group" aria-label="Export range">
+            <button id="clearExportRange" type="button">Whole song</button>
+            <button id="partExportRange" type="button">Part of the song</button>
+          </div>
+          <div class="export-grid" id="exportRangeFields">
+            <div class="field"><span>Start (seconds)</span><input id="exportIn" type="number" min="0" step="0.01" aria-label="Start (seconds)"></div>
+            <div class="field"><span>End (seconds)</span><input id="exportOut" type="number" min="0" step="0.01" aria-label="End (seconds)"></div>
+            <button class="button secondary" id="markExportIn" type="button">Start at playhead (I)</button>
+            <button class="button secondary" id="markExportOut" type="button">End at playhead (O)</button>
+          </div>
+          <p class="microcopy range-hint">Tip: on the timeline, press I and O at the playhead, or drag the range markers.</p>
+        </section>
         <section class="export-group">
           <label class="export-toggle"><input id="exportVideo" type="checkbox" checked /><b>Video</b></label>
           <div class="export-grid">

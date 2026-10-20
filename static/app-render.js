@@ -15,6 +15,7 @@ async function openRenderDialog() {
   }
   resetRenderModal();
   syncExportDialog();
+  refreshExportRange();
   els.renderMessage.textContent = project.exportRange
     ? `Export: ${formatTime(project.exportRange.in)} → ${formatTime(project.exportRange.out)}`
     : t("Full timeline");

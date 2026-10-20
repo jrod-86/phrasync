@@ -1,11 +1,15 @@
 "use strict";
-Object.assign(ITALIAN, {"Set IN (I)":"Imposta IN (I)","Set OUT (O)":"Imposta OUT (O)","Full timeline":"Timeline completa","Custom":"Personalizzata","Timeline":"Timeline","OUT must be after IN.":"OUT deve essere successivo a IN."});
+Object.assign(ITALIAN, {"Full timeline":"Timeline completa","Whole song":"Brano intero","Part of the song":"Parte del brano","Start (seconds)":"Inizio (secondi)","End (seconds)":"Fine (secondi)","Start at playhead (I)":"Inizia dalla testina (I)","End at playhead (O)":"Termina alla testina (O)","Timeline length":"Durata timeline","Auto (fit the song)":"Auto (adatta al brano)","Range":"Intervallo","Custom":"Personalizzata","Timeline":"Timeline","OUT must be after IN.":"OUT deve essere successivo a IN."});
 function refreshExportRange() {
   const duration=projectDuration(), range=project.exportRange;
   if (!document.getElementById("exportIn")) return;
   document.getElementById("exportIn").value=range?.in ?? 0;
   document.getElementById("exportOut").value=range?.out ?? duration;
-  document.getElementById("exportRangeSummary").textContent=range ? `${formatTime(range.in)} → ${formatTime(range.out)} · ${(range.out-range.in).toFixed(2)}s` : t("Full timeline");
+  document.getElementById("exportRangeSummary").textContent=range ? `${formatTime(range.in)} → ${formatTime(range.out)} · ${(range.out-range.in).toFixed(2)}s` : formatTime(duration);
+  document.querySelector(".export-range").classList.toggle("has-range",Boolean(range));
+  document.getElementById("clearExportRange").classList.toggle("active",!range);
+  document.getElementById("partExportRange").classList.toggle("active",Boolean(range));
+  if (els.renderDialog?.open) refreshExportSummary();
   document.getElementById("timelineDurationMode").value=project.timelineDuration ? "custom" : "auto";
   document.getElementById("timelineDurationInput").value=duration;
   document.getElementById("timelineDurationInput").disabled=!project.timelineDuration;
@@ -21,6 +25,7 @@ function setupExportRange() {
     document.getElementById(`markExport${name}`).onclick=()=>markExportRange(edge,currentPlaybackTime());
     document.getElementById(`export${name}`).onchange=e=>markExportRange(edge,e.target.value);
   }
+  document.getElementById("partExportRange").onclick=()=>{if(!project.exportRange){project.exportRange={in:0,out:projectDuration()};timeline?.draw();scheduleSave();}refreshExportRange();};
   document.getElementById("clearExportRange").onclick=()=>{delete project.exportRange;refreshExportRange();timeline?.draw();scheduleSave();};
   const changeDuration=value=>{
     if (value!==null && (!Number.isFinite(value)||value<.5)) return refreshExportRange();

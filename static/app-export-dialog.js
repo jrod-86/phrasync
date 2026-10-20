@@ -46,7 +46,9 @@ function refreshExportSummary() {
     : `Duration ${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")} · Size about ${formatSize(bytes)}`;
   els.confirmRender.disabled = nothing;
   $$(".export-group").forEach(group => {
-    const on = group.querySelector(".export-toggle input").checked;
+    const toggle = group.querySelector(".export-toggle input");
+    if (!toggle) return;
+    const on = toggle.checked;
     group.classList.toggle("is-off", !on);
     group.querySelectorAll(".export-grid select, .export-grid input").forEach(control => { control.disabled = !on; });
   });
