@@ -27,7 +27,7 @@ const document = {documentElement: {lang: 'en'}, events: {}, createElement: tag 
 let project = {cues: Array.from({length: 5000}, (_, i) => ({id: `cue-${i}`, start: i * 3, end: i * 3 + 2, text: `Line ${i}`})), timing: {}};
 let selectedCueId = 'cue-0', currentCueId = null, selectedWordIndex = 0, tapQueue = [], timeline = null;
 const els = {cueList: new Element('div'), cueCount: new Element('span')};
-const normalizeCues = () => {}, updateWordLabel = () => {}, updateDurationUI = () => {}, scheduleSave = () => {}, seekTo = () => {};
+const normalizeCues = () => {}, updateWordLabel = () => {}, updateDurationUI = () => {}, scheduleSave = () => {}, seekTo = () => {}, toast = () => {};
 const $$ = (selector, root) => root.querySelectorAll(selector);
 """
     checks = r"""
