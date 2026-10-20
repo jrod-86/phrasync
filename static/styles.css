@@ -533,7 +533,7 @@ input[type="range"].volume { width: 96px; min-width: 96px; }
 .onboarding-points { display: grid; gap: 10px; margin-top: 20px; }
 .onboarding-points p { display: grid; gap: 3px; margin: 0; padding: 13px 15px; border: 1px solid var(--border-soft); border-radius: 11px; background: var(--panel-2); }
 .onboarding-points span { color: var(--muted); font-size: 13px; line-height: 1.4; }
-.settings-modal { width: min(620px, calc(100vw - 32px)); }
+.settings-modal { width: min(720px, calc(100vw - 32px)); }
 .settings-content { padding: 18px; }
 .settings-content { display: grid; gap: 12px; max-height: min(70vh, 650px); overflow-y: auto; }
 .store-update-card #storeUpdateMessage { margin-top: 0; color: var(--accent); }
@@ -859,3 +859,39 @@ body.home-open .app-shell { visibility: hidden; }
 .home-card-menu button:hover { background: var(--accent-soft); }
 .home-card-menu button.danger { color: var(--danger); }
 @media (max-width: 1180px) { .home-features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Settings window (CapCut-style tabs) ---------- */
+.set-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 14px 18px 0; padding: 4px; border-radius: 10px; background: var(--panel-2); }
+.set-tabs button { padding: 9px 6px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.set-tabs button:hover { color: var(--text); }
+.set-tabs button.active { color: var(--text); background: var(--panel-3); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+.settings-content { height: min(62vh, 560px); align-content: start; }
+.set-page { display: grid; gap: 12px; align-content: start; }
+.set-page[hidden] { display: none; }
+.set-card { display: grid; gap: 2px; padding: 8px 18px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--panel-2); }
+.set-heading { margin: 8px 0 2px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.set-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); align-items: center; gap: 16px; padding: 10px 0; }
+.set-row + .set-row { border-top: 1px solid var(--border-soft); }
+.set-label { font-size: 12px; font-weight: 600; }
+.set-control { display: grid; gap: 6px; min-width: 0; }
+.set-control > small { color: var(--muted); font-size: 10px; line-height: 1.45; }
+.set-control select, .set-control input[type="number"], .set-control input[type="text"] {
+  height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; font-size: 12px;
+}
+.set-control select { max-width: 260px; }
+.set-control input[type="number"] { width: 92px; }
+.set-inline { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.set-inline b { font-variant-numeric: tabular-nums; }
+.set-path { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.set-path code { flex: 1; min-width: 0; height: 34px; display: flex; align-items: center; padding: 0 10px; overflow: hidden; border-radius: 8px; background: var(--panel); color: var(--text); font: 11px ui-monospace, SFMono-Regular, Consolas, monospace; white-space: nowrap; text-overflow: ellipsis; }
+.set-icon { width: 34px; height: 34px; flex: none; display: grid; place-items: center; padding: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-3); color: var(--text); cursor: pointer; }
+.set-icon[hidden] { display: none; }
+.set-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.set-icon:hover { border-color: var(--accent); }
+.set-check { display: flex; align-items: center; gap: 9px; font-size: 12px; cursor: pointer; }
+.set-check input, .set-choice input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.set-choice { display: flex; flex-wrap: wrap; gap: 8px; }
+.set-choice label { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); font-size: 12px; cursor: pointer; }
+.set-choice label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.set-footer { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
+.set-footer .button { height: 40px; justify-content: center; }

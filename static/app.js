@@ -272,8 +272,8 @@ function bindControls() {
     if (tapArmed && (event.key === "t" || event.key === "T")) { event.preventDefault(); handleTap(); }
     if (event.key === "ArrowLeft" && event.shiftKey) { event.preventDefault(); nudgeWord(-0.02); }
     if (event.key === "ArrowRight" && event.shiftKey) { event.preventDefault(); nudgeWord(0.02); }
-    if (event.key === "ArrowLeft" && !event.shiftKey) { event.preventDefault(); seekTo(currentPlaybackTime() - (event.altKey ? 0.05 : 1)); }
-    if (event.key === "ArrowRight" && !event.shiftKey) { event.preventDefault(); seekTo(currentPlaybackTime() + (event.altKey ? 0.05 : 1)); }
+    if (event.key === "ArrowLeft" && !event.shiftKey) { event.preventDefault(); seekTo(currentPlaybackTime() - (event.altKey ? 0.05 : appPrefs.stepSeconds)); }
+    if (event.key === "ArrowRight" && !event.shiftKey) { event.preventDefault(); seekTo(currentPlaybackTime() + (event.altKey ? 0.05 : appPrefs.stepSeconds)); }
     if (event.key === "w" || event.key === "W") { selectWordAtPlayhead(); }
     if ((event.key === "s" || event.key === "S") && !event.ctrlKey && !event.metaKey) {
       event.preventDefault(); splitCueAtPlayhead();
@@ -318,7 +318,7 @@ async function openSettings() {
     const result = await api("/api/settings");
     document.getElementById("aboutVersion").textContent = `${t("Version")} ${result.version || "0.4.5"}`;
     showHfTokenStatus(result.huggingFace);
-    if (!els.settingsDialog.open) els.settingsDialog.showModal();
+    fillSettings("projects"); if (!els.settingsDialog.open) els.settingsDialog.showModal();
   } catch (error) {
     toast(`Could not load settings: ${error.message}`, "error");
   }

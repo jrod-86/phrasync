@@ -68,3 +68,16 @@ def test_assets_resolve_after_the_workspace_moves(tmp_path, monkeypatch):
 
     listed = storage.list_assets()
     assert [item["id"] for item in listed] == [asset_id]
+
+
+def test_preferences_are_cleaned_and_merged(tmp_path):
+    from phrasync.settings import PREFERENCE_DEFAULTS, preferences, save_preferences
+
+    path = tmp_path / "settings.json"
+    assert preferences(path) == PREFERENCE_DEFAULTS
+    saved = save_preferences({"stepSeconds": 2, "newAspect": "9:16", "exportThreads": 999, "bogus": 1}, path)
+    assert saved["stepSeconds"] == 2 and saved["newAspect"] == "9:16" and saved["exportThreads"] == 64
+    assert "bogus" not in saved
+    saved = save_preferences({"newAspect": "7:3", "defaultEncoder": "gpu:1", "startPage": "no"}, path)
+    assert saved["newAspect"] == "original" and saved["defaultEncoder"] == "gpu:1"
+    assert saved["stepSeconds"] == 2 and saved["startPage"] is True

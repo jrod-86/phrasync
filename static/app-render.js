@@ -138,7 +138,7 @@ async function pollRender() {
       els.downloadRender.href = "#";
       els.downloadRender.removeAttribute("download");
       if (job.result.path) els.renderDirectory.textContent = job.result.path.replace(/[\\/][^\\/]+$/, "");
-      showExportStage("done");
+      showExportStage("done"); playExportSound();
       els.renderMeta.textContent = exportResultSummary(job.result);
       if (job.postflight && !job.postflight.ok) showReport(job.postflight, "Post-render critic");
       toast("Export complete.", "success");

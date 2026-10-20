@@ -18,7 +18,7 @@ const MENU_COMMANDS = {
   language: () => $("#languageToggle").click(),
   diagnostics: () => $("#diagnosticsButton").click(),
   guide: () => $("#onboardingDialog")?.showModal(),
-  about: () => openSettings(),
+  about: () => openSettings().then(() => showSettingsTab("about")),
   settings: () => openSettings(),
   quit: () => $("#shutdownButton").click()
 };

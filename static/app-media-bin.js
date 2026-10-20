@@ -24,7 +24,7 @@ function addMediaClip(assetId, time = currentPlaybackTime(), track = 0) {
   if (!project.background.tracks?.length) project.background.tracks = ["V1"];
   track = Math.max(0, Math.min(project.background.tracks.length-1, track));
   const start = Math.max(0, Number(time) || 0);
-  const clip = { id: crypto.randomUUID(), asset: clone(asset), start, end: start + (asset.duration || 5), in: 0, rate: 1,
+  const clip = { id: crypto.randomUUID(), asset: clone(asset), start, end: start + (asset.duration || appPrefs.imageDuration), in: 0, rate: 1,
     zoomStart: 1, zoomEnd: 1, xStart: 0, yStart: 0, xEnd: 0, yEnd: 0, track, opacity:1, fadeIn:0, fadeOut:0, transition:"cut" };
   (project.background.clips ||= []).push(clip); selectedFootageId = clip.id;
   project.background.footageEnabled = true;

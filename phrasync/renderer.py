@@ -278,7 +278,10 @@ def frame_workers(composer: "FrameComposer") -> int:
     sequentially from one decoder, so it keeps a single drawing thread."""
     if composer.video_source is not None:
         return 1
-    return max(1, min(32, (os.cpu_count() or 2) - 1))
+    from .settings import preferences
+
+    chosen = preferences().get("exportThreads") or 0
+    return max(1, int(chosen)) if chosen else max(1, min(32, (os.cpu_count() or 2) - 1))
 
 
 def render_project(

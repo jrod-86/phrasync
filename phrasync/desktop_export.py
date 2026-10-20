@@ -33,6 +33,12 @@ class DesktopExportBridge:
         self._lock = threading.RLock()
         self._directory = RENDERS_DIR
         self._directory_selected = False
+        # An export folder chosen in Settings (or last time) is remembered.
+        from .settings import preferences
+        saved = preferences().get("exportDirectory")
+        if saved and Path(saved).is_dir():
+            self._directory = Path(saved)
+            self._directory_selected = True
         self._file_directory = Path.home()
 
     def save_text_file(self, content: str, filename: str, extension: str) -> str | None:
@@ -106,6 +112,22 @@ class DesktopExportBridge:
         with self._lock:
             self._directory = directory
             self._directory_selected = True
+        from .settings import save_preferences
+        save_preferences({"exportDirectory": str(directory)})
+        return str(directory)
+
+    def open_workspace_folder(self, kind: str) -> str:
+        """Open the projects, models or exports folder in Explorer."""
+        from .library import LIBRARY_DIR
+        from .config import WORKSPACE
+        folders = {"projects": LIBRARY_DIR, "models": WORKSPACE / "models", "exports": Path(self.get_render_directory())}
+        if kind not in folders:
+            raise ValueError("Unknown folder")
+        directory = folders[kind]
+        directory.mkdir(parents=True, exist_ok=True)
+        if os.name != "nt":
+            raise RuntimeError("Opening a folder is only supported in the Windows desktop app")
+        subprocess.Popen(["explorer.exe", str(directory)], creationflags=0x08000000)
         return str(directory)
 
     def open_render_directory(self, job_id: str | None = None) -> str:

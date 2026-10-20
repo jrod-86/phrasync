@@ -101,7 +101,7 @@ function replaceProject(next, message = "") {
 
 async function startNewProject(kind = "lyric") {
   await saveToLibrary(true);
-  const fresh = clone(DEFAULT_PROJECT);
+  const fresh = applyNewProjectPrefs(clone(DEFAULT_PROJECT));
   fresh.id = newLibraryId();
   fresh.mode = kind === "subtitles" ? "subtitles" : "lyric";
   fresh.title = fresh.mode === "subtitles" ? "Untitled subtitles" : "Untitled lyric video";
@@ -286,7 +286,7 @@ function initHome() {
   $("#homeDiagnostics").addEventListener("click", () => $("#diagnosticsButton").click());
   $("#homeTheme").addEventListener("click", () => els.themeToggle.click());
   addEventListener("pagehide", () => saveToLibrary());
-  showHome();
+  if (appPrefs.startPage) showHome();
 }
 
 document.addEventListener("DOMContentLoaded", initHome, { once: true });

@@ -661,9 +661,75 @@
 
   <dialog id="settingsDialog" class="modal settings-modal">
     <form method="dialog" class="modal-card">
-      <header><div><span class="eyebrow">PHRASYNC</span><h2>Settings &amp; about</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
+      <header><div><span class="eyebrow">PHRASYNC</span><h2>Settings</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
+      <nav class="set-tabs" role="tablist">
+        <button type="button" data-set-tab="projects" class="active">Projects</button>
+        <button type="button" data-set-tab="edit">Edit</button>
+        <button type="button" data-set-tab="performance">Performance</button>
+        <button type="button" data-set-tab="general">General</button>
+        <button type="button" data-set-tab="about">About</button>
+      </nav>
       <div class="settings-content">
-        <section class="integration-card about-card">
+        <section class="set-page" data-set-page="projects">
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Projects folder</span><div class="set-control"><div class="set-path"><code id="set-projects-path">…</code><button type="button" class="set-icon" data-open-folder="projects" title="Open folder" aria-label="Open folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button></div><small>Every project autosaves here. <span id="set-projects-size"></span></small></div></div>
+            <div class="set-row"><span class="set-label">Export to</span><div class="set-control"><div class="set-path"><code id="set-exports-path">…</code><button type="button" class="set-icon" id="setExportChoose" title="Choose folder" aria-label="Choose export folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button type="button" class="set-icon" data-open-folder="exports" title="Open folder" aria-label="Open folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button></div><input id="setExportInput" type="text" placeholder="C:\Videos\Karaoke" hidden /><small>Remembered between sessions. The Export window starts here.</small></div></div>
+          </div>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Temporary files</span><div class="set-control"><div class="set-inline"><b id="set-temp-size">…</b><button type="button" class="button secondary" id="setTempClear">Clear</button></div><small>Leftovers from exports, transcriptions and vocal removal. Your projects and media are not touched.</small></div></div>
+            <div class="set-row"><span class="set-label">Downloaded models</span><div class="set-control"><div class="set-inline"><b id="set-models-size">…</b><button type="button" class="set-icon" data-open-folder="models" title="Open folder" aria-label="Open models folder"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button></div></div></div>
+            <div class="set-row"><span class="set-label">Imported media</span><div class="set-control"><b id="set-uploads-size">…</b><small>Songs, pictures and videos you have added to projects.</small></div></div>
+          </div>
+        </section>
+        <section class="set-page" data-set-page="edit" hidden>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Arrow keys jump</span><div class="set-control"><div class="set-inline"><input id="setStep" type="number" min="0.01" max="30" step="0.1" /><span>seconds</span></div><small>Alt + arrow still nudges by 0.05 s.</small></div></div>
+            <div class="set-row"><span class="set-label">Picture clip length</span><div class="set-control"><div class="set-inline"><input id="setImageDuration" type="number" min="0.5" max="600" step="0.5" /><span>seconds</span></div><small>How long a picture lasts when you drop it on the timeline.</small></div></div>
+          </div>
+          <div class="set-card">
+            <p class="set-heading">New projects start with</p>
+            <div class="set-row"><span class="set-label">Ratio</span><div class="set-control"><select id="setAspect"><option value="original">Original</option><option value="16:9">16:9</option><option value="9:16">9:16</option><option value="1:1">1:1</option><option value="4:5">4:5</option><option value="4:3">4:3</option><option value="3:4">3:4</option><option value="2:1">2:1</option><option value="21:9">21:9</option><option value="2.35:1">2.35:1</option><option value="1.85:1">1.85:1</option></select></div></div>
+            <div class="set-row"><span class="set-label">Resolution</span><div class="set-control"><select id="setResolution"><option value="720">720p</option><option value="1080">1080p</option><option value="1440">2K</option><option value="2160">4K</option></select></div></div>
+            <div class="set-row"><span class="set-label">Frame rate</span><div class="set-control"><select id="setFps"><option value="24">24 fps</option><option value="25">25 fps</option><option value="30">30 fps</option><option value="50">50 fps</option><option value="60">60 fps</option></select></div></div>
+          </div>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Sound for export</span><div class="set-control"><label class="set-check"><input id="setSound" type="checkbox" /><span>Play a sound when an export finishes</span></label></div></div>
+          </div>
+        </section>
+        <section class="set-page" data-set-page="performance" hidden>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Export encoder</span><div class="set-control"><select id="setEncoder"><option value="cpu">CPU</option></select><small>Default for new projects. GPU (NVENC) is much faster; the Export window can still change it per export.</small></div></div>
+            <div class="set-row"><span class="set-label">Export threads</span><div class="set-control"><select id="setThreads"></select><small>Threads used to draw frames. Auto leaves one core free so the app stays responsive.</small></div></div>
+          </div>
+<section class="integration-card">
+          <div class="integration-heading">
+            <div><strong>Hugging Face</strong><span id="hfTokenStatus">Not configured</span></div>
+            <span class="integration-badge">Whisper models</span>
+          </div>
+          <p>Optional token for gated or rate-limited model downloads. It stays on this computer and is never added to projects or exports.</p>
+          <label class="settings-field"><span>Access token</span><div class="secret-input"><input id="hfTokenInput" type="password" autocomplete="off" spellcheck="false" placeholder="hf_…" /><button id="hfTokenReveal" type="button" aria-label="Show or hide token">Show</button></div></label>
+          <small>Create a read-only token in <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer">Hugging Face token settings</a>.</small>
+          <div class="settings-actions"><button class="button secondary danger-text" id="hfTokenRemove" type="button">Remove saved token</button><button class="button primary" id="hfTokenSave" type="button">Save token</button></div>
+        </section>
+        </section>
+        <section class="set-page" data-set-page="general" hidden>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Language</span><div class="set-control"><div class="set-choice"><label><input type="radio" name="setLanguage" value="en" /><span>English</span></label><label><input type="radio" name="setLanguage" value="it" /><span>Italiano</span></label></div></div></div>
+            <div class="set-row"><span class="set-label">Theme</span><div class="set-control"><div class="set-choice"><label><input type="radio" name="setTheme" value="dark" /><span>Dark</span></label><label><input type="radio" name="setTheme" value="light" /><span>Light</span></label></div></div></div>
+          </div>
+          <div class="set-card">
+            <div class="set-row"><span class="set-label">Start page</span><div class="set-control"><label class="set-check"><input id="setStartPage" type="checkbox" /><span>Open on the start page</span></label><small>Off opens straight into the last project you worked on.</small></div></div>
+            <div class="set-row"><span class="set-label">Getting started</span><div class="set-control"><label class="set-check"><input id="setGuide" type="checkbox" /><span>Show the getting-started guide at launch</span></label></div></div>
+          </div>
+<section class="integration-card store-update-card">
+          <div class="integration-heading"><div><strong>App updates</strong><span id="storeUpdateVersion">Checking installation…</span></div><span class="integration-badge">Microsoft Store</span></div>
+          <p>Check for new Phrasync versions and install them through Microsoft Store. Your projects remain on this computer.</p>
+          <p id="storeUpdateMessage" role="status" aria-live="polite">Open settings to check the installation.</p>
+          <div class="settings-actions"><button class="button secondary" id="storeUpdateOpen" type="button" hidden>Open Microsoft Store</button><button class="button secondary" id="storeUpdateCheck" type="button">Check for updates</button><button class="button primary" id="storeUpdateInstall" type="button" hidden>Install update</button></div>
+        </section>
+        </section>
+        <section class="set-page" data-set-page="about" hidden>
+<section class="integration-card about-card">
           <div class="integration-heading"><div><strong>Phrasync</strong><span id="aboutVersion">Version 0.4.5</span></div><span class="integration-badge">FREE · LOCAL</span></div>
           <p>Local lyric-video and subtitle studio. Transcription, editing and rendering run on your computer.</p>
           <p><span>Created by</span> <strong>Giovanni De Miccoli</strong></p>
@@ -676,23 +742,9 @@
           </nav>
           <small>Optional support via Buy Me a Coffee. No features are locked behind payment. Microsoft is not the fundraiser or sponsor.</small>
         </section>
-        <section class="integration-card store-update-card">
-          <div class="integration-heading"><div><strong>App updates</strong><span id="storeUpdateVersion">Checking installation…</span></div><span class="integration-badge">Microsoft Store</span></div>
-          <p>Check for new Phrasync versions and install them through Microsoft Store. Your projects remain on this computer.</p>
-          <p id="storeUpdateMessage" role="status" aria-live="polite">Open settings to check the installation.</p>
-          <div class="settings-actions"><button class="button secondary" id="storeUpdateOpen" type="button" hidden>Open Microsoft Store</button><button class="button secondary" id="storeUpdateCheck" type="button">Check for updates</button><button class="button primary" id="storeUpdateInstall" type="button" hidden>Install update</button></div>
-        </section>
-        <section class="integration-card">
-          <div class="integration-heading">
-            <div><strong>Hugging Face</strong><span id="hfTokenStatus">Not configured</span></div>
-            <span class="integration-badge">Whisper models</span>
-          </div>
-          <p>Optional token for gated or rate-limited model downloads. It stays on this computer and is never added to projects or exports.</p>
-          <label class="settings-field"><span>Access token</span><div class="secret-input"><input id="hfTokenInput" type="password" autocomplete="off" spellcheck="false" placeholder="hf_…" /><button id="hfTokenReveal" type="button" aria-label="Show or hide token">Show</button></div></label>
-          <small>Create a read-only token in <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer">Hugging Face token settings</a>.</small>
-          <div class="settings-actions"><button class="button secondary danger-text" id="hfTokenRemove" type="button">Remove saved token</button><button class="button primary" id="hfTokenSave" type="button">Save token</button></div>
         </section>
       </div>
+      <footer class="set-footer"><button type="button" class="button primary" id="settingsSave">Save</button><button class="button secondary" value="cancel">Cancel</button></footer>
     </form>
   </dialog>
 
@@ -827,6 +879,7 @@
   <script src="/static/app-panels.js" defer></script>
   <script src="/static/app-menu.js" defer></script>
   <script src="/static/app-home.js" defer></script>
+  <script src="/static/app-settings.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

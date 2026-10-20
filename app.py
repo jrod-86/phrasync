@@ -5,6 +5,7 @@ import asyncio
 import ipaddress
 import json
 import os
+import shutil
 import platform
 import re
 import threading
@@ -31,8 +32,10 @@ from phrasync.config import (
     ASSETS_DIR,
     DEFAULT_HOST,
     DEFAULT_PORT,
+    JOBS_DIR,
     PROJECTS_DIR,
     STATIC_DIR,
+    TMP_DIR,
     UPLOADS_DIR,
     WORKSPACE,
 )
@@ -54,7 +57,7 @@ from phrasync.server import (
     install_windows_transport_error_filter,
     instance_url,
 )
-from phrasync.settings import apply_saved_settings, hf_token_status, remove_hf_token, save_hf_token
+from phrasync.settings import apply_saved_settings, hf_token_status, preferences, remove_hf_token, save_hf_token, save_preferences
 from phrasync.subtitles import (
     cues_to_ass,
     cues_to_enhanced_lrc,
@@ -263,6 +266,76 @@ def update_hugging_face_settings(request: Request, payload: dict[str, Any] = Bod
 def delete_hugging_face_settings(request: Request) -> dict[str, Any]:
     _require_local_request(request)
     return {"huggingFace": remove_hf_token()}
+
+
+@app.get("/api/settings/preferences")
+def get_preferences(request: Request) -> dict[str, Any]:
+    _require_local_request(request)
+    return {"preferences": preferences(), "cpuCount": os.cpu_count() or 1}
+
+
+@app.put("/api/settings/preferences")
+def put_preferences(request: Request, payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    _require_local_request(request)
+    changes = payload.get("preferences") or {}
+    directory = changes.get("exportDirectory")
+    if directory and not Path(str(directory)).expanduser().is_dir():
+        raise HTTPException(status_code=400, detail="That export folder does not exist")
+    saved = save_preferences(changes)
+    if directory:
+        with desktop_export._lock:
+            desktop_export._directory = Path(str(directory)).expanduser()
+            desktop_export._directory_selected = True
+    return {"preferences": saved}
+
+
+def _folder_bytes(folder: Path) -> int:
+    total = 0
+    if folder.is_dir():
+        for item in folder.rglob("*"):
+            try:
+                if item.is_file():
+                    total += item.stat().st_size
+            except OSError:
+                continue
+    return total
+
+
+def _busy() -> bool:
+    with manager.lock:
+        return any(job.state in {"queued", "running"} for job in manager.jobs.values())
+
+
+@app.get("/api/settings/storage")
+def storage_status(request: Request) -> dict[str, Any]:
+    _require_local_request(request)
+    folders = {
+        "projects": library.LIBRARY_DIR,
+        "temp": TMP_DIR,
+        "models": WORKSPACE / "models",
+        "uploads": UPLOADS_DIR,
+    }
+    result = {key: {"path": str(path), "bytes": _folder_bytes(path)} for key, path in folders.items()}
+    result["temp"]["bytes"] += _folder_bytes(JOBS_DIR)
+    result["exports"] = {"path": desktop_export.get_render_directory(), "chosen": desktop_export.get_selected_render_directory() is not None}
+    return result
+
+
+@app.post("/api/settings/clear-temp")
+def clear_temp(request: Request) -> dict[str, Any]:
+    _require_local_request(request)
+    if _busy():
+        raise HTTPException(status_code=409, detail="Wait for the current export, transcription or vocal removal to finish.")
+    freed = 0
+    for folder in (TMP_DIR, JOBS_DIR):
+        for item in list(folder.iterdir()) if folder.is_dir() else []:
+            size = _folder_bytes(item) if item.is_dir() else item.stat().st_size
+            try:
+                shutil.rmtree(item) if item.is_dir() else item.unlink()
+                freed += size
+            except OSError:
+                continue
+    return {"freed": freed}
 
 
 @app.get("/api/assets")
