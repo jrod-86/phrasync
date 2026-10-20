@@ -62,7 +62,7 @@ function scheduleSave() {
   els.autosaveStatus.textContent = "Saving…";
   saveTimer = setTimeout(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(project)); librarySave();
       els.autosaveStatus.textContent = "Autosaved locally";
     } catch {
       els.autosaveStatus.textContent = "Autosave unavailable";
@@ -143,16 +143,7 @@ function updateRangeUI(input) {
 function setCanvasDimensions() {
   const aspect = project.canvas.aspect;
   const resolution = Number(els.resolutionSelect.value || 1080);
-  if (aspect === "16:9") {
-    project.canvas.width = Math.round(resolution * 16 / 9);
-    project.canvas.height = resolution;
-  } else if (aspect === "9:16") {
-    project.canvas.width = resolution;
-    project.canvas.height = Math.round(resolution * 16 / 9);
-  } else {
-    project.canvas.width = resolution;
-    project.canvas.height = resolution;
-  }
+  [project.canvas.width, project.canvas.height] = canvasSize(aspect, resolution);
   project.canvas.fps = Number(els.fpsSelect.value || 30);
   els.previewResolution.textContent = `${project.canvas.width} × ${project.canvas.height} · ${project.canvas.fps} fps`;
   els.stage.dataset.aspect = aspect;
@@ -164,8 +155,7 @@ function setCanvasDimensions() {
 }
 
 function inferResolution() {
-  if (project.canvas.aspect === "16:9") return project.canvas.height;
-  return project.canvas.width;
+  return Math.min(project.canvas.width, project.canvas.height);
 }
 
 function applyProjectToControls() {

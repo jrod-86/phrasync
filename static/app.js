@@ -224,13 +224,9 @@ function bindControls() {
   });
 
   const loadProject = async content => {
-      const loaded = migrateProject(JSON.parse(content));
-      els.audioPlayer.pause(); project = loaded;
-      analysis = null; analysisPending = false; selectedWordIndex = 0; tapArmed = false; tapQueue = [];
-      selectedCueId = project.cues[0]?.id || null;
-      applyProjectToControls(); updateSyncSummary(); timeline?.fitAll(); seekTo(0); scheduleSave();
-      toast("Project loaded. Media links refer to this local Phrasync workspace.", "success");
-      if (project.audioAssetId) ensureAnalysis();
+      const loaded = JSON.parse(content); await saveToLibrary(true);
+      replaceProject({ ...loaded, id: newLibraryId() }, "Project loaded. Media links refer to this local Phrasync workspace.");
+      hideHome();
   };
   els.loadProjectButton.addEventListener("click", async () => {
     if (!IS_DESKTOP_HOST) return els.projectInput.click();
@@ -255,13 +251,8 @@ function bindControls() {
       if (path) toast(`Project saved: ${path}`, "success");
     } catch (error) { toast(`Could not save project: ${error.message}`, "error"); }
   });
-  els.resetProjectButton.addEventListener("click", () => {
-    if (!confirm(t("Create a new project? Save your current project first to keep it."))) return;
-    els.audioPlayer.pause(); analysis = null; analysisPending = false; selectedFootageId = null;
-    selectedWordIndex = 0; tapArmed = false; tapQueue = [];
-    project = clone(DEFAULT_PROJECT); selectedCueId = project.cues[0].id; currentCueId = null;
-    localStorage.removeItem(STORAGE_KEY); applyProjectToControls(); updateSyncSummary(); timeline?.fitAll(); seekTo(0); scheduleSave(); toast("Project reset.");
-  });
+  // The current project stays in the start page's library, so nothing is lost.
+  els.resetProjectButton.addEventListener("click", () => startNewProject(project.mode));
 
   els.renderClose.addEventListener("click", () => els.renderDialog.close());
   els.chooseRenderDirectory.addEventListener("click", chooseRenderDirectory);

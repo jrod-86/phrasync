@@ -16,7 +16,7 @@ const DEFAULT_PROJECT = {
   version: 2,
   mode: "lyric",
   title: "Untitled lyric video",
-  canvas: { aspect: "16:9", width: 1920, height: 1080, fps: 30 },
+  canvas: { aspect: "original", width: 1920, height: 1080, fps: 30 },
   duration: 8,
   audioAssetId: null,
   audio: null,

@@ -40,6 +40,7 @@ from phrasync.align import align_cues, alignment_stats, estimate_offset
 from phrasync.audio_analysis import AnalysisUnavailable, analyze_audio
 from phrasync.font_utils import font_status
 from phrasync.jobs import manager
+from phrasync import library
 from phrasync.lyric_sync import apply_lyric_sync
 from phrasync.desktop_export import DesktopExportBridge
 from phrasync.media import ffmpeg_exe, probe_duration
@@ -587,6 +588,56 @@ def save_project(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
     path = PROJECTS_DIR / f"{safe}.phrasync.json"
     path.write_text(json.dumps(project, indent=2, ensure_ascii=False), encoding="utf-8")
     return {"saved": True, "path": str(path), "filename": path.name}
+
+
+@app.get("/api/library")
+def library_list() -> dict[str, Any]:
+    return {"projects": library.list_projects(), "newId": library.new_id()}
+
+
+def _library_call(function, *args):
+    try:
+        return function(*args)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Project not found") from exc
+
+
+@app.get("/api/library/{project_id}")
+def library_get(project_id: str) -> dict[str, Any]:
+    return _library_call(library.load_project, project_id)
+
+
+@app.put("/api/library/{project_id}")
+def library_put(project_id: str, payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return _library_call(library.save_project, project_id, payload.get("project"), payload.get("thumbnail"))
+
+
+@app.get("/api/library/{project_id}/thumbnail")
+def library_thumbnail(project_id: str) -> FileResponse:
+    path = _library_call(library.thumbnail_path, project_id)
+    if not path:
+        raise HTTPException(status_code=404, detail="No thumbnail")
+    return FileResponse(path, media_type="image/jpeg")
+
+
+@app.post("/api/library/{project_id}/duplicate")
+def library_duplicate(project_id: str) -> dict[str, Any]:
+    return _library_call(library.duplicate_project, project_id)
+
+
+@app.delete("/api/library/{project_id}")
+def library_delete(project_id: str) -> dict[str, bool]:
+    return {"deleted": _library_call(library.delete_project, project_id)}
+
+
+@app.post("/api/library/{project_id}/restore")
+def library_restore(project_id: str) -> dict[str, Any]:
+    restored = _library_call(library.restore_project, project_id)
+    if not restored:
+        raise HTTPException(status_code=404, detail="Nothing to restore")
+    return restored
 
 
 def _open_browser(host: str, port: int) -> None:

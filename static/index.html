@@ -9,16 +9,80 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+  <div class="home-page" id="homePage" hidden>
+    <aside class="home-nav">
+      <div class="brand home-brand">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
+        <div><strong>PHRA<span>//</span>SYNC</strong><small>local lyric &amp; subtitle studio</small></div>
+      </div>
+      <nav>
+        <button type="button" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+        <button type="button" id="homeSettings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+        <button type="button" id="homeDiagnostics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Diagnostics</button>
+        <button type="button" id="homeTheme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Light / dark</button>
+      </nav>
+    </aside>
+    <main class="home-main">
+      <section class="home-hero">
+        <button type="button" class="home-create" id="homeCreate"><span class="plus">+</span><span>Create project</span></button>
+        <div class="home-features" id="homeFeatures"></div>
+      </section>
+      <section class="home-projects-head">
+        <h2>Projects <small id="homeCount"></small></h2>
+        <div class="home-tools">
+          <input type="search" id="homeSearch" placeholder="Search projects" aria-label="Search projects" />
+          <select id="homeSort" aria-label="Sort projects"><option value="recent">Most recent</option><option value="name">Name</option></select>
+        </div>
+      </section>
+      <div class="home-undo" id="homeUndo" hidden><span id="homeUndoText"></span><button type="button">Undo</button></div>
+      <div class="home-grid" id="homeProjects"></div>
+      <p class="home-empty" id="homeEmpty" hidden></p>
+    </main>
+    <div class="home-card-menu" id="homeCardMenu" role="menu" hidden>
+      <button type="button" data-action="open">Open</button>
+      <button type="button" data-action="rename">Rename</button>
+      <button type="button" data-action="duplicate">Duplicate</button>
+      <button type="button" data-action="delete" class="danger">Delete</button>
+    </div>
+  </div>
   <div class="app-shell">
     <header class="topbar">
       <div class="brand" aria-label="Phrasync">
         <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
         <div><strong>PHRA<span>//</span>SYNC</strong><small>local lyric &amp; subtitle studio</small></div>
-        <details id="projectMenu" class="project-menu"><summary>File</summary><nav aria-label="Project commands">
-          <button type="button" id="resetProjectButton">New project</button>
-          <button type="button" id="loadProjectButton">Load project</button>
-          <button type="button" id="saveProjectButton">Save project</button>
-          <small>Ctrl+N · Ctrl+O · Ctrl+S</small>
+        <details id="projectMenu" class="project-menu app-menu"><summary>Menu</summary><nav aria-label="Menu">
+          <div class="menu-group" tabindex="0"><span>File</span><div class="submenu">
+            <button type="button" id="resetProjectButton">New project<kbd>Ctrl+N</kbd></button>
+            <button type="button" data-menu="home">Open project…</button>
+            <button type="button" id="loadProjectButton">Import project file…<kbd>Ctrl+O</kbd></button>
+            <button type="button" id="saveProjectButton">Save project file…<kbd>Ctrl+S</kbd></button>
+            <hr><button type="button" data-menu="export">Export…<kbd>Ctrl+Enter</kbd></button>
+          </div></div>
+          <div class="menu-group" tabindex="0"><span>Edit</span><div class="submenu">
+            <button type="button" data-menu="add-line">Add lyric line</button>
+            <button type="button" data-menu="delete-line">Delete selected line<kbd>Del</kbd></button>
+            <button type="button" data-menu="undo-delete">Undo delete<kbd>Ctrl+Z</kbd></button>
+            <hr><button type="button" data-menu="check">Check project</button>
+          </div></div>
+          <div class="menu-group" tabindex="0"><span>Layout</span><div class="submenu">
+            <button type="button" data-menu="toggle-left" class="check">Studio panel</button>
+            <button type="button" data-menu="toggle-right" class="check">Lyrics panel</button>
+            <button type="button" data-menu="reset-layout">Reset panel sizes</button>
+            <hr><button type="button" data-menu="fullscreen">Full-screen preview</button>
+          </div></div>
+          <div class="menu-group" tabindex="0"><span>More</span><div class="submenu">
+            <button type="button" data-menu="theme">Light / dark theme</button>
+            <button type="button" data-menu="language">Switch language</button>
+            <button type="button" data-menu="diagnostics">Diagnostics</button>
+          </div></div>
+          <div class="menu-group" tabindex="0"><span>Help</span><div class="submenu">
+            <button type="button" data-menu="guide">Getting started</button>
+            <button type="button" data-menu="about">About Phrasync</button>
+          </div></div>
+          <hr>
+          <button type="button" data-menu="settings">Settings</button>
+          <button type="button" data-menu="home">Back to home page</button>
+          <button type="button" data-menu="quit">Quit</button>
         </nav></details>
       </div>
       <label class="project-name"><span>Project</span><input id="projectTitle" value="Untitled lyric video" maxlength="80" /></label>
@@ -440,6 +504,10 @@
         <div class="preview-toolbar">
           <div><strong>Live preview</strong><span id="previewResolution">1920 × 1080 · 30 fps</span></div>
           <div class="preview-tools">
+            <div class="ratio-picker">
+              <button class="ratio-button" id="ratioButton" type="button" title="Canvas aspect ratio" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/></svg><span>Ratio</span></button>
+              <div class="ratio-menu" id="ratioMenu" role="menu" hidden></div>
+            </div>
             <button class="icon-button" id="restartAnimation" title="Replay current lyric animation" type="button">↻</button>
             <button class="icon-button" id="fullscreenButton" title="Fullscreen preview" type="button">⛶</button>
           </div>
@@ -755,6 +823,10 @@
   <script src="/static/app-stems.js" defer></script>
   <script src="/static/app-export-dialog.js" defer></script>
   <script src="/static/app-sidebar-tabs.js" defer></script>
+  <script src="/static/app-ratio.js" defer></script>
+  <script src="/static/app-panels.js" defer></script>
+  <script src="/static/app-menu.js" defer></script>
+  <script src="/static/app-home.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>
