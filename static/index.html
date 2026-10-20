@@ -13,7 +13,7 @@
     <aside class="home-nav">
       <div class="brand home-brand">
         <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
-        <div><strong>PHRA<span>//</span>SYNC</strong><small>local lyric &amp; subtitle studio</small></div>
+        <div><strong>PHRA<span>//</span>SYNC</strong><small>local karaoke &amp; lyric studio</small></div>
       </div>
       <nav>
         <button type="button" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
@@ -49,7 +49,7 @@
     <header class="topbar">
       <div class="brand" aria-label="Phrasync">
         <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
-        <div><strong>PHRA<span>//</span>SYNC</strong><small>local lyric &amp; subtitle studio</small></div>
+        <div><strong>PHRA<span>//</span>SYNC</strong><small>local karaoke &amp; lyric studio</small></div>
         <details id="projectMenu" class="project-menu app-menu"><summary>Menu</summary><nav aria-label="Menu">
           <div class="menu-group" tabindex="0"><span>File</span><div class="submenu">
             <button type="button" id="resetProjectButton">New project<kbd>Ctrl+N</kbd></button>
@@ -72,7 +72,7 @@
           </div></div>
           <div class="menu-group" tabindex="0"><span>More</span><div class="submenu">
             <button type="button" data-menu="theme">Theme…</button>
-            <button type="button" data-menu="language">Switch language</button>
+            <button type="button" data-menu="language">Language…</button>
             <button type="button" data-menu="diagnostics">Diagnostics</button>
           </div></div>
           <div class="menu-group" tabindex="0"><span>Help</span><div class="submenu">
@@ -87,7 +87,7 @@
       </div>
       <label class="project-name"><span>Project</span><input id="projectTitle" value="Untitled lyric video" maxlength="80" /></label>
       <div class="top-actions">
-        <button class="chip language-toggle" id="languageToggle" type="button" title="Switch to Italian" aria-label="Switch interface language">IT</button>
+        <select class="chip language-select" id="languageToggle" title="Interface language" aria-label="Interface language" data-no-i18n></select>
         <button class="chip status-chip" id="engineStatus" type="button" title="Local engine status"><i></i><span>Checking engine</span></button>
         <button class="chip diagnostics-trigger" id="diagnosticsButton" type="button" title="Open support diagnostics">Diagnostics</button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Open settings">⚙</button>
@@ -106,10 +106,10 @@
 
         <div class="mode-card">
           <div class="segmented" id="projectMode" aria-label="Project mode">
-            <button type="button" data-value="lyric" class="active">Lyric Video</button>
-            <button type="button" data-value="subtitles">Subtitles</button>
+            <button type="button" data-value="karaoke" class="active">Karaoke</button>
+            <button type="button" data-value="lyric">Lyric Video</button>
           </div>
-          <p id="modeDescription">Turn a song into a kinetic lyric video.</p>
+          <p id="modeDescription">Make a karaoke video: lyrics roll up in time with the song.</p>
         </div>
 
         <details open>
@@ -627,7 +627,7 @@
     <div class="modal-card onboarding-card">
       <header>
         <div><span class="eyebrow">WELCOME TO PHRA//SYNC</span><h2>Local lyric videos, without the wait being a mystery</h2></div>
-        <button class="chip language-toggle" id="onboardingLanguageToggle" type="button" title="Switch to Italian" aria-label="Switch interface language">IT</button>
+        <select class="chip language-select" id="onboardingLanguageToggle" title="Interface language" aria-label="Interface language" data-no-i18n></select>
       </header>
       <div class="onboarding-content">
         <div class="onboarding-icon" aria-hidden="true">◉</div>
@@ -710,7 +710,7 @@
         </section>
         <section class="set-page" data-set-page="general" hidden>
           <div class="set-card">
-            <div class="set-row"><span class="set-label">Language</span><div class="set-control"><div class="set-choice"><label><input type="radio" name="setLanguage" value="en" /><span>English</span></label><label><input type="radio" name="setLanguage" value="it" /><span>Italiano</span></label></div></div></div>
+            <div class="set-row"><span class="set-label">Language</span><div class="set-control"><select class="set-language" id="setLanguage" aria-label="Interface language" data-no-i18n></select></div></div>
             <div class="set-row set-row-stack"><span class="set-label">Theme</span><div class="set-control"><div class="theme-grid" id="setThemeGrid"></div><small>Click to preview. Save keeps it, Cancel goes back.</small></div></div>
           </div>
           <div class="set-card">

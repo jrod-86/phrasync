@@ -102,7 +102,7 @@ const ITALIAN = {
   "Import interrupted. Check that Phrasync is still running and try again.": "Importazione interrotta. Verifica che Phrasync sia aperto e riprova.",
   "Import cancelled.": "Importazione annullata.",
   "The local server returned an invalid import response.": "Il server locale ha restituito una risposta di importazione non valida.",
-  "local lyric & subtitle studio": "studio locale per lyric video e sottotitoli",
+  "local karaoke & lyric studio": "studio locale per karaoke e lyric video",
   "Project": "Progetto",
   "Untitled lyric video": "Lyric video senza titolo",
   "Checking engine": "Controllo motore",
@@ -325,10 +325,24 @@ const ITALIAN = {
 };
 
 let currentLanguage = "en";
+// The ten most spoken languages, plus Italian (Phrasync's original second language).
+// Each one's strings live in static/i18n/<code>.json, keyed by the English text.
+const LANGUAGES = { en: "English", zh: "中文 (简体)", hi: "हिन्दी", es: "Español", ar: "العربية", fr: "Français",
+  bn: "বাংলা", pt: "Português", ru: "Русский", id: "Bahasa Indonesia", it: "Italiano" };
+const TRANSLATIONS = { en: {}, it: ITALIAN };
+const loadedLanguages = new Set(["en"]);
 
 function translateExact(value, language = currentLanguage) {
-  if (language === "en") return value;
-  return ITALIAN[value] || value;
+  return TRANSLATIONS[language]?.[value] || value;
+}
+
+async function loadLanguage(language) {
+  if (loadedLanguages.has(language)) return;
+  try {
+    const response = await fetch(`/static/i18n/${language}.json`);
+    if (response.ok) TRANSLATIONS[language] = Object.assign(TRANSLATIONS[language] || {}, await response.json());
+    loadedLanguages.add(language);
+  } catch { /* stays English until the next try */ }
 }
 
 function translateTextNode(node, language) {
@@ -366,25 +380,21 @@ function translateElement(root = document, language = currentLanguage) {
 }
 
 function updateLanguageButtons() {
-  const target = currentLanguage === "en" ? "IT" : "EN";
-  const title = currentLanguage === "en" ? "Switch to Italian" : "Switch to English";
-  for (const button of document.querySelectorAll(".language-toggle")) {
-    button.textContent = target;
-    button.title = translateExact(title, currentLanguage);
+  for (const select of document.querySelectorAll(".language-select, #setLanguage")) {
+    if (!select.options.length) select.append(...Object.entries(LANGUAGES).map(([code, name]) => new Option(name, code)));
+    select.value = currentLanguage;
   }
 }
 
-function setInterfaceLanguage(language) {
-  currentLanguage = language === "it" ? "it" : "en";
+async function setInterfaceLanguage(language) {
+  language = LANGUAGES[language] ? language : "en";
+  await loadLanguage(language);
+  currentLanguage = language;
   localStorage.setItem(LANGUAGE_KEY, currentLanguage);
   document.documentElement.lang = currentLanguage;
   translateElement(document, currentLanguage);
   updateLanguageButtons();
   document.dispatchEvent(new CustomEvent("phrasync-language-change", { detail: currentLanguage }));
-}
-
-function toggleInterfaceLanguage() {
-  setInterfaceLanguage(currentLanguage === "en" ? "it" : "en");
 }
 
 function formatByteCount(value) {
@@ -415,9 +425,10 @@ function formatTranscriptionJob(job) {
 }
 
 function initI18n() {
-  currentLanguage = localStorage.getItem(LANGUAGE_KEY) === "it" ? "it" : "en";
-  document.querySelector("#languageToggle")?.addEventListener("click", toggleInterfaceLanguage);
-  document.querySelector("#onboardingLanguageToggle")?.addEventListener("click", toggleInterfaceLanguage);
+  currentLanguage = LANGUAGES[localStorage.getItem(LANGUAGE_KEY)] ? localStorage.getItem(LANGUAGE_KEY) : "en";
+  updateLanguageButtons();
+  document.querySelectorAll(".language-select").forEach(select =>
+    select.addEventListener("change", () => setInterfaceLanguage(select.value)));
   document.querySelector("#onboardingHide")?.addEventListener("change", event => {
     if (event.target.checked) localStorage.setItem(ONBOARDING_KEY,"hidden");
     else localStorage.removeItem(ONBOARDING_KEY);
@@ -435,5 +446,4 @@ function initI18n() {
 window.t = translateExact;
 window.initI18n = initI18n;
 window.setInterfaceLanguage = setInterfaceLanguage;
-window.toggleInterfaceLanguage = toggleInterfaceLanguage;
 window.formatTranscriptionJob = formatTranscriptionJob;

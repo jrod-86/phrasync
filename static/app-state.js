@@ -120,7 +120,7 @@ const LEGACY_STYLE_PRESETS = { "center-punch": "kinetic-slam", karaoke: "wipe-fi
 function migrateProject(input) {
   const next = deepMerge(DEFAULT_PROJECT, input);
   next.version = 2;
-  if (!["lyric", "subtitles"].includes(next.mode)) next.mode = "lyric";
+  if (!["karaoke", "lyric"].includes(next.mode)) next.mode = "lyric";
   if (!next.sourceAssetId && next.audioAssetId) next.sourceAssetId = next.audioAssetId;
   if (!next.sourceKind) next.sourceKind = next.audio?.kind || "audio";
   const legacyDemo = ["STAND YOUR\nGROUND", "MAKE EVERY WORD\nHIT HARDER", "BUILD IT.\nPLAY IT."];
@@ -129,6 +129,7 @@ function migrateProject(input) {
     next.cues = clone(DEFAULT_PROJECT.cues);
   }
   if (LEGACY_STYLE_PRESETS[next.style.preset]) next.style.preset = LEGACY_STYLE_PRESETS[next.style.preset];
+  if (next.style.preset === "credit-crawl") next.mode = "karaoke"; // crawl projects made before the Karaoke mode
   if (typeof next.style.animation === "string") {
     const parsed = Number(next.style.animation);
     next.style.animation = Number.isFinite(parsed) ? parsed : (LEGACY_MOTION[next.style.animation] ?? 1);

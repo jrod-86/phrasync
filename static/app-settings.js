@@ -110,7 +110,7 @@ async function fillSettings(tab) {
   threads.replaceChildren(new Option(`Auto (${Math.max(1, Math.min(32, cpuCount - 1))})`, "0"),
     ...Array.from({ length: Math.min(64, cpuCount) }, (_, index) => new Option(String(index + 1), String(index + 1))));
   threads.value = String(appPrefs.exportThreads || 0);
-  $$('input[name="setLanguage"]').forEach(input => { input.checked = input.value === currentLanguage; });
+  $("#setLanguage").value = currentLanguage;
   settingsThemeAtOpen = settingsThemePick = currentUiThemeId();
   applyUiTheme(settingsThemePick, false);
   $("#setExportChoose").hidden = !IS_DESKTOP_HOST;
@@ -142,8 +142,8 @@ async function saveSettings() {
     storePrefs(result.preferences);
   } catch (error) { toast(`Could not save settings: ${error.message}`, "error"); return; }
   if ($("#setGuide").checked) localStorage.removeItem(ONBOARDING_KEY); else localStorage.setItem(ONBOARDING_KEY, "hidden");
-  const language = $('input[name="setLanguage"]:checked')?.value;
-  if (language && language !== currentLanguage) $("#languageToggle").click();
+  const language = $("#setLanguage").value;
+  if (language && language !== currentLanguage) setInterfaceLanguage(language);
   applyUiTheme(settingsThemePick);
   settingsThemeAtOpen = settingsThemePick;
   els.settingsDialog.close();

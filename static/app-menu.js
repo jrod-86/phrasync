@@ -15,7 +15,7 @@ const MENU_COMMANDS = {
   "reset-layout": () => resetLayout(),
   fullscreen: () => $("#fullscreenButton").click(),
   theme: () => openThemePicker($("#projectMenu summary")),
-  language: () => $("#languageToggle").click(),
+  language: () => openSettings().then(() => showSettingsTab("general")),
   diagnostics: () => $("#diagnosticsButton").click(),
   guide: () => $("#onboardingDialog")?.showModal(),
   about: () => openSettings().then(() => showSettingsTab("about")),

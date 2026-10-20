@@ -1,23 +1,36 @@
 "use strict";
 
-const MODE_COPY = {
-  lyric: {
-    description: "Turn a song into a kinetic lyric video.",
-    source: "Add song", hint: "WAV, MP3, FLAC, M4A…",
-    transcribe: "Transcribe song locally", section: "Local song transcription",
-    panel: "Lyrics", bulk: "Paste or OCR lyrics", placeholder: "One lyric cue per line…",
-    importLabel: "Import lyrics", preview: "Add a song or scrub the timeline to preview",
-    render: "Building your lyric video"
-  },
-  subtitles: {
-    description: "Transcribe speech and burn readable subtitles directly into audio or video.",
-    source: "Add video or audio", hint: "MP4/WebM · up to 16 GB · long-form video",
-    transcribe: "Transcribe media locally", section: "Local speech transcription",
-    panel: "Subtitles", bulk: "Paste or import transcript", placeholder: "One subtitle cue per line…",
-    importLabel: "Import subtitles", preview: "Add media or scrub the timeline to preview",
-    render: "Burning subtitles into your video"
-  }
+// The two kinds of project. Karaoke offers only the karaoke style presets;
+// Lyric Video offers the kinetic ones. Old Subtitles projects open as Lyric Video.
+const LYRIC_COPY = {
+  description: "Turn a song into a kinetic lyric video.",
+  source: "Add song", hint: "WAV, MP3, FLAC, M4A…",
+  transcribe: "Transcribe song locally", section: "Local song transcription",
+  panel: "Lyrics", bulk: "Paste or OCR lyrics", placeholder: "One lyric cue per line…",
+  importLabel: "Import lyrics", preview: "Add a song or scrub the timeline to preview",
+  render: "Building your lyric video"
 };
+const MODE_COPY = {
+  karaoke: { ...LYRIC_COPY, description: "Make a karaoke video: lyrics roll up in time with the song.", render: "Building your karaoke video" },
+  lyric: LYRIC_COPY
+};
+const KARAOKE_PRESETS = ["credit-crawl"];
+const MODE_DEFAULT_PRESET = { karaoke: "credit-crawl", lyric: "kinetic-slam" };
+
+function presetFitsMode(preset, mode) {
+  return KARAOKE_PRESETS.includes(preset) === (mode === "karaoke");
+}
+
+/** Show only the presets that belong to the project's mode, switching if needed. */
+function fitPresetsToMode(mode) {
+  for (const option of els.stylePreset.options) {
+    const fits = presetFitsMode(option.value, mode);
+    option.hidden = !fits; option.disabled = !fits;
+  }
+  if (presetFitsMode(project.style.preset, mode)) return;
+  els.stylePreset.value = MODE_DEFAULT_PRESET[mode];
+  els.stylePreset.dispatchEvent(new Event("change"));
+}
 
 const PRESET_LABELS_2D = {
   spiral:"Spiral Flight: orbit into focus", constellation:"Word Constellation: scattered typography",
@@ -176,6 +189,7 @@ function applyEnvironmentUI() {
 
 function applyModeUI() {
   const mode = MODE_COPY[project.mode] ? project.mode : "lyric";
+  fitPresetsToMode(mode);
   const copy = MODE_COPY[mode];
   els.root.dataset.projectMode = mode;
   $$('button', els.projectMode).forEach(button =>
@@ -183,9 +197,7 @@ function applyModeUI() {
   els.modeDescription.textContent = t(copy.description);
   els.audioName.textContent = project.audio?.name || t(copy.source);
   els.audioHint.textContent = t(copy.hint);
-  els.audioInput.accept = mode === "subtitles"
-    ? "audio/*,video/mp4,video/webm,.wav,.mp3,.m4a,.aac,.flac,.ogg,.opus,.mp4,.webm"
-    : "audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg,.opus";
+  els.audioInput.accept = "audio/*,.wav,.mp3,.m4a,.aac,.flac,.ogg,.opus";
   els.transcribeButton.textContent = typeof transcribeButtonLabel === "function" ? transcribeButtonLabel() : t(copy.transcribe);
   els.transcriptionSectionName.textContent = t(copy.section);
   els.cuePanelTitle.textContent = t(copy.panel);

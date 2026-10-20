@@ -138,7 +138,8 @@ def test_project_modes_and_environment_controls_are_wired():
     assert 'mode: "lyric"' in state
     assert 'mode === "subtitles"' in workflow
     assert 'uploadAsset(kind, file)' in workflow
-    assert 'video/mp4' in modes and 'video/webm' in modes
+    assert 'karaoke: {' in modes and 'KARAOKE_PRESETS = ["credit-crawl"]' in modes
+    assert 'data-value="karaoke"' in html and 'data-value="subtitles"' not in html
     assert 'PRESET_LABELS_3D' in modes
     assert 'resolvedEnvironmentAt(t)' in modes
     assert 'from "/static/scene3d-environment.js"' in scene
