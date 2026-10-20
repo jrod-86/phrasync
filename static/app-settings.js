@@ -15,6 +15,8 @@ const PREF_DEFAULTS = {
 let appPrefs = { ...PREF_DEFAULTS };
 try { appPrefs = { ...PREF_DEFAULTS, ...JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") }; } catch { /* storage blocked */ }
 let cpuCount = 4;
+let settingsThemeAtOpen = null;
+let settingsThemePick = null;
 
 function storePrefs(prefs) {
   appPrefs = { ...PREF_DEFAULTS, ...prefs };
@@ -109,7 +111,8 @@ async function fillSettings(tab) {
     ...Array.from({ length: Math.min(64, cpuCount) }, (_, index) => new Option(String(index + 1), String(index + 1))));
   threads.value = String(appPrefs.exportThreads || 0);
   $$('input[name="setLanguage"]').forEach(input => { input.checked = input.value === currentLanguage; });
-  $$('input[name="setTheme"]').forEach(input => { input.checked = input.value === (els.root.dataset.theme || "dark"); });
+  settingsThemeAtOpen = settingsThemePick = currentUiThemeId();
+  applyUiTheme(settingsThemePick, false);
   $("#setExportChoose").hidden = !IS_DESKTOP_HOST;
   $("#setExportInput").hidden = IS_DESKTOP_HOST;
   $$("#settingsDialog [data-open-folder]").forEach(button => { button.hidden = !IS_DESKTOP_HOST; });
@@ -141,8 +144,8 @@ async function saveSettings() {
   if ($("#setGuide").checked) localStorage.removeItem(ONBOARDING_KEY); else localStorage.setItem(ONBOARDING_KEY, "hidden");
   const language = $('input[name="setLanguage"]:checked')?.value;
   if (language && language !== currentLanguage) $("#languageToggle").click();
-  const theme = $('input[name="setTheme"]:checked')?.value;
-  if (theme && theme !== (els.root.dataset.theme || "dark")) els.themeToggle.click();
+  applyUiTheme(settingsThemePick);
+  settingsThemeAtOpen = settingsThemePick;
   els.settingsDialog.close();
   toast("Settings saved.", "success");
 }
@@ -170,6 +173,10 @@ function initSettingsWindow() {
     const kind = event.target.closest("[data-open-folder]")?.dataset.openFolder;
     if (!kind) return;
     try { await desktopExportApi().open_workspace_folder(kind); } catch (error) { toast(error.message, "error"); }
+  });
+  // Cancel (or closing the window) puts the previewed theme back.
+  els.settingsDialog.addEventListener("close", () => {
+    if (settingsThemeAtOpen && settingsThemePick !== settingsThemeAtOpen) applyUiTheme(settingsThemeAtOpen);
   });
   loadPrefs();
 }

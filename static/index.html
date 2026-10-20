@@ -19,7 +19,7 @@
         <button type="button" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
         <button type="button" id="homeSettings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
         <button type="button" id="homeDiagnostics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Diagnostics</button>
-        <button type="button" id="homeTheme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Light / dark</button>
+        <button type="button" id="homeTheme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/></svg>Theme</button>
       </nav>
     </aside>
     <main class="home-main">
@@ -71,7 +71,7 @@
             <hr><button type="button" data-menu="fullscreen">Full-screen preview</button>
           </div></div>
           <div class="menu-group" tabindex="0"><span>More</span><div class="submenu">
-            <button type="button" data-menu="theme">Light / dark theme</button>
+            <button type="button" data-menu="theme">Theme…</button>
             <button type="button" data-menu="language">Switch language</button>
             <button type="button" data-menu="diagnostics">Diagnostics</button>
           </div></div>
@@ -92,8 +92,8 @@
         <button class="chip diagnostics-trigger" id="diagnosticsButton" type="button" title="Open support diagnostics">Diagnostics</button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Open settings">⚙</button>
         <button class="icon-button" id="shutdownButton" type="button" title="Save and stop Phrasync" aria-label="Stop Phrasync">⏻</button>
-        <button class="icon-button" id="themeToggle" type="button" title="Toggle light/dark theme" aria-label="Toggle theme">
-          <svg class="sun" viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
+        <button class="icon-button" id="themeToggle" type="button" title="Theme" aria-label="Choose a theme">
+          <svg class="palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7.2" r="1.2"/><circle cx="15" cy="7.4" r="1.2"/></svg>
         </button>
         <button class="button secondary" id="criticButton" type="button">Check project</button>
         <button class="button primary" id="renderButton" type="button"><span>Export</span><kbd>Ctrl ↵</kbd></button>
@@ -660,7 +660,7 @@
   </dialog>
 
   <dialog id="settingsDialog" class="modal settings-modal">
-    <form method="dialog" class="modal-card">
+    <form method="dialog" class="modal-card" novalidate>
       <header><div><span class="eyebrow">PHRASYNC</span><h2>Settings</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
       <nav class="set-tabs" role="tablist">
         <button type="button" data-set-tab="projects" class="active">Projects</button>
@@ -683,7 +683,7 @@
         </section>
         <section class="set-page" data-set-page="edit" hidden>
           <div class="set-card">
-            <div class="set-row"><span class="set-label">Arrow keys jump</span><div class="set-control"><div class="set-inline"><input id="setStep" type="number" min="0.01" max="30" step="0.1" /><span>seconds</span></div><small>Alt + arrow still nudges by 0.05 s.</small></div></div>
+            <div class="set-row"><span class="set-label">Arrow keys jump</span><div class="set-control"><div class="set-inline"><input id="setStep" type="number" min="0.01" max="30" step="any" /><span>seconds</span></div><small>Alt + arrow still nudges by 0.05 s.</small></div></div>
             <div class="set-row"><span class="set-label">Picture clip length</span><div class="set-control"><div class="set-inline"><input id="setImageDuration" type="number" min="0.5" max="600" step="0.5" /><span>seconds</span></div><small>How long a picture lasts when you drop it on the timeline.</small></div></div>
           </div>
           <div class="set-card">
@@ -715,7 +715,7 @@
         <section class="set-page" data-set-page="general" hidden>
           <div class="set-card">
             <div class="set-row"><span class="set-label">Language</span><div class="set-control"><div class="set-choice"><label><input type="radio" name="setLanguage" value="en" /><span>English</span></label><label><input type="radio" name="setLanguage" value="it" /><span>Italiano</span></label></div></div></div>
-            <div class="set-row"><span class="set-label">Theme</span><div class="set-control"><div class="set-choice"><label><input type="radio" name="setTheme" value="dark" /><span>Dark</span></label><label><input type="radio" name="setTheme" value="light" /><span>Light</span></label></div></div></div>
+            <div class="set-row set-row-stack"><span class="set-label">Theme</span><div class="set-control"><div class="theme-grid" id="setThemeGrid"></div><small>Click to preview. Save keeps it, Cancel goes back.</small></div></div>
           </div>
           <div class="set-card">
             <div class="set-row"><span class="set-label">Start page</span><div class="set-control"><label class="set-check"><input id="setStartPage" type="checkbox" /><span>Open on the start page</span></label><small>Off opens straight into the last project you worked on.</small></div></div>
@@ -880,6 +880,7 @@
   <script src="/static/app-menu.js" defer></script>
   <script src="/static/app-home.js" defer></script>
   <script src="/static/app-settings.js" defer></script>
+  <script src="/static/app-themes.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

@@ -296,7 +296,6 @@ function initHome() {
   });
   $("#homeSettings").addEventListener("click", () => openSettings());
   $("#homeDiagnostics").addEventListener("click", () => $("#diagnosticsButton").click());
-  $("#homeTheme").addEventListener("click", () => els.themeToggle.click());
   addEventListener("pagehide", () => saveToLibrary());
   if (appPrefs.startPage) showHome(); else reportEditorOpen(true);
 }

@@ -6,11 +6,8 @@ function bindControls() {
     project.mode = button.dataset.value;
     applyModeUI(); scheduleSave();
   }));
-  els.themeToggle.addEventListener("click", () => {
-    const theme = els.root.dataset.theme === "dark" ? "light" : "dark";
-    els.root.dataset.theme = theme; localStorage.setItem(THEME_KEY, theme);
-    timeline?.refreshTheme();
-  });
+  // Opens the theme picker (16 interface themes, see app-themes.js).
+  els.themeToggle.addEventListener("click", () => openThemePicker(els.themeToggle));
   els.criticButton.addEventListener("click", runCritic);
   els.renderButton.addEventListener("click", openRenderDialog);
   els.audioPick.addEventListener("click", () => els.audioInput.click());
