@@ -1,88 +1,167 @@
 "use strict";
 
-// Interface themes: 16 presets, each a light or dark base plus its own
-// colours. Picked from the palette button in the top bar, the start page, or
-// Settings › General. Only the editor's look changes, never the video.
+// Interface themes: 20 colour families, each in a dark and a light version.
+// The sun/moon switch in the top bar flips between them; the palette button,
+// the start page and Settings › General pick the family. Only the editor's
+// look changes, never the video. A theme is stored as "family:mode".
 
 const UI_THEME_KEY = "phrasync.uiTheme";
 const UI_THEMES = [
-  { id: "phrasync-dark", name: "Phrasync Dark", base: "dark", bg: "#101112", elevated: "#151618", panel: "#191a1d", panel2: "#202125", panel3: "#292b30", border: "#3a3b42", soft: "#2c2e33", text: "#f4f1f8", muted: "#aaa9b2", accent: "#e487cd", accent2: "#b67ce0" },
-  { id: "phrasync-light", name: "Phrasync Light", base: "light", bg: "#efedf3", elevated: "#f8f7fa", panel: "#ffffff", panel2: "#f5f3f8", panel3: "#eeebf2", border: "#d9d4df", soft: "#e6e1e9", text: "#1d1a24", muted: "#686371", accent: "#c04aa8", accent2: "#8f4fd0" },
-  { id: "capcut", name: "Studio Cyan", base: "dark", bg: "#0d0e10", elevated: "#141518", panel: "#18191c", panel2: "#212226", panel3: "#2a2c31", border: "#393b41", soft: "#2a2c30", text: "#f2f4f5", muted: "#a2a6ad", accent: "#00c4cc", accent2: "#20e3b2" },
-  { id: "midnight", name: "Midnight Blue", base: "dark", bg: "#0b0f1a", elevated: "#10162a", panel: "#131a30", panel2: "#1a2240", panel3: "#222c4f", border: "#323e66", soft: "#232c4c", text: "#eef2ff", muted: "#9aa6c8", accent: "#5aa9ff", accent2: "#7c6cff" },
-  { id: "synthwave", name: "Neon Synthwave", base: "dark", bg: "#120b1f", elevated: "#180f2a", panel: "#1d1233", panel2: "#261843", panel3: "#301f53", border: "#46306f", soft: "#2f2050", text: "#fbefff", muted: "#b9a3d6", accent: "#ff2fd0", accent2: "#00e5ff" },
-  { id: "ember", name: "Ember", base: "dark", bg: "#15100e", elevated: "#1c1512", panel: "#211915", panel2: "#2b201b", panel3: "#362821", border: "#4d3a30", soft: "#33261f", text: "#fff3ea", muted: "#c3a999", accent: "#ff7a3d", accent2: "#ffb347" },
-  { id: "forest", name: "Forest", base: "dark", bg: "#0d1410", elevated: "#121b16", panel: "#15201a", panel2: "#1c2a22", panel3: "#24352b", border: "#344a3c", soft: "#22322a", text: "#effaf2", muted: "#9fb8a8", accent: "#4ade80", accent2: "#a3e635" },
-  { id: "ocean", name: "Deep Ocean", base: "dark", bg: "#0a1416", elevated: "#0f1c1f", panel: "#122326", panel2: "#182d31", panel3: "#1f383d", border: "#2d4f55", soft: "#1e3438", text: "#eafcfc", muted: "#94b9bc", accent: "#2dd4bf", accent2: "#38bdf8" },
-  { id: "crimson", name: "Crimson Stage", base: "dark", bg: "#140c0e", elevated: "#1b1013", panel: "#211417", panel2: "#2b1a1e", panel3: "#362126", border: "#4f3036", soft: "#341f24", text: "#fff0f2", muted: "#c79ea6", accent: "#ff3b5c", accent2: "#ff8fa3" },
-  { id: "gold", name: "Gold Record", base: "dark", bg: "#12100a", elevated: "#19160e", panel: "#1e1a11", panel2: "#282316", panel3: "#332c1c", border: "#4a412a", soft: "#302a1b", text: "#fdf8e9", muted: "#bfb18f", accent: "#f5c542", accent2: "#e8933d" },
-  { id: "graphite", name: "Graphite", base: "dark", bg: "#0f0f10", elevated: "#151516", panel: "#19191b", panel2: "#212123", panel3: "#2a2a2d", border: "#3b3b3f", soft: "#2b2b2e", text: "#f5f5f5", muted: "#a5a5aa", accent: "#e6e6e6", accent2: "#9a9aa0" },
-  { id: "oled", name: "OLED Black", base: "dark", bg: "#000000", elevated: "#060606", panel: "#0b0b0c", panel2: "#121214", panel3: "#1a1a1d", border: "#2b2b30", soft: "#1b1b1f", text: "#ffffff", muted: "#9c9ca4", accent: "#b388ff", accent2: "#ff80ab" },
-  { id: "lavender", name: "Lavender Mist", base: "light", bg: "#f1eef8", elevated: "#f8f6fc", panel: "#ffffff", panel2: "#f4f1fa", panel3: "#ebe6f5", border: "#d8d0ea", soft: "#e6e0f2", text: "#221b33", muted: "#6c6382", accent: "#7c4ddb", accent2: "#c084fc" },
-  { id: "paper", name: "Paper", base: "light", bg: "#f4efe6", elevated: "#f9f6f0", panel: "#fffdf9", panel2: "#f7f2ea", panel3: "#efe8dc", border: "#ddd2c0", soft: "#e9e0d2", text: "#2b241b", muted: "#75695a", accent: "#c2410c", accent2: "#d97706" },
-  { id: "mint", name: "Mint", base: "light", bg: "#edf6f2", elevated: "#f5faf8", panel: "#ffffff", panel2: "#f1f8f5", panel3: "#e5f1ec", border: "#cde3da", soft: "#deede7", text: "#15241e", muted: "#5a7268", accent: "#0f9f7a", accent2: "#14a3b8" },
-  { id: "rose", name: "Rose Quartz", base: "light", bg: "#f8eef2", elevated: "#fbf5f7", panel: "#ffffff", panel2: "#faf2f5", panel3: "#f3e6ec", border: "#e7d0da", soft: "#f0e0e7", text: "#2d1a22", muted: "#7a5e69", accent: "#d02670", accent2: "#f472b6" }
+  { id: "phrasync", name: "Phrasync", hue: 300, tint: 6, accent: "#e487cd", accent2: "#b67ce0" },
+  { id: "capcut", name: "Studio Cyan", hue: 200, tint: 6, accent: "#00c4cc", accent2: "#20e3b2" },
+  { id: "midnight", name: "Midnight Blue", hue: 225, tint: 32, accent: "#5aa9ff", accent2: "#7c6cff" },
+  { id: "synthwave", name: "Neon Synthwave", hue: 272, tint: 38, accent: "#ff2fd0", accent2: "#00e5ff" },
+  { id: "ember", name: "Ember", hue: 18, tint: 22, accent: "#ff7a3d", accent2: "#ffb347" },
+  { id: "forest", name: "Forest", hue: 145, tint: 22, accent: "#4ade80", accent2: "#a3e635" },
+  { id: "ocean", name: "Deep Ocean", hue: 188, tint: 32, accent: "#2dd4bf", accent2: "#38bdf8" },
+  { id: "crimson", name: "Crimson Stage", hue: 350, tint: 26, accent: "#ff3b5c", accent2: "#ff8fa3" },
+  { id: "gold", name: "Gold Record", hue: 44, tint: 26, accent: "#f5c542", accent2: "#e8933d" },
+  { id: "graphite", name: "Graphite", hue: 0, tint: 0, accent: "#e6e6e6", accent2: "#9a9aa0", lightAccent: "#2f2f35", lightAccent2: "#7a7a82" },
+  { id: "oled", name: "OLED / Pure", hue: 260, tint: 0, accent: "#b388ff", accent2: "#ff80ab", pure: true },
+  { id: "lavender", name: "Lavender", hue: 262, tint: 26, accent: "#b794f6", accent2: "#f0abfc" },
+  { id: "coffee", name: "Coffee", hue: 28, tint: 18, accent: "#d4a373", accent2: "#e9c46a" },
+  { id: "mint", name: "Mint", hue: 160, tint: 20, accent: "#5eead4", accent2: "#86efac" },
+  { id: "sky", name: "Sky", hue: 206, tint: 30, accent: "#38bdf8", accent2: "#818cf8" },
+  { id: "rose", name: "Rose Quartz", hue: 335, tint: 22, accent: "#f472b6", accent2: "#fda4af" },
+  { id: "sunset", name: "Sunset", hue: 12, tint: 24, accent: "#ff6b6b", accent2: "#feca57" },
+  { id: "aurora", name: "Aurora", hue: 172, tint: 24, accent: "#34d399", accent2: "#a78bfa" },
+  { id: "sakura", name: "Cherry Blossom", hue: 330, tint: 16, accent: "#ff9ecd", accent2: "#c4b5fd" },
+  { id: "terminal", name: "Retro Terminal", hue: 125, tint: 30, accent: "#39ff14", accent2: "#00ff9c" }
 ];
+// Themes saved by the earlier 16-theme version.
+const LEGACY_UI_THEMES = {
+  "phrasync-dark": "phrasync:dark", "phrasync-light": "phrasync:light", paper: "coffee:light",
+  lavender: "lavender:light", mint: "mint:light", rose: "rose:light"
+};
 
-function uiTheme(id) {
-  return UI_THEMES.find(theme => theme.id === id) || UI_THEMES[0];
+const hsl = (h, s, l) => `hsl(${h} ${s}% ${l}%)`;
+
+function hexToHsl(hex) {
+  const [r, g, b] = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+  if (max === min) return [0, 0, l * 100];
+  const d = max - min, s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [Math.round((h * 60 + 360) % 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+/** On a light background an accent needs to be darker to stay readable. */
+function lightAccent(hex) {
+  const [h, s, l] = hexToHsl(hex);
+  return hsl(h, Math.min(90, s), Math.min(l, 42));
+}
+
+function themeColors(family, mode) {
+  const { hue: h, tint: t } = family;
+  if (mode === "light") {
+    return {
+      bg: family.pure ? "#f6f6f7" : hsl(h, t, 94), elevated: family.pure ? "#fbfbfc" : hsl(h, t, 97), panel: "#ffffff",
+      panel2: hsl(h, t, 96.5), panel3: hsl(h, t, 92.5), border: hsl(h, Math.min(t, 24), 84), soft: hsl(h, Math.min(t, 24), 90),
+      text: hsl(h, Math.min(30, t + 10), 12), muted: hsl(h, Math.min(12, t), 42),
+      accent: family.lightAccent || lightAccent(family.accent), accent2: family.lightAccent2 || lightAccent(family.accent2)
+    };
+  }
+  return {
+    bg: family.pure ? "#000000" : hsl(h, t, 6.5), elevated: family.pure ? "#060606" : hsl(h, t, 8.5),
+    panel: family.pure ? "#0b0b0c" : hsl(h, t, 10.5), panel2: family.pure ? "#121214" : hsl(h, t, 13),
+    panel3: family.pure ? "#1a1a1d" : hsl(h, t, 16.5), border: hsl(h, Math.min(t, 26), 24), soft: hsl(h, Math.min(t, 26), 17.5),
+    text: hsl(h, Math.min(40, t + 15), 96), muted: hsl(h, Math.min(14, t), 68),
+    accent: family.accent, accent2: family.accent2
+  };
+}
+
+function parseUiTheme(value) {
+  const [familyId, mode] = String(LEGACY_UI_THEMES[value] || value || "").split(":");
+  const family = UI_THEMES.find(item => item.id === familyId) || UI_THEMES[0];
+  return { family, mode: mode === "light" ? "light" : "dark" };
 }
 
 function currentUiThemeId() {
   try {
     const saved = localStorage.getItem(UI_THEME_KEY);
-    if (saved) return uiTheme(saved).id;
-    return localStorage.getItem(THEME_KEY) === "light" ? "phrasync-light" : "phrasync-dark";
-  } catch { return "phrasync-dark"; }
+    if (saved) { const { family, mode } = parseUiTheme(saved.includes(":") || LEGACY_UI_THEMES[saved] ? saved : `${saved}:dark`); return `${family.id}:${mode}`; }
+    return localStorage.getItem(THEME_KEY) === "light" ? "phrasync:light" : "phrasync:dark";
+  } catch { return "phrasync:dark"; }
+}
+
+/** The theme on screen right now (which may be a Settings preview). */
+function shownUiThemeId() {
+  return document.documentElement.dataset.uiTheme || currentUiThemeId();
 }
 
 /** Readable text colour on top of an accent-filled button. */
-function onAccentColor(hex) {
-  const [r, g, b] = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255);
-  const light = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return light > 0.45 ? "#15121a" : "#ffffff";
+function onAccentColor(color) {
+  const probe = document.createElement("i");
+  probe.style.color = color; document.body.append(probe);
+  const [r, g, b] = getComputedStyle(probe).color.match(/[\d.]+/g).map(Number).map(value => value / 255);
+  probe.remove();
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.45 ? "#15121a" : "#ffffff";
 }
 
 function applyUiTheme(id, remember = true) {
-  const theme = uiTheme(id);
+  const { family, mode } = parseUiTheme(id);
+  const colors = themeColors(family, mode);
   const root = document.documentElement;
-  root.dataset.theme = theme.base;
-  root.dataset.uiTheme = theme.id;
+  root.dataset.theme = mode;
+  root.dataset.uiTheme = `${family.id}:${mode}`;
   const vars = {
-    "--bg": theme.bg, "--bg-elevated": theme.elevated, "--panel": theme.panel, "--panel-2": theme.panel2,
-    "--panel-3": theme.panel3, "--border": theme.border, "--border-soft": theme.soft, "--text": theme.text,
-    "--muted": theme.muted, "--muted-2": `color-mix(in srgb, ${theme.muted} 80%, ${theme.bg})`,
-    "--accent": theme.accent, "--accent-2": theme.accent2, "--on-accent": onAccentColor(theme.accent),
-    "--accent-soft": `color-mix(in srgb, ${theme.accent} ${theme.base === "light" ? 12 : 16}%, transparent)`
+    "--bg": colors.bg, "--bg-elevated": colors.elevated, "--panel": colors.panel, "--panel-2": colors.panel2,
+    "--panel-3": colors.panel3, "--border": colors.border, "--border-soft": colors.soft, "--text": colors.text,
+    "--muted": colors.muted, "--muted-2": `color-mix(in srgb, ${colors.muted} 80%, ${colors.bg})`,
+    "--accent": colors.accent, "--accent-2": colors.accent2, "--on-accent": onAccentColor(colors.accent),
+    "--accent-soft": `color-mix(in srgb, ${colors.accent} ${mode === "light" ? 12 : 16}%, transparent)`
   };
   for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value);
   if (remember) {
-    try { localStorage.setItem(UI_THEME_KEY, theme.id); localStorage.setItem(THEME_KEY, theme.base); } catch { /* storage blocked */ }
+    try { localStorage.setItem(UI_THEME_KEY, `${family.id}:${mode}`); localStorage.setItem(THEME_KEY, mode); } catch { /* storage blocked */ }
   }
   timeline?.refreshTheme?.();
-  $$(".theme-swatch").forEach(swatch => swatch.classList.toggle("active", swatch.dataset.uiTheme === theme.id));
+  $$(".theme-grid").forEach(grid => renderThemeGrid(grid));
+  $$("[data-theme-mode]").forEach(button => button.classList.toggle("active", button.dataset.themeMode === mode));
+  const toggle = $("#modeToggle");
+  if (toggle) { toggle.setAttribute("aria-checked", String(mode === "light")); toggle.title = mode === "light" ? "Light mode (click for dark)" : "Dark mode (click for light)"; }
 }
 
-function themeSwatch(theme) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "theme-swatch";
-  button.dataset.uiTheme = theme.id;
-  button.title = theme.name;
-  button.innerHTML = `<span class="theme-preview" style="background:${theme.bg}">
-      <i style="background:${theme.panel};border-color:${theme.soft}"></i>
-      <i style="background:${theme.panel2};border-color:${theme.soft}"><b style="background:${theme.accent}"></b><b style="background:${theme.accent2}"></b></i>
-    </span><span class="theme-name"></span>`;
-  $(".theme-name", button).textContent = theme.name;
-  return button;
+/** Swatches for all 20 families, drawn in the mode currently on screen. */
+function renderThemeGrid(grid) {
+  const { family: active, mode } = parseUiTheme(shownUiThemeId());
+  if (grid.dataset.mode === mode && grid.children.length) {
+    $$(".theme-swatch", grid).forEach(swatch => swatch.classList.toggle("active", swatch.dataset.uiTheme === active.id));
+    return;
+  }
+  grid.dataset.mode = mode;
+  grid.replaceChildren(...UI_THEMES.map(family => {
+    const c = themeColors(family, mode);
+    const button = document.createElement("button");
+    button.type = "button"; button.className = "theme-swatch"; button.dataset.uiTheme = family.id; button.title = family.name;
+    button.classList.toggle("active", family.id === active.id);
+    button.innerHTML = `<span class="theme-preview" style="background:${c.bg}">
+        <i style="background:${c.panel};border-color:${c.soft}"></i>
+        <i style="background:${c.panel2};border-color:${c.soft}"><b style="background:${c.accent}"></b><b style="background:${c.accent2}"></b></i>
+      </span><span class="theme-name"></span>`;
+    $(".theme-name", button).textContent = family.name;
+    return button;
+  }));
 }
 
+/** onPick gets the full "family:mode" id. */
 function fillThemeGrid(grid, onPick) {
-  grid.replaceChildren(...UI_THEMES.map(themeSwatch));
+  renderThemeGrid(grid);
   grid.addEventListener("click", event => {
-    const id = event.target.closest(".theme-swatch")?.dataset.uiTheme;
-    if (id) onPick(id);
+    const family = event.target.closest(".theme-swatch")?.dataset.uiTheme;
+    if (family) onPick(`${family}:${parseUiTheme(shownUiThemeId()).mode}`);
   });
+}
+
+function modeSwitch(onPick) {
+  const wrap = document.createElement("div");
+  wrap.className = "theme-mode";
+  wrap.innerHTML = '<button type="button" data-theme-mode="dark">☾ Dark</button><button type="button" data-theme-mode="light">☀ Light</button>';
+  wrap.addEventListener("click", event => {
+    const mode = event.target.closest("[data-theme-mode]")?.dataset.themeMode;
+    if (mode) onPick(`${parseUiTheme(shownUiThemeId()).family.id}:${mode}`);
+  });
+  return wrap;
 }
 
 function closeThemePicker() { $("#themePicker").hidden = true; }
@@ -94,10 +173,8 @@ function openThemePicker(anchor) {
   const box = anchor.getBoundingClientRect();
   picker.hidden = false;
   const width = picker.offsetWidth;
-  picker.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, box.right - width))}px`;
-  picker.style.top = `${Math.min(innerHeight - picker.offsetHeight - 8, box.bottom + 8)}px`;
-  if (box.left < 300) picker.style.left = `${box.right + 8}px`;
-  applyUiTheme(currentUiThemeId(), false);
+  picker.style.left = box.left < 300 ? `${box.right + 8}px` : `${Math.max(8, Math.min(innerWidth - width - 8, box.right - width))}px`;
+  picker.style.top = `${Math.max(8, Math.min(innerHeight - picker.offsetHeight - 8, box.bottom + 8))}px`;
 }
 
 function initThemes() {
@@ -105,16 +182,32 @@ function initThemes() {
   picker.id = "themePicker"; picker.className = "theme-picker"; picker.hidden = true;
   picker.innerHTML = '<header><strong>Theme</strong><button type="button" data-theme-more>More settings</button></header><div class="theme-grid"></div>';
   document.body.append(picker);
+  $("header strong", picker).after(modeSwitch(id => applyUiTheme(id)));
   fillThemeGrid($(".theme-grid", picker), id => applyUiTheme(id));
   $("[data-theme-more]", picker).addEventListener("click", () => {
     closeThemePicker();
     openSettings().then(() => showSettingsTab("general"));
   });
+
+  const pickInSettings = id => { settingsThemePick = id; applyUiTheme(id, false); };
+  $("#setThemeGrid").before(modeSwitch(pickInSettings));
+  fillThemeGrid($("#setThemeGrid"), pickInSettings);
+
+  // Sun/moon switch in the top bar, beside the palette button.
+  const toggle = document.createElement("button");
+  toggle.type = "button"; toggle.id = "modeToggle"; toggle.className = "mode-toggle";
+  toggle.setAttribute("role", "switch"); toggle.setAttribute("aria-label", "Light mode");
+  toggle.innerHTML = '<span class="mode-knob"></span><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.3 6.3 0 0 0 9.5 9.5z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></svg>';
+  toggle.addEventListener("click", () => {
+    const { family, mode } = parseUiTheme(currentUiThemeId());
+    applyUiTheme(`${family.id}:${mode === "light" ? "dark" : "light"}`);
+  });
+  $("#themeToggle").before(toggle);
+
   document.addEventListener("pointerdown", event => {
     if (!event.target.closest("#themePicker, #themeToggle, #homeTheme, .app-menu")) closeThemePicker();
   });
   document.addEventListener("keydown", event => { if (event.key === "Escape") closeThemePicker(); });
-  fillThemeGrid($("#setThemeGrid"), id => { settingsThemePick = id; applyUiTheme(id, false); });
   $("#homeTheme").addEventListener("click", event => openThemePicker(event.currentTarget));
   applyUiTheme(currentUiThemeId());
 }

@@ -899,13 +899,14 @@ body.home-open .app-shell { visibility: hidden; }
 /* ---------- Interface themes ---------- */
 .icon-button svg.palette { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 .icon-button svg.palette circle { fill: currentColor; stroke: none; }
-.theme-picker { position: fixed; z-index: 80; width: 452px; max-width: calc(100vw - 16px); padding: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 44px #0008; }
+.theme-picker { position: fixed; z-index: 80; width: 540px; max-width: calc(100vw - 16px); padding: 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 44px #0008; }
 .theme-picker[hidden] { display: none; }
-.theme-picker header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.theme-picker header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.theme-picker header [data-theme-more] { margin-left: auto; }
 .theme-picker header strong { font-size: 13px; }
 .theme-picker header button { padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--accent); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
 .theme-picker header button:hover { background: var(--accent-soft); }
-.theme-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.theme-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .theme-swatch { display: grid; gap: 5px; padding: 5px; border: 1px solid var(--border-soft); border-radius: 9px; background: var(--panel-2); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
 .theme-swatch:hover { border-color: var(--muted); }
 .theme-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
@@ -915,3 +916,16 @@ body.home-open .app-shell { visibility: hidden; }
 .theme-preview b + b { flex: .6; }
 .theme-name { overflow: hidden; padding: 0 2px; font-size: 10px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
 .set-row-stack { grid-template-columns: 1fr; gap: 10px; }
+.theme-mode { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--border-soft); }
+.theme-mode button { padding: 5px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.theme-mode button.active { background: var(--accent); color: var(--on-accent, #fff); }
+.set-control > .theme-mode { justify-self: start; }
+.mode-toggle {
+  position: relative; width: 60px; height: 32px; flex: none; display: inline-flex; align-items: center; justify-content: space-between; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--panel-2); color: var(--muted); cursor: pointer;
+}
+.mode-toggle svg { position: relative; z-index: 1; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.mode-knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); transition: transform .2s ease; }
+.mode-toggle[aria-checked="true"] .mode-knob { transform: translateX(28px); }
+.mode-toggle[aria-checked="false"] .moon, .mode-toggle[aria-checked="true"] .sun { color: var(--on-accent, #fff); }
+.mode-toggle:hover { border-color: var(--accent); }
