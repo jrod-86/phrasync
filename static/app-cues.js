@@ -130,12 +130,7 @@ function renderCueList(options = {}) {
       if (cue.id === currentCueId) renderLyric(true);
       scheduleSave();
     });
-    remove.addEventListener("click", event => {
-      event?.stopPropagation();
-      project.cues = project.cues.filter(item => item.id !== cue.id);
-      if (selectedCueId === cue.id) selectedCueId = project.cues[0]?.id || null;
-      renderCueList(); updateDurationUI(); scheduleSave();
-    });
+    remove.addEventListener("click", event => { event?.stopPropagation(); deleteCue(cue.id); });
     fragment.append(card);
   });
   els.cueList.append(fragment);
@@ -187,4 +182,30 @@ function nudgeSelected(delta) {
   cue.start = Math.max(0, cue.start + delta);
   cue.end = cue.start + duration;
   renderCueList(); seekTo(cue.start); scheduleSave();
+}
+
+// One level of undo for a deleted lyric line, from the list's × or the
+// timeline's Delete key.
+let lastDeletedCue = null;
+
+function deleteCue(id) {
+  const index = project.cues.findIndex(item => item.id === id);
+  if (index < 0) return false;
+  lastDeletedCue = { cue: project.cues[index], index };
+  project.cues = project.cues.filter(item => item.id !== id);
+  if (selectedCueId === id) selectedCueId = project.cues[Math.min(index, project.cues.length - 1)]?.id || null;
+  renderCueList(); updateDurationUI(); timeline?.draw(); scheduleSave();
+  toast("Lyric line deleted. Press Ctrl+Z to bring it back.");
+  return true;
+}
+
+function restoreDeletedCue() {
+  if (!lastDeletedCue) return false;
+  const { cue, index } = lastDeletedCue;
+  lastDeletedCue = null;
+  project.cues = [...project.cues.slice(0, index), cue, ...project.cues.slice(index)];
+  selectedCueId = cue.id;
+  renderCueList(); updateDurationUI(); timeline?.draw(); scheduleSave();
+  toast("Lyric line restored.", "success");
+  return true;
 }

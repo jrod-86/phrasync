@@ -314,6 +314,28 @@ function setupTimeline() {
     }
   });
   timeline.fitAll();
+  // Click a lyric block on the timeline, then Delete or Backspace removes it.
+  // The key only acts while the last click was on a block, so typing or
+  // pressing Delete anywhere else never removes a line.
+  let armedCueId = null;
+  document.addEventListener("pointerdown", event => {
+    if (event.target !== timeline.canvas) { armedCueId = null; return; }
+    const { x, y } = timeline.localPoint(event);
+    const hit = timeline.hitTest(x, y);
+    armedCueId = hit?.type === "phrase" ? hit.cue.id : null;
+  }, true);
+  document.addEventListener("keydown", event => {
+    if (event.target.matches("input,textarea,select") || document.querySelector("dialog[open]")) return;
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === "z") {
+      if (restoreDeletedCue()) event.preventDefault();
+      return;
+    }
+    if ((event.key === "Delete" || event.key === "Backspace") && armedCueId && armedCueId === selectedCueId) {
+      event.preventDefault();
+      deleteCue(armedCueId);
+      armedCueId = null;
+    }
+  });
   scrollbar.addEventListener("scroll", () => {
     if (Math.abs(scrollbar.scrollLeft - expectedScroll) < 2) return;
     timeline.follow = false;
