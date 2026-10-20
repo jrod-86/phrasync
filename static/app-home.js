@@ -184,9 +184,16 @@ async function refreshHome() {
   renderHomeProjects();
 }
 
+/** Popovers belong to the screen they were opened on; switching screens closes them. */
+function closeFloatingMenus() {
+  closeHomeMenu();
+  for (const id of ["themePicker", "ratioMenu", "clipContextMenu"]) { const node = document.getElementById(id); if (node) node.hidden = true; }
+  $("#projectMenu").open = false;
+}
+
 async function showHome() {
   els.audioPlayer.pause();
-  closeHomeMenu();
+  closeFloatingMenus();
   await saveToLibrary(true);
   document.body.classList.add("home-open");
   $("#homePage").hidden = false;
@@ -202,6 +209,7 @@ function reportEditorOpen(open) {
 }
 
 function hideHome() {
+  closeFloatingMenus();
   reportEditorOpen(true);
   $("#homePage").hidden = true;
   document.body.classList.remove("home-open");
