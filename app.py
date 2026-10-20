@@ -770,6 +770,8 @@ def _open_desktop_window(url: str) -> None:
         js_api=desktop_export,
     )
     bind_window(desktop_export._window)
+    # The window's X returns to the start page from the editor (CapCut-style).
+    desktop_export._window.events.closing += desktop_export._on_closing
     # Edge Chromium uses the Windows WebView2 runtime and keeps Phrasync inside
     # its own app window instead of exposing a browser tab to the user.
     webview.start(gui="edgechromium", debug=False, private_mode=False, icon=str(ASSETS_DIR / "Phrasync.ico"))

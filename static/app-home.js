@@ -57,7 +57,7 @@ function captureThumbnail() {
 function isPristineProject() {
   const texts = list => (list || []).map(cue => cue.text).join("|");
   const bg = project.background || {};
-  return !project.audioAssetId && !project.sourceAssetId && texts(project.cues) === texts(DEFAULT_PROJECT.cues)
+  return !project.audioAssetId && !project.sourceAssetId && [texts(DEFAULT_PROJECT.cues), ""].includes(texts(project.cues))
     && bg.type === DEFAULT_PROJECT.background.type && !(bg.clips || []).length
     && ["Untitled lyric video", "Untitled subtitles"].includes(project.title);
 }
@@ -94,7 +94,8 @@ function replaceProject(next, message = "") {
   analysis = null; analysisPending = false; selectedWordIndex = 0; tapArmed = false; tapQueue = [];
   selectedFootageId = null; currentCueId = null;
   selectedCueId = project.cues[0]?.id || null;
-  applyProjectToControls(); updateSyncSummary(); timeline?.fitAll(); seekTo(0); scheduleSave();
+  els.currentCueLabel.textContent = "No active cue";
+  applyProjectToControls(); setCanvasDimensions(); updateSyncSummary(); timeline?.fitAll(); seekTo(0); scheduleSave();
   if (message) toast(message, "success");
   if (project.audioAssetId) ensureAnalysis();
 }
@@ -103,6 +104,8 @@ async function startNewProject(kind = "lyric") {
   await saveToLibrary(true);
   const fresh = applyNewProjectPrefs(clone(DEFAULT_PROJECT));
   fresh.id = newLibraryId();
+  fresh.cues = []; // a new project starts empty, no sample lines
+
   fresh.mode = kind === "subtitles" ? "subtitles" : "lyric";
   fresh.title = fresh.mode === "subtitles" ? "Untitled subtitles" : "Untitled lyric video";
   replaceProject(fresh);
@@ -187,10 +190,19 @@ async function showHome() {
   await saveToLibrary(true);
   document.body.classList.add("home-open");
   $("#homePage").hidden = false;
+  reportEditorOpen(false);
   await refreshHome();
 }
 
+/** Tell the desktop window whether its X should go back to the start page. */
+function reportEditorOpen(open) {
+  if (!IS_DESKTOP_HOST) return;
+  const send = () => window.pywebview?.api?.set_editor_open?.(open);
+  if (window.pywebview?.api) send(); else addEventListener("pywebviewready", send, { once: true });
+}
+
 function hideHome() {
+  reportEditorOpen(true);
   $("#homePage").hidden = true;
   document.body.classList.remove("home-open");
   timeline?.resize?.();
@@ -286,7 +298,7 @@ function initHome() {
   $("#homeDiagnostics").addEventListener("click", () => $("#diagnosticsButton").click());
   $("#homeTheme").addEventListener("click", () => els.themeToggle.click());
   addEventListener("pagehide", () => saveToLibrary());
-  if (appPrefs.startPage) showHome();
+  if (appPrefs.startPage) showHome(); else reportEditorOpen(true);
 }
 
 document.addEventListener("DOMContentLoaded", initHome, { once: true });

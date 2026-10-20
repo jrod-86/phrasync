@@ -296,7 +296,7 @@ async function shutdownServer() {
   try {
     const response = await fetch("/api/shutdown", { method: "POST" });
     if (!response.ok) throw new Error(await response.text());
-    document.body.innerHTML = '<main class="shutdown-screen"><h1>Phrasync stopped.</h1><p>You can close this tab. Port released.</p></main>';
+    window.pywebview?.api?.close_window?.(); document.body.innerHTML = '<main class="shutdown-screen"><h1>Phrasync stopped.</h1><p>You can close this tab. Port released.</p></main>';
   } catch (error) {
     toast(`Could not stop Phrasync: ${error.message}`, "error");
   }

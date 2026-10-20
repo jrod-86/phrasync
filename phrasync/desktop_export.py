@@ -31,6 +31,8 @@ class DesktopExportBridge:
     def __init__(self) -> None:
         self._window = None
         self._lock = threading.RLock()
+        self._editor_open = False
+        self._closing_allowed = False
         self._directory = RENDERS_DIR
         self._directory_selected = False
         # An export folder chosen in Settings (or last time) is remembered.
@@ -115,6 +117,37 @@ class DesktopExportBridge:
         from .settings import save_preferences
         save_preferences({"exportDirectory": str(directory)})
         return str(directory)
+
+    def set_editor_open(self, is_open: bool) -> bool:
+        """The page reports whether the editor (not the start page) is showing."""
+        self._editor_open = bool(is_open)
+        return self._editor_open
+
+    def close_window(self) -> bool:
+        """Close the app for real (Quit), skipping the back-to-start-page step."""
+        self._closing_allowed = True
+        if self._window is not None:
+            threading.Thread(target=self._window.destroy, daemon=True).start()
+        return True
+
+    def _on_closing(self) -> bool:
+        """Window X: from the editor go back to the start page; from the start page, close."""
+        if self._closing_allowed or not self._editor_open or self._window is None:
+            return True
+        window = self._window
+
+        def back_to_start() -> None:
+            try:
+                window.evaluate_js("showHome()")
+            except Exception:
+                # The page cannot respond, so do not trap the user in the window.
+                self._closing_allowed = True
+                window.destroy()
+
+        # evaluate_js waits on the UI thread that is running this handler.
+        threading.Thread(target=back_to_start, daemon=True).start()
+        self._editor_open = False
+        return False
 
     def open_workspace_folder(self, kind: str) -> str:
         """Open the projects, models or exports folder in Explorer."""
