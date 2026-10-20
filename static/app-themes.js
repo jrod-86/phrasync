@@ -7,8 +7,8 @@
 
 const UI_THEME_KEY = "phrasync.uiTheme";
 const UI_THEMES = [
-  { id: "phrasync", name: "Phrasync", hue: 300, tint: 6, accent: "#e487cd", accent2: "#b67ce0" },
-  { id: "capcut", name: "Studio Cyan", hue: 200, tint: 6, accent: "#00c4cc", accent2: "#20e3b2" },
+  { id: "phrasync", name: "Phrasync", hue: 300, tint: 6, cleanLight: true, accent: "#e487cd", accent2: "#b67ce0" },
+  { id: "capcut", name: "Studio Cyan", hue: 200, tint: 6, cleanLight: true, accent: "#00c4cc", accent2: "#20e3b2" },
   { id: "midnight", name: "Midnight Blue", hue: 225, tint: 32, accent: "#5aa9ff", accent2: "#7c6cff" },
   { id: "synthwave", name: "Neon Synthwave", hue: 272, tint: 38, accent: "#ff2fd0", accent2: "#00e5ff" },
   { id: "ember", name: "Ember", hue: 18, tint: 22, accent: "#ff7a3d", accent2: "#ffb347" },
@@ -54,17 +54,27 @@ function lightAccent(hex) {
 function themeColors(family, mode) {
   const { hue: h, tint: t } = family;
   if (mode === "light") {
+    const accents = { accent: family.lightAccent || lightAccent(family.accent), accent2: family.lightAccent2 || lightAccent(family.accent2) };
+    if (family.pure || family.cleanLight || !t) {
+      // Clean white light themes: Phrasync, Studio Cyan, Pure (and grey Graphite).
+      return {
+        bg: family.pure ? "#f6f6f7" : hsl(h, t, 94), elevated: family.pure ? "#fbfbfc" : hsl(h, t, 97), panel: "#ffffff",
+        panel2: hsl(h, t, 96.5), panel3: hsl(h, t, 92.5), border: hsl(h, Math.min(t, 24), 80), soft: hsl(h, Math.min(t, 24), 86),
+        text: hsl(h, Math.min(30, t + 10), 12), muted: hsl(h, Math.min(12, t), 42), ...accents
+      };
+    }
+    // Tinted light themes: every surface carries a soft wash of the family colour.
+    const st = Math.min(70, 28 + t * 1.3);
     return {
-      bg: family.pure ? "#f6f6f7" : hsl(h, t, 94), elevated: family.pure ? "#fbfbfc" : hsl(h, t, 97), panel: "#ffffff",
-      panel2: hsl(h, t, 96.5), panel3: hsl(h, t, 92.5), border: hsl(h, Math.min(t, 24), 84), soft: hsl(h, Math.min(t, 24), 90),
-      text: hsl(h, Math.min(30, t + 10), 12), muted: hsl(h, Math.min(12, t), 42),
-      accent: family.lightAccent || lightAccent(family.accent), accent2: family.lightAccent2 || lightAccent(family.accent2)
+      bg: hsl(h, st, 91), elevated: hsl(h, st, 94.5), panel: hsl(h, st, 97.5),
+      panel2: hsl(h, st, 94.5), panel3: hsl(h, st, 90.5), border: hsl(h, st * 0.6, 76), soft: hsl(h, st * 0.6, 84),
+      text: hsl(h, 38, 13), muted: hsl(h, 16, 38), ...accents
     };
   }
   return {
     bg: family.pure ? "#000000" : hsl(h, t, 6.5), elevated: family.pure ? "#060606" : hsl(h, t, 8.5),
     panel: family.pure ? "#0b0b0c" : hsl(h, t, 10.5), panel2: family.pure ? "#121214" : hsl(h, t, 13),
-    panel3: family.pure ? "#1a1a1d" : hsl(h, t, 16.5), border: hsl(h, Math.min(t, 26), 24), soft: hsl(h, Math.min(t, 26), 17.5),
+    panel3: family.pure ? "#1a1a1d" : hsl(h, t, 16.5), border: hsl(h, Math.min(t, 26), 27), soft: hsl(h, Math.min(t, 26), 21),
     text: hsl(h, Math.min(40, t + 15), 96), muted: hsl(h, Math.min(14, t), 68),
     accent: family.accent, accent2: family.accent2
   };

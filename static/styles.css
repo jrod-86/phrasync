@@ -929,3 +929,14 @@ body.home-open .app-shell { visibility: hidden; }
 .mode-toggle[aria-checked="true"] .mode-knob { transform: translateX(28px); }
 .mode-toggle[aria-checked="false"] .moon, .mode-toggle[aria-checked="true"] .sun { color: var(--on-accent, #fff); }
 .mode-toggle:hover { border-color: var(--accent); }
+
+/* Defined outlines on the main boxes, lightly tinted with the theme accent. */
+.panel, .preview-column, .timeline-dock { border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border)); }
+.mode-card, .set-card, .integration-card, .cue-card, .home-feature { border-color: var(--border); }
+.export-range-controls button, .export-range-controls input, .export-range-controls select {
+  height: 28px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-2); color: var(--text); font: inherit; font-size: 11px;
+}
+.export-range-controls button { padding: 0 10px; font-weight: 700; }
+.export-range-controls button:hover { border-color: var(--accent); }
+.export-range-controls input { padding: 0 8px; }
+.export-range-controls input:disabled { opacity: .5; }
