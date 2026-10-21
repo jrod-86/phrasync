@@ -6,7 +6,9 @@ async function handleAudioFile(file) {
     const video = project.mode === "subtitles" && isVideoUpload(file);
     if (video) await assertBrowserPreviewableVideo(file);
     const kind = video ? "video" : "audio";
-    const asset = await uploadAsset(kind, file);
+    showSongProgress(file.name, "upload", 0);
+    const asset = await uploadAsset(kind, file, (percent, stage) => showSongProgress(file.name, stage, percent), kind === "audio");
+    showSongProgress(null);
     project.audioAssetId = asset.id;
     project.audio = asset;
     project.sourceAssetId = asset.id;
@@ -25,14 +27,26 @@ async function handleAudioFile(file) {
     els.audioName.textContent = asset.name;
     applyAudioPreview(); applyBackgroundPreview(); updateDurationUI(); refreshStemsControls(); scheduleSave();
     const mediaLabel = video ? "Video" : (project.mode === "subtitles" ? "Audio" : "Song");
-    setAssetStatus(`${mediaLabel} ready · ${asset.duration ? formatTime(asset.duration) : "loading duration"}`, "success");
-    toast(`${mediaLabel} loaded.`, "success");
+    setAssetStatus(`${mediaLabel} ready · ${asset.duration ? formatTime(asset.duration) : "loading duration"}${asset.remastered ? ` · ${asset.remastered}` : ""}`, "success");
+    toast(asset.remastered ? t("Song remastered to WAV · stereo · 48 kHz · 32-bit.") : `${mediaLabel} loaded.`, "success");
     timeline?.fitAll();
     ensureAnalysis(true);
   } catch (error) {
+    showSongProgress(null);
+    els.audioName.textContent = project.audio?.name || t("Add song");
     setAssetStatus(error.message, "error");
     toast(error.message, "error");
   }
+}
+/** The song tile says what is happening: uploading, then remastering. */
+function showSongProgress(name, stage, percent) {
+  const tile = els.audioPick;
+  tile.classList.toggle("is-busy", Boolean(name));
+  tile.classList.toggle("is-remastering", stage === "remastering");
+  if (!name) { els.audioHint.textContent = t("WAV, MP3, FLAC, M4A…"); return; }
+  const remastering = stage === "remastering";
+  els.audioName.textContent = remastering ? t("Remastering…") : `${t("Uploading…")} ${percent ?? 0}%`;
+  els.audioHint.textContent = remastering ? t("Converting to WAV · stereo · 48 kHz · 32-bit") : name;
 }
 async function handleBackgroundFile(file) {
   if (!file || project.background.type === "dynamic") return;

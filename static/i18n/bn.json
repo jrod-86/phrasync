@@ -758,5 +758,10 @@
  "Building your karaoke video": "আপনার কারাওকে ভিডিও তৈরি হচ্ছে",
  "Language…": "ভাষা…",
  "Interface language": "ইন্টারফেসের ভাষা",
- "local karaoke & lyric studio": "লোকাল কারাওকে ও লিরিক স্টুডিও"
+ "local karaoke & lyric studio": "লোকাল কারাওকে ও লিরিক স্টুডিও",
+ "Uploading…": "আপলোড হচ্ছে…",
+ "Remastering…": "রিমাস্টার হচ্ছে…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "WAV · স্টেরিও · 48 kHz · 32-বিটে রূপান্তর হচ্ছে",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "WAV · স্টেরিও · 48 kHz · 32-বিটে রিমাস্টার হচ্ছে…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "গানটি WAV · স্টেরিও · 48 kHz · 32-বিটে রিমাস্টার হয়েছে।"
 }

@@ -758,5 +758,10 @@
  "Building your karaoke video": "جارٍ إنشاء فيديو الكاريوكي",
  "Language…": "اللغة…",
  "Interface language": "لغة الواجهة",
- "local karaoke & lyric studio": "استوديو محلي للكاريوكي والكلمات"
+ "local karaoke & lyric studio": "استوديو محلي للكاريوكي والكلمات",
+ "Uploading…": "جارٍ الرفع…",
+ "Remastering…": "جارٍ إعادة المعالجة…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "جارٍ التحويل إلى WAV · ستيريو · 48 kHz · 32 بت",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "جارٍ إعادة المعالجة إلى WAV · ستيريو · 48 kHz · 32 بت…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "تمت إعادة معالجة الأغنية إلى WAV · ستيريو · 48 kHz · 32 بت."
 }

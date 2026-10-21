@@ -758,5 +758,10 @@
  "Building your karaoke video": "Creando tu video de karaoke",
  "Language…": "Idioma…",
  "Interface language": "Idioma de la interfaz",
- "local karaoke & lyric studio": "estudio local de karaoke y letras"
+ "local karaoke & lyric studio": "estudio local de karaoke y letras",
+ "Uploading…": "Subiendo…",
+ "Remastering…": "Remasterizando…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "Convirtiendo a WAV · estéreo · 48 kHz · 32 bits",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Remasterizando a WAV · estéreo · 48 kHz · 32 bits…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Canción remasterizada a WAV · estéreo · 48 kHz · 32 bits."
 }

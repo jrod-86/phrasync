@@ -352,5 +352,10 @@
  "Building your karaoke video": "Creazione del video karaoke",
  "Language…": "Lingua…",
  "Interface language": "Lingua dell'interfaccia",
- "Lyrics": "Testi"
+ "Lyrics": "Testi",
+ "Uploading…": "Caricamento…",
+ "Remastering…": "Rimasterizzazione…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "Conversione in WAV · stereo · 48 kHz · 32 bit",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Rimasterizzazione in WAV · stereo · 48 kHz · 32 bit…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Brano rimasterizzato in WAV · stereo · 48 kHz · 32 bit."
 }

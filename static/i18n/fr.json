@@ -758,5 +758,10 @@
  "Building your karaoke video": "Création de votre vidéo karaoké",
  "Language…": "Langue…",
  "Interface language": "Langue de l'interface",
- "local karaoke & lyric studio": "studio local de karaoké et de paroles"
+ "local karaoke & lyric studio": "studio local de karaoké et de paroles",
+ "Uploading…": "Envoi…",
+ "Remastering…": "Remastérisation…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "Conversion en WAV · stéréo · 48 kHz · 32 bits",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Remastérisation en WAV · stéréo · 48 kHz · 32 bits…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Chanson remastérisée en WAV · stéréo · 48 kHz · 32 bits."
 }

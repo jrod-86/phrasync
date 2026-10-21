@@ -758,5 +758,10 @@
  "Building your karaoke video": "Membuat video karaoke Anda",
  "Language…": "Bahasa…",
  "Interface language": "Bahasa antarmuka",
- "local karaoke & lyric studio": "studio karaoke & lirik lokal"
+ "local karaoke & lyric studio": "studio karaoke & lirik lokal",
+ "Uploading…": "Mengunggah…",
+ "Remastering…": "Me-remaster…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "Mengonversi ke WAV · stereo · 48 kHz · 32-bit",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Me-remaster ke WAV · stereo · 48 kHz · 32-bit…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Lagu di-remaster ke WAV · stereo · 48 kHz · 32-bit."
 }

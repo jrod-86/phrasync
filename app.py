@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
 from phrasync import APP_NAME, APP_VERSION
+from phrasync.remaster import MASTER_LABEL, remaster_asset
 from phrasync.cuda import configure_cuda_paths, cuda_diagnostics, list_gpus
 from phrasync.diagnostics import install_exception_hooks, log_event, log_exception, support_report
 
@@ -365,11 +366,15 @@ def remove_asset(asset_id: str) -> dict[str, bool]:
 
 
 @app.post("/api/assets/{kind}/stream")
-async def upload_asset_stream(kind: str, request: Request, filename: str) -> dict[str, Any]:
+async def upload_asset_stream(kind: str, request: Request, filename: str, remaster: bool = False) -> dict[str, Any]:
     try:
         content_length = request.headers.get("content-length")
         asset = await store_chunks(kind, filename, request.stream(), int(content_length) if content_length else None)
+        if remaster and kind == "audio":
+            asset = await run_in_threadpool(remaster_asset, asset)
         result = asset.public()
+        if remaster and kind == "audio":
+            result["remastered"] = MASTER_LABEL
         if kind in {"audio", "video"}:
             result["duration"] = await run_in_threadpool(probe_duration, Path(asset.path))
         return result

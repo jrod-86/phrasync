@@ -758,5 +758,10 @@
  "Building your karaoke video": "正在生成卡拉OK视频",
  "Language…": "语言…",
  "Interface language": "界面语言",
- "local karaoke & lyric studio": "本地卡拉OK与歌词视频工作室"
+ "local karaoke & lyric studio": "本地卡拉OK与歌词视频工作室",
+ "Uploading…": "正在上传…",
+ "Remastering…": "正在重新母带处理…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "正在转换为 WAV · 立体声 · 48 kHz · 32 位",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "正在重新母带处理为 WAV · 立体声 · 48 kHz · 32 位…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "歌曲已重新处理为 WAV · 立体声 · 48 kHz · 32 位。"
 }

@@ -758,5 +758,10 @@
  "Building your karaoke video": "Создаём караоке-видео",
  "Language…": "Язык…",
  "Interface language": "Язык интерфейса",
- "local karaoke & lyric studio": "локальная студия караоке и лирик-видео"
+ "local karaoke & lyric studio": "локальная студия караоке и лирик-видео",
+ "Uploading…": "Загрузка…",
+ "Remastering…": "Ремастеринг…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "Преобразование в WAV · стерео · 48 кГц · 32 бит",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Ремастеринг в WAV · стерео · 48 кГц · 32 бит…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Песня переведена в WAV · стерео · 48 кГц · 32 бит."
 }

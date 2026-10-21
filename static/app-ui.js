@@ -25,11 +25,11 @@ async function api(path, options = {}) {
   return data;
 }
 
-async function uploadAsset(kind, file, onProgress = null) {
+async function uploadAsset(kind, file, onProgress = null, remaster = false) {
   // Send the File directly: multipart would spool and copy a long video twice.
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("POST", `/api/assets/${kind}/stream?filename=${encodeURIComponent(file.name)}`);
+    request.open("POST", `/api/assets/${kind}/stream?filename=${encodeURIComponent(file.name)}${remaster ? "&remaster=true" : ""}`);
     request.setRequestHeader("Content-Type", "application/octet-stream");
     request.upload.onprogress = event => {
       if (!event.lengthComputable) return;
@@ -37,7 +37,10 @@ async function uploadAsset(kind, file, onProgress = null) {
       onProgress?.(percent, "upload");
       setAssetStatus(`${window.t("Importing")}: ${file.name} · ${percent}% · ${formatByteCount(event.loaded)} / ${formatByteCount(event.total)}`);
     };
-    request.upload.onload = () => { setAssetStatus(window.t("Checking media…")); onProgress?.(100, "checking"); };
+    request.upload.onload = () => {
+      setAssetStatus(window.t(remaster ? "Remastering to WAV · stereo · 48 kHz · 32-bit…" : "Checking media…"));
+      onProgress?.(100, remaster ? "remastering" : "checking");
+    };
     request.onerror = () => reject(new Error(window.t("Import interrupted. Check that Phrasync is still running and try again.")));
     request.onabort = () => reject(new Error(window.t("Import cancelled.")));
     request.onload = () => {

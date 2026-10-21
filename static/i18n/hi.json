@@ -758,5 +758,10 @@
  "Building your karaoke video": "आपका कराओके वीडियो बन रहा है",
  "Language…": "भाषा…",
  "Interface language": "इंटरफ़ेस भाषा",
- "local karaoke & lyric studio": "लोकल कराओके और लिरिक स्टूडियो"
+ "local karaoke & lyric studio": "लोकल कराओके और लिरिक स्टूडियो",
+ "Uploading…": "अपलोड हो रहा है…",
+ "Remastering…": "रीमास्टर हो रहा है…",
+ "Converting to WAV · stereo · 48 kHz · 32-bit": "WAV · स्टीरियो · 48 kHz · 32-बिट में बदला जा रहा है",
+ "Remastering to WAV · stereo · 48 kHz · 32-bit…": "WAV · स्टीरियो · 48 kHz · 32-बिट में रीमास्टर हो रहा है…",
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "गाना WAV · स्टीरियो · 48 kHz · 32-बिट में रीमास्टर हो गया।"
 }
