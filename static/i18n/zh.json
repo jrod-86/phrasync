@@ -801,5 +801,7 @@
  "Reset to default": "恢复默认",
  "Delete effect": "删除特效",
  "Drag = move · edges = stretch · Delete = remove": "拖动 = 移动 · 边缘 = 拉伸 · Delete = 删除",
- "Add effects from the Effects tab": "从“特效”标签添加特效"
+ "Add effects from the Effects tab": "从“特效”标签添加特效",
+ "Snap": "吸附",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "将特效吸附到歌曲开头和结尾、播放头及其他片段（按住 Alt 可自由放置）"
 }

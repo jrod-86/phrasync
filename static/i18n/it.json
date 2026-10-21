@@ -395,5 +395,7 @@
  "Reset to default": "Ripristina predefiniti",
  "Delete effect": "Elimina effetto",
  "Drag = move · edges = stretch · Delete = remove": "Trascina = sposta · bordi = allunga · Elimina = rimuovi",
- "Add effects from the Effects tab": "Aggiungi effetti dalla scheda Effetti"
+ "Add effects from the Effects tab": "Aggiungi effetti dalla scheda Effetti",
+ "Snap": "Aggancio",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "Aggancia gli effetti a inizio e fine brano, al cursore e alle altre clip (tieni premuto Alt per posizionarli liberamente)"
 }

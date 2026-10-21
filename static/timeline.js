@@ -89,9 +89,14 @@
       return Math.max(1, this.getState().duration || 1);
     }
 
+    /** Widest zoom-out: the whole song shrinks to a tenth of the track, like CapCut. */
+    maxSpan() {
+      return Math.max(60, this.duration() * 10);
+    }
+
     setView(start, span) {
       const duration = this.duration();
-      this.viewSpan = clamp(span, 0.6, duration + 2);
+      this.viewSpan = clamp(span, 0.6, this.maxSpan());
       this.viewStart = clamp(start, -0.4, Math.max(0, duration - this.viewSpan * 0.25));
       this.onView(this.viewStart, this.viewSpan);
       this.draw();
@@ -99,7 +104,7 @@
 
     zoomAt(factor, pivotX) {
       const pivotTime = this.xToTime(pivotX);
-      const span = clamp(this.viewSpan * factor, 0.6, this.duration() + 2);
+      const span = clamp(this.viewSpan * factor, 0.6, this.maxSpan());
       const ratio = pivotX / Math.max(1, this.width);
       this.setView(pivotTime - span * ratio, span);
     }
@@ -499,9 +504,9 @@
       ctx.lineTo(this.width, LANES.ruler - .5);
       ctx.stroke();
 
-      const stepChoices = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60];
+      const stepChoices = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600];
       const target = this.viewSpan / (this.width / 90);
-      const step = stepChoices.find(value => value >= target) || 60;
+      const step = stepChoices.find(value => value >= target) || 3600;
       const first = Math.ceil(this.viewStart / step) * step;
 
       ctx.font = `10px ${theme.font}`;

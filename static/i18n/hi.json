@@ -801,5 +801,7 @@
  "Reset to default": "डिफ़ॉल्ट पर रीसेट करें",
  "Delete effect": "इफ़ेक्ट हटाएँ",
  "Drag = move · edges = stretch · Delete = remove": "ड्रैग = मूव · किनारे = स्ट्रेच · Delete = हटाएँ",
- "Add effects from the Effects tab": "इफ़ेक्ट्स टैब से इफ़ेक्ट जोड़ें"
+ "Add effects from the Effects tab": "इफ़ेक्ट्स टैब से इफ़ेक्ट जोड़ें",
+ "Snap": "स्नैप",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "इफ़ेक्ट्स को गाने की शुरुआत और अंत, प्लेहेड और दूसरी क्लिप पर स्नैप करें (आज़ादी से रखने के लिए Alt दबाए रखें)"
 }

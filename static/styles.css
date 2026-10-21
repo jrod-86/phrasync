@@ -987,3 +987,11 @@ body.home-open .app-shell { visibility: hidden; }
 .effect-block { position: absolute; height: 26px; border: 1px solid #b35cff; border-radius: 4px; padding: 5px 10px; overflow: hidden; white-space: nowrap; cursor: grab; font-size: 11px; color: var(--text);
   background: color-mix(in srgb, #b35cff 28%, var(--panel)); }
 .effect-block.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 30%, var(--panel)); box-shadow: 0 0 0 1px var(--accent); }
+/* Snap toggle on the Effects track, and the guide line shown while an edge snaps. */
+.effects-lane-title { align-items: center; gap: 10px; }
+.effects-lane-title > span { margin-left: auto; }
+.snap-toggle { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-2); color: var(--muted); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.snap-toggle svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.snap-toggle.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.effect-snap-line { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); box-shadow: 0 0 6px var(--accent); pointer-events: none; z-index: 3; }
+.effects-lane, .footage-lane { user-select: none; -webkit-user-select: none; }

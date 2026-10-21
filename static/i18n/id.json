@@ -801,5 +801,7 @@
  "Reset to default": "Reset ke default",
  "Delete effect": "Hapus efek",
  "Drag = move · edges = stretch · Delete = remove": "Seret = pindah · tepi = regangkan · Delete = hapus",
- "Add effects from the Effects tab": "Tambahkan efek dari tab Efek"
+ "Add effects from the Effects tab": "Tambahkan efek dari tab Efek",
+ "Snap": "Snap",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "Tempelkan efek ke awal dan akhir lagu, playhead, dan klip lain (tahan Alt untuk menaruh bebas)"
 }

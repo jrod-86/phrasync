@@ -801,5 +801,7 @@
  "Reset to default": "ডিফল্টে রিসেট করুন",
  "Delete effect": "ইফেক্ট মুছুন",
  "Drag = move · edges = stretch · Delete = remove": "ড্র্যাগ = সরান · প্রান্ত = স্ট্রেচ · Delete = মুছুন",
- "Add effects from the Effects tab": "ইফেক্ট ট্যাব থেকে ইফেক্ট যোগ করুন"
+ "Add effects from the Effects tab": "ইফেক্ট ট্যাব থেকে ইফেক্ট যোগ করুন",
+ "Snap": "স্ন্যাপ",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "ইফেক্টগুলো গানের শুরু ও শেষ, প্লেহেড এবং অন্য ক্লিপে স্ন্যাপ করুন (মুক্তভাবে রাখতে Alt চেপে ধরুন)"
 }

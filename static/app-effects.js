@@ -12,6 +12,41 @@ let selectedEffectId = null;
 let armedEffectId = null;
 let effectDrag = null;
 let effectsViewKey = "";
+const SNAP_KEY = "phrasync.effectSnap";
+let effectSnap = true;
+try { effectSnap = localStorage.getItem(SNAP_KEY) !== "off"; } catch { /* storage blocked */ }
+
+/** Edges an effect can snap to: song start and end, the playhead, other effects and footage clips. */
+function effectSnapPoints(ignoreId) {
+  const points = [0, projectDuration() + (project.timing.offset || 0), currentPlaybackTime()];
+  for (const clip of effectList()) if (clip.id !== ignoreId) points.push(clip.start, clip.end);
+  for (const clip of project.background.clips || []) points.push(clip.start, clip.end);
+  return points;
+}
+
+/** The nearest snap point within 10 px of `value`, or null. Hold Alt to place freely. */
+function snapTarget(value, points, event) {
+  if (!effectSnap || event.altKey) return null;
+  const tolerance = 10 / Math.max(1, $("#effectsLane").clientWidth) * timeline.viewSpan;
+  let best = null;
+  for (const point of points) if (Math.abs(point - value) <= tolerance && (best === null || Math.abs(point - value) < Math.abs(best - value))) best = point;
+  return best;
+}
+
+function showSnapLine(time) {
+  const lane = $("#effectsLane");
+  let line = $(".effect-snap-line", lane);
+  if (time === null) { line?.remove(); return; }
+  if (!line) { line = document.createElement("b"); line.className = "effect-snap-line"; lane.append(line); }
+  line.style.left = `${(time - (project.timing.offset || 0) - timeline.viewStart) / timeline.viewSpan * lane.clientWidth}px`;
+}
+
+function setEffectSnap(on) {
+  effectSnap = on;
+  try { localStorage.setItem(SNAP_KEY, on ? "on" : "off"); } catch { /* storage blocked */ }
+  const button = $("#effectSnap");
+  button.classList.toggle("on", on); button.setAttribute("aria-pressed", String(on));
+}
 
 const effectList = () => (project.effects ||= []);
 const selectedEffect = () => effectList().find(clip => clip.id === selectedEffectId) || null;
@@ -171,18 +206,34 @@ function initEffects() {
     if (effectDrag.pan) { timeline.setView(effectDrag.viewStart - delta, timeline.viewSpan); return; }
     const clip = selectedEffect(), original = effectDrag.original;
     if (!clip) return;
+    const points = effectDrag.points ||= effectSnapPoints(clip.id);
+    let snapped = null;
     if (effectDrag.mode === "move") {
-      clip.start = Math.max(0, original.start + delta); clip.end = clip.start + original.end - original.start;
+      const length = original.end - original.start;
+      let start = Math.max(0, original.start + delta);
+      const head = snapTarget(start, points, event), tail = snapTarget(start + length, points, event);
+      if (head !== null && (tail === null || Math.abs(head - start) <= Math.abs(tail - start - length))) { start = head; snapped = head; }
+      else if (tail !== null) { start = Math.max(0, tail - length); snapped = tail; }
+      clip.start = start; clip.end = start + length;
       clip.track = laneTrackAt(lane, event.clientY);
       if (clip.track >= effectTrackCount()) lane.style.height = `${(clip.track + 1) * EFFECT_ROW}px`;
     } else if (effectDrag.mode === "start") {
-      clip.start = Math.max(0, Math.min(original.start + delta, original.end - 0.1));
-    } else clip.end = Math.max(clip.start + 0.1, original.end + delta);
+      let start = Math.max(0, Math.min(original.start + delta, original.end - 0.1));
+      const target = snapTarget(start, points, event);
+      if (target !== null && target < original.end - 0.1) { start = target; snapped = target; }
+      clip.start = start;
+    } else {
+      let end = Math.max(clip.start + 0.1, original.end + delta);
+      const target = snapTarget(end, points, event);
+      if (target !== null && target > clip.start + 0.1) { end = target; snapped = target; }
+      clip.end = end;
+    }
+    showSnapLine(snapped);
     const element = lane.querySelector(`[data-id="${clip.id}"]`);
     if (element) positionEffectBlock(element, clip);
     $("#effectTiming").textContent = `${formatTime(clip.start)} → ${formatTime(clip.end)} · ${(clip.end - clip.start).toFixed(2)}s`;
   });
-  const release = () => { if (!effectDrag) return; effectDrag = null; refreshEffectEditor(); effectsChanged(); };
+  const release = () => { if (!effectDrag) return; effectDrag = null; showSnapLine(null); refreshEffectEditor(); effectsChanged(); };
   lane.addEventListener("pointerup", release); lane.addEventListener("pointercancel", release); lane.addEventListener("lostpointercapture", release);
   lane.addEventListener("auxclick", event => { if (event.button === 1) event.preventDefault(); });
   lane.addEventListener("wheel", event => {
@@ -213,6 +264,8 @@ function initEffects() {
     removeEffect(armedEffectId);
   }, true);
   $("#effectRemove").addEventListener("click", () => removeEffect());
+  $("#effectSnap").addEventListener("click", () => setEffectSnap(!effectSnap));
+  setEffectSnap(effectSnap);
   $("#effectDuplicate").addEventListener("click", () => {
     const clip = selectedEffect(); if (!clip) return;
     const copy = { ...clone(clip), id: crypto.randomUUID(), start: clip.end, end: clip.end + clip.end - clip.start };

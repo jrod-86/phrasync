@@ -801,5 +801,7 @@
  "Reset to default": "Сбросить по умолчанию",
  "Delete effect": "Удалить эффект",
  "Drag = move · edges = stretch · Delete = remove": "Перетаскивание = перемещение · края = растяжение · Delete = удаление",
- "Add effects from the Effects tab": "Добавьте эффекты на вкладке «Эффекты»"
+ "Add effects from the Effects tab": "Добавьте эффекты на вкладке «Эффекты»",
+ "Snap": "Привязка",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "Привязывать эффекты к началу и концу песни, плейхеду и другим клипам (удерживайте Alt для свободного размещения)"
 }

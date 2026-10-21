@@ -801,5 +801,7 @@
  "Reset to default": "Rétablir les valeurs par défaut",
  "Delete effect": "Supprimer l'effet",
  "Drag = move · edges = stretch · Delete = remove": "Glisser = déplacer · bords = étirer · Suppr = supprimer",
- "Add effects from the Effects tab": "Ajoutez des effets depuis l'onglet Effets"
+ "Add effects from the Effects tab": "Ajoutez des effets depuis l'onglet Effets",
+ "Snap": "Magnétisme",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "Aimante les effets au début et à la fin de la chanson, à la tête de lecture et aux autres clips (maintenez Alt pour les placer librement)"
 }

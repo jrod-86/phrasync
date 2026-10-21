@@ -801,5 +801,7 @@
  "Reset to default": "Restablecer valores predeterminados",
  "Delete effect": "Eliminar efecto",
  "Drag = move · edges = stretch · Delete = remove": "Arrastrar = mover · bordes = estirar · Supr = eliminar",
- "Add effects from the Effects tab": "Agrega efectos desde la pestaña Efectos"
+ "Add effects from the Effects tab": "Agrega efectos desde la pestaña Efectos",
+ "Snap": "Imán",
+ "Snap effects to the song's start and end, the playhead and other clips (hold Alt to place freely)": "Ajusta los efectos al inicio y final de la canción, al cabezal y a otros clips (mantén Alt para colocarlos libremente)"
 }
