@@ -768,5 +768,11 @@
  "Drop a song file here (WAV, MP3, FLAC, M4A…).": "Suelta aquí un archivo de audio (WAV, MP3, FLAC, M4A…).",
  "Drop a picture here (PNG, JPG, WEBP).": "Suelta aquí una imagen (PNG, JPG, WEBP).",
  "Drop an MP4 or WebM video here.": "Suelta aquí un video MP4 o WebM.",
- "Choose Picture or Video as the background first.": "Primero elige Imagen o Video como fondo."
+ "Choose Picture or Video as the background first.": "Primero elige Imagen o Video como fondo.",
+ "Normalize volume": "Normalizar volumen",
+ "Evens out the song's loudness in the video and audio file": "Iguala el volumen de la canción en el video y el archivo de audio",
+ "Target loudness": "Sonoridad objetivo",
+ "−14 LUFS · YouTube, Spotify": "−14 LUFS · YouTube, Spotify",
+ "−16 LUFS · Apple Music, podcasts": "−16 LUFS · Apple Music, pódcasts",
+ "−23 LUFS · TV broadcast": "−23 LUFS · televisión"
 }

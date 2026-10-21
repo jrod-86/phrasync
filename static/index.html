@@ -823,6 +823,18 @@
           </div>
         </section>
         <section class="export-group">
+          <label class="export-toggle"><input id="exportNormalize" type="checkbox" checked /><b>Normalize volume</b><small>Evens out the song's loudness in the video and audio file</small></label>
+          <div class="export-grid">
+            <label class="field"><span>Target loudness</span>
+              <select id="exportNormalizeTarget">
+                <option value="-14">−14 LUFS · YouTube, Spotify</option>
+                <option value="-16">−16 LUFS · Apple Music, podcasts</option>
+                <option value="-23">−23 LUFS · TV broadcast</option>
+              </select>
+            </label>
+          </div>
+        </section>
+        <section class="export-group">
           <label class="export-toggle"><input id="exportAudio" type="checkbox" /><b>Audio</b><small>The selected song track as its own file</small></label>
           <div class="export-grid">
             <label class="field"><span>Format</span>

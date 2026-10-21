@@ -16,6 +16,7 @@ from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 from . import kinetic
 from .processes import background_flags
+from .loudness import loudness_filter
 from .media import audio_envelope, decode_audio_frame, ffmpeg_exe, probe_duration
 from .storage import Asset, get_asset, get_av_asset
 from .render_backgrounds import DynamicBackground
@@ -284,6 +285,15 @@ def frame_workers(composer: "FrameComposer") -> int:
     return max(1, int(chosen)) if chosen else max(1, min(32, (os.cpu_count() or 2) - 1))
 
 
+def audio_output_args(project: dict[str, Any], ctx: RenderContext) -> list[str]:
+    """Map the song into the video, loudness-normalized when the export asks for it."""
+    args = ["-map", "1:a:0"]
+    chain = loudness_filter(project, Path(ctx.audio.path), ctx.start_time, ctx.duration)
+    if chain:
+        args.extend(["-af", chain])
+    return [*args, "-c:a", "aac", "-b:a", "192k"]
+
+
 def render_project(
     project: dict[str, Any],
     output_path: Path,
@@ -334,7 +344,7 @@ def render_project(
                 command.extend(["-ss", str(ctx.start_time), "-i", ctx.audio.path])
             command.extend(["-map", "0:v:0"])
             if ctx.audio:
-                command.extend(["-map", "1:a:0", "-c:a", "aac", "-b:a", "192k"])
+                command.extend(audio_output_args(project, ctx))
             if video_codec(project) == "hevc":
                 command.extend(["-tag:v", "hvc1"])
             command.extend(["-c:v", "copy", "-t", f"{ctx.duration:.6f}",
@@ -385,7 +395,7 @@ def render_project(
         ]
     )
     if ctx.audio:
-        command.extend(["-map", "1:a:0", "-c:a", "aac", "-b:a", "192k"])
+        command.extend(audio_output_args(project, ctx))
     command.extend(
         [
             *encoder_args(project),

@@ -768,5 +768,11 @@
  "Drop a song file here (WAV, MP3, FLAC, M4A…).": "এখানে গানের ফাইল ছাড়ুন (WAV, MP3, FLAC, M4A…)।",
  "Drop a picture here (PNG, JPG, WEBP).": "এখানে ছবি ছাড়ুন (PNG, JPG, WEBP)।",
  "Drop an MP4 or WebM video here.": "এখানে MP4 বা WebM ভিডিও ছাড়ুন।",
- "Choose Picture or Video as the background first.": "আগে ব্যাকগ্রাউন্ড হিসেবে ছবি বা ভিডিও বেছে নিন।"
+ "Choose Picture or Video as the background first.": "আগে ব্যাকগ্রাউন্ড হিসেবে ছবি বা ভিডিও বেছে নিন।",
+ "Normalize volume": "ভলিউম স্বাভাবিক করুন",
+ "Evens out the song's loudness in the video and audio file": "ভিডিও ও অডিও ফাইলে গানের আওয়াজ সমান করে",
+ "Target loudness": "লক্ষ্য লাউডনেস",
+ "−14 LUFS · YouTube, Spotify": "−14 LUFS · YouTube, Spotify",
+ "−16 LUFS · Apple Music, podcasts": "−16 LUFS · Apple Music, পডকাস্ট",
+ "−23 LUFS · TV broadcast": "−23 LUFS · টিভি সম্প্রচার"
 }

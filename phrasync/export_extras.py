@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from .loudness import loudness_filter
 from .media import ffmpeg_exe
 from .processes import background_flags
 from .storage import get_av_asset
@@ -56,6 +57,9 @@ def export_audio(project: dict[str, Any], output_dir: Path, base: str, fmt: str)
     command = [ffmpeg_exe(), "-y", "-v", "error", "-ss", f"{start:.6f}", "-i", asset.path, "-vn", "-map", "0:a:0"]
     if duration is not None:
         command.extend(["-t", f"{duration:.6f}"])
+    chain = loudness_filter(project, Path(asset.path), start, duration)
+    if chain:
+        command.extend(["-af", chain])
     command.extend([*codec, str(path)])
     completed = subprocess.run(command, capture_output=True, text=True, creationflags=background_flags())
     if completed.returncode != 0:

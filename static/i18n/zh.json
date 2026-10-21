@@ -768,5 +768,11 @@
  "Drop a song file here (WAV, MP3, FLAC, M4A…).": "请拖入歌曲文件（WAV、MP3、FLAC、M4A…）。",
  "Drop a picture here (PNG, JPG, WEBP).": "请拖入图片（PNG、JPG、WEBP）。",
  "Drop an MP4 or WebM video here.": "请拖入 MP4 或 WebM 视频。",
- "Choose Picture or Video as the background first.": "请先将背景设为图片或视频。"
+ "Choose Picture or Video as the background first.": "请先将背景设为图片或视频。",
+ "Normalize volume": "音量标准化",
+ "Evens out the song's loudness in the video and audio file": "统一视频和音频文件中歌曲的响度",
+ "Target loudness": "目标响度",
+ "−14 LUFS · YouTube, Spotify": "−14 LUFS · YouTube、Spotify",
+ "−16 LUFS · Apple Music, podcasts": "−16 LUFS · Apple Music、播客",
+ "−23 LUFS · TV broadcast": "−23 LUFS · 电视广播"
 }

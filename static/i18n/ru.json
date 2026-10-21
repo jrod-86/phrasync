@@ -768,5 +768,11 @@
  "Drop a song file here (WAV, MP3, FLAC, M4A…).": "Перетащите сюда аудиофайл (WAV, MP3, FLAC, M4A…).",
  "Drop a picture here (PNG, JPG, WEBP).": "Перетащите сюда изображение (PNG, JPG, WEBP).",
  "Drop an MP4 or WebM video here.": "Перетащите сюда видео MP4 или WebM.",
- "Choose Picture or Video as the background first.": "Сначала выберите фон «Изображение» или «Видео»."
+ "Choose Picture or Video as the background first.": "Сначала выберите фон «Изображение» или «Видео».",
+ "Normalize volume": "Нормализовать громкость",
+ "Evens out the song's loudness in the video and audio file": "Выравнивает громкость песни в видео и аудиофайле",
+ "Target loudness": "Целевая громкость",
+ "−14 LUFS · YouTube, Spotify": "−14 LUFS · YouTube, Spotify",
+ "−16 LUFS · Apple Music, podcasts": "−16 LUFS · Apple Music, подкасты",
+ "−23 LUFS · TV broadcast": "−23 LUFS · телевещание"
 }

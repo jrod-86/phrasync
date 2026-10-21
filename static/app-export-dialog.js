@@ -12,6 +12,7 @@ function exportSettings() {
   settings.format ||= "mp4";
   if (typeof settings.video !== "boolean") settings.video = true;
   settings.audio = { enabled: false, format: "mp3", ...(settings.audio || {}) };
+  settings.normalize = { enabled: true, target: -14, ...(settings.normalize || {}) };
   settings.captions = { enabled: false, format: "srt", ...(settings.captions || {}) };
   return settings;
 }
@@ -75,6 +76,8 @@ function syncExportDialog() {
   $("#exportCodec").value = settings.codec;
   $("#exportContainer").value = settings.format;
   $("#exportAudio").checked = settings.audio.enabled;
+  $("#exportNormalize").checked = settings.normalize.enabled;
+  $("#exportNormalizeTarget").value = String(settings.normalize.target);
   $("#exportAudioFormat").value = settings.audio.format;
   $("#exportCaptions").checked = settings.captions.enabled;
   $("#exportCaptionFormat").value = settings.captions.format;
@@ -104,6 +107,8 @@ const exportBindings = [
   ["#exportEncoder", "change", target => { exportSettings().encoder = target.value; }],
   ["#exportContainer", "change", target => { exportSettings().format = target.value; }],
   ["#exportAudio", "change", target => { exportSettings().audio.enabled = target.checked; }],
+  ["#exportNormalize", "change", target => { exportSettings().normalize.enabled = target.checked; }],
+  ["#exportNormalizeTarget", "change", target => { exportSettings().normalize.target = Number(target.value); }],
   ["#exportAudioFormat", "change", target => { exportSettings().audio.format = target.value; }],
   ["#exportCaptions", "change", target => { exportSettings().captions.enabled = target.checked; }],
   ["#exportCaptionFormat", "change", target => { exportSettings().captions.format = target.value; }],
