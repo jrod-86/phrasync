@@ -260,6 +260,25 @@
               </button>
             </div>
 
+            <div id="effectsHolder" hidden>
+              <div id="effectsLibrary" class="effects-library">
+                <p class="microcopy">Click an effect to add it at the playhead, or drag it onto the Effects track. Stretch it on the timeline to cover the part you want.</p>
+                <div class="effect-grid" id="effectGrid"></div>
+              </div>
+              <div id="effectDetails" class="effect-details">
+                <p class="microcopy" id="effectEmpty">Select an effect on the timeline to fine-tune it.</p>
+                <div id="effectEditor" hidden>
+                  <div class="effect-details-head"><strong>Details</strong><button class="icon-button" id="effectReset" type="button" title="Reset to default" aria-label="Reset to default">↺</button></div>
+                  <div class="effect-name-row"><span>Name</span><strong id="effectName"></strong></div>
+                  <div id="effectSliders"></div>
+                  <div class="effect-timing" id="effectTiming"></div>
+                  <div class="effect-actions">
+                    <button class="button secondary" id="effectDuplicate" type="button">Duplicate</button>
+                    <button class="button secondary" id="effectRemove" type="button">Delete effect</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <details id="footageSection" class="footage-panel">
               <summary>Footage & effects</summary>
               <label class="toggle-row"><input id="footageEnable" type="checkbox" /><span>Use footage timeline</span></label>
@@ -609,6 +628,8 @@
       <div class="timeline-canvas-wrap" id="timelineWrap"><canvas id="timelineCanvas"></canvas></div>
       <div class="footage-lane-title"><strong>Background footage</strong><span>Drag = move · edges = trim · double click = edit</span><div id="footageTools" class="footage-tools" hidden><button id="footageSplit" type="button">Split at playhead</button><button id="footageDuplicate" type="button">Duplicate clip</button><button id="footageRemove" type="button">Remove clip</button></div></div>
       <div id="footageLane" class="footage-lane" role="region" aria-label="Background footage"></div>
+      <div class="footage-lane-title effects-lane-title"><strong>Effects</strong><span>Drag = move · edges = stretch · Delete = remove</span></div>
+      <div id="effectsLane" class="effects-lane" role="region" aria-label="Effects"></div>
       <div id="timelineScroll" class="timeline-scrollbar" tabindex="0" role="region" aria-label="Scroll timeline"><div id="timelineScrollTrack"></div></div>
       <div class="dock-foot">
         <div class="word-nudge">
@@ -880,6 +901,7 @@
   <script src="/static/app-ui.js" defer></script>
   <script src="/static/app-lyrics.js" defer></script>
   <script src="/static/app-visuals.js" defer></script>
+  <script src="/static/effects.js" defer></script>
   <script src="/static/media-effects.js" defer></script>
   <script src="/static/visual-clips.js" defer></script>
   <script src="/static/app-footage.js" defer></script>
@@ -904,6 +926,7 @@
   <script src="/static/app-settings.js" defer></script>
   <script src="/static/app-themes.js" defer></script>
   <script src="/static/app-drop-tiles.js" defer></script>
+  <script src="/static/app-effects.js" defer></script>
   <script src="/static/app-render.js" defer></script>
   <script src="/static/store-updates.js" defer></script>
   <script src="/static/app-timeline.js" defer></script>

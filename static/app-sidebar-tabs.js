@@ -12,6 +12,7 @@ const SIDEBAR_ICONS = {
   lyrics: '<path d="M4 6h16M4 11h16M4 16h10"/><path d="M18 15v5l3-2"/>',
   text: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
   background: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="8.5" r="1.5"/>',
+  effects: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="m6 6 2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
   canvas: '<rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 3v3M17 18v3"/>'
 };
 
@@ -53,6 +54,10 @@ function sidebarLayout() {
       { id: "visual", label: "Visual", nodes: sidebarRun(backgroundLabel, footage) },
       { id: "adjust", label: "Adjust", nodes: [...sidebarSectionBody("visual").children] },
       { id: "footage", label: "Footage", nodes: [footage] }
+    ] },
+    { id: "effects", label: "Effects", groups: [
+      { id: "library", label: "Library", nodes: [$("#effectsLibrary")] },
+      { id: "adjust", label: "Adjust", nodes: [$("#effectDetails")] }
     ] },
     { id: "canvas", label: "Canvas", groups: [
       { id: "format", label: "Format", nodes: [...sidebarSectionBody("export").children] }

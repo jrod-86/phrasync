@@ -692,7 +692,7 @@ input[type="range"].volume { width: 96px; min-width: 96px; }
 .controls-panel { display: flex; flex-direction: column; overflow: hidden; }
 .controls-panel > .panel-title { flex: none; }
 .controls-panel > .mode-card { flex: none; margin-top: 10px; }
-.studio-tabs { flex: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--border-soft); }
+.studio-tabs { flex: none; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--border-soft); }
 .studio-tab {
   position: relative; display: grid; justify-items: center; gap: 4px; padding: 8px 2px 9px;
   border: 0; border-radius: 8px 8px 0 0; background: none; color: var(--muted);
@@ -958,3 +958,32 @@ body.home-open .app-shell { visibility: hidden; }
 .asset-tile.drop-active { position: relative; }
 .asset-tile.drop-active::after { content: attr(data-drop-label); position: absolute; right: 14px; color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 #exportNormalizeTarget { min-width: 270px; }
+/* Effects tab (library + Adjust) and the Effects track on the timeline. */
+.effect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-top: 8px; }
+.effect-card { display: grid; gap: 6px; padding: 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); color: var(--text); font: inherit; cursor: pointer; text-align: center; }
+.effect-card:hover { border-color: var(--accent); }
+.effect-card strong { font-size: 11px; }
+.effect-swatch { display: grid; place-items: center; aspect-ratio: 16 / 10; border-radius: 7px; font-size: 22px; color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.45); }
+.fx-colourful .effect-swatch { background: linear-gradient(120deg, #ff3d7f, #ffb02e, #3ee07c, #2e9bff, #b44dff); }
+.fx-gold-sparkles .effect-swatch { background: radial-gradient(circle at 30% 35%, #fff5c9 0 4%, transparent 9%), radial-gradient(circle at 70% 60%, #ffd56a 0 5%, transparent 11%), #2a1d05; color: #ffd56a; }
+.fx-snow-storm .effect-swatch { background: radial-gradient(circle at 20% 30%, #fff 0 3%, transparent 5%), radial-gradient(circle at 65% 70%, #fff 0 4%, transparent 6%), linear-gradient(#3c5a7a, #9fb8d2); }
+.fx-gold-sequins .effect-swatch { background: radial-gradient(circle at 35% 40%, #ffe9a3 0 8%, #c8961e 9% 14%, transparent 15%), radial-gradient(circle at 68% 62%, #f4c54d 0 9%, transparent 10%), #1d1404; color: #ffcf55; }
+.fx-pendulum .effect-swatch { background: linear-gradient(160deg, #3a2d6b, #8a4fd8); }
+.fx-tremor-strobe .effect-swatch { background: repeating-linear-gradient(90deg, #111 0 6px, #f5f5f5 6px 9px); }
+.fx-disco-bounce .effect-swatch { background: radial-gradient(circle at 25% 30%, #ff3dd0 0 18%, transparent 40%), radial-gradient(circle at 75% 65%, #36d6ff 0 18%, transparent 42%), #140a26; }
+.effect-details { display: grid; gap: 10px; }
+.effect-details-head { display: flex; align-items: center; justify-content: space-between; }
+.effect-details-head strong { font-size: 13px; }
+.effect-name-row { display: grid; grid-template-columns: 70px 1fr; align-items: center; margin: 10px 0 6px; font-size: 12px; color: var(--muted); }
+.effect-name-row strong { color: var(--text); }
+.effect-slider { display: grid; grid-template-columns: 1fr 64px; gap: 4px 10px; align-items: center; margin-top: 10px; }
+.effect-slider span { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.effect-slider input[type=number] { height: 30px; padding: 0 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-2); color: var(--text); font: inherit; text-align: center; }
+.effect-timing { margin-top: 10px; font-size: 11px; color: var(--muted); }
+.effect-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.effects-lane { position: relative; flex-shrink: 0; height: 30px; margin: 0 11px; overflow: hidden; border-radius: 6px; touch-action: none; color: var(--muted); font-size: 11px;
+  background: var(--panel-2) repeating-linear-gradient(to bottom, transparent 0, transparent 29px, var(--border) 29px, var(--border) 30px); }
+.effects-lane-empty { position: absolute; left: 10px; top: 8px; }
+.effect-block { position: absolute; height: 26px; border: 1px solid #b35cff; border-radius: 4px; padding: 5px 10px; overflow: hidden; white-space: nowrap; cursor: grab; font-size: 11px; color: var(--text);
+  background: color-mix(in srgb, #b35cff 28%, var(--panel)); }
+.effect-block.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 30%, var(--panel)); box-shadow: 0 0 0 1px var(--accent); }

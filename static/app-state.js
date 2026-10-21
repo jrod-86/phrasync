@@ -22,6 +22,7 @@ const DEFAULT_PROJECT = {
   audio: null,
   sourceAssetId: null,
   sourceKind: "audio",
+  effects: [], // timeline effect clips, see static/effects.js
   background: {
     type: "dynamic",
     footageEnabled: false,

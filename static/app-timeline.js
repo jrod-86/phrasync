@@ -278,7 +278,7 @@ function setupTimeline() {
     expectedScroll = Math.max(0, start) / span * width;
     if (Math.abs(scrollbar.scrollLeft - expectedScroll) > 1) scrollbar.scrollLeft = expectedScroll;
     els.followToggle.classList.toggle("off", !timeline.follow);
-    renderFootageLane();
+    renderFootageLane(); window.renderEffectsLane?.();
   };
   timeline = window.VFTimeline.create({
     canvas: els.timelineCanvas,

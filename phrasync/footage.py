@@ -10,15 +10,43 @@ EFFECTS = {"bw": 100, "pendulum": 15, "shake": 8, "flash": 60, "gradient": 80,
            "particles": 100, "spectrum": 150, "bpm": 300, "drop": 30, "pulse": 40}
 
 
+TIMELINE_EFFECTS = {"colourful", "gold-sparkles", "snow-storm", "gold-sequins",
+                    "pendulum", "tremor-strobe", "disco-bounce"}
+
+
 def effects_enabled(project: dict) -> bool:
     bg = project.get("background") or {}
-    return bool(bg.get("footageEnabled")) or any(
+    return bool(bg.get("footageEnabled")) or bool(project.get("effects")) or any(
         float((bg.get("effects") or {}).get(key) or 0) > 0 for key in EFFECTS if key != "bpm"
     )
 
 
+def check_timeline_effects(effects) -> list:
+    """Timeline effect clips (static/effects.js): known type, sane timing, 0–100 settings."""
+    if effects is None:
+        return []
+    if not isinstance(effects, list) or len(effects) > 200:
+        raise ValueError("Invalid effects track")
+    for clip in effects:
+        if not isinstance(clip, dict) or clip.get("type") not in TIMELINE_EFFECTS:
+            raise ValueError("Unknown timeline effect")
+        try:
+            start, end, track = float(clip.get("start", 0)), float(clip.get("end", 0)), int(clip.get("track", 0))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Effect timing must be numbers") from exc
+        if not (math.isfinite(start) and math.isfinite(end) and 0 <= start < end) or not 0 <= track < 4:
+            raise ValueError("Invalid effect timing")
+        params = clip.get("params") or {}
+        if not isinstance(params, dict) or any(
+            not isinstance(value, (int, float)) or not 0 <= value <= 100 for value in params.values()
+        ):
+            raise ValueError("Effect settings must be between 0 and 100")
+    return effects
+
+
 def prepare_footage(project: dict) -> dict:
     project = copy.deepcopy(project)
+    check_timeline_effects(project.get("effects"))
     bg = project.setdefault("background", {})
     fx = bg.get("effects") or {}
     for key, maximum in EFFECTS.items():

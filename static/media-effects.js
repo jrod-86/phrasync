@@ -7,7 +7,7 @@ window.VFMedia = (() => {
   function enabled(p = project) { return Boolean(p.background.footageEnabled); }
   function usesCanvas(p = project) {
     const fx = p.background.effects || {};
-    return enabled(p) || ["bw", "pendulum", "shake", "flash", "gradient", "particles", "spectrum", "drop", "pulse"].some(key => positive(fx[key]) > 0);
+    return enabled(p) || window.VFEffects?.list(p).length > 0 || ["bw", "pendulum", "shake", "flash", "gradient", "particles", "spectrum", "drop", "pulse"].some(key => positive(fx[key]) > 0);
   }
   function activeClip(time, p = project) {
     return (p.background.clips || []).filter(c => time >= c.start && time < c.end)
@@ -139,6 +139,7 @@ window.VFMedia = (() => {
       ctx.stroke();
     }
     ctx.restore();
+    window.VFEffects?.drawOverlay(ctx, t);
   }
   function legacySource() {
     const bg = project.background;
@@ -167,6 +168,10 @@ window.VFMedia = (() => {
     return { source: value.element, clip };
   }
   async function exportBase(ctx, t, amplitude) {
+    await exportLayers(ctx, t, amplitude);
+    window.VFEffects?.applyCamera(ctx, t, project.background.backgroundColor);
+  }
+  async function exportLayers(ctx, t, amplitude) {
     if (!enabled()) { const { source, clip } = await exportSource(t); drawBase(ctx,source,clip,t,amplitude); return; }
     drawBase(ctx,null,null,t,amplitude);
     for (const clip of activeLayers(t)) {
@@ -223,6 +228,7 @@ window.VFMedia = (() => {
       for (const entry of resources.values()) if (!activeVideos.has(entry.element)) entry.element.pause?.();
     }
     else drawBase(baseCtx,source,clip,t,amplitude);
+    window.VFEffects?.applyCamera(baseCtx, t, project.background.backgroundColor);
     const ctx = overlay.getContext("2d"); ctx.clearRect(0, 0, width, height); drawOverlay(ctx, t, amplitude);
   }
   return { enabled, usesCanvas, activeClip, preview, exportBase, drawOverlay, preload: resource };
