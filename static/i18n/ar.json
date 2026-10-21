@@ -763,5 +763,10 @@
  "Remastering…": "جارٍ إعادة المعالجة…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "جارٍ التحويل إلى WAV · ستيريو · 48 kHz · 32 بت",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "جارٍ إعادة المعالجة إلى WAV · ستيريو · 48 kHz · 32 بت…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "تمت إعادة معالجة الأغنية إلى WAV · ستيريو · 48 kHz · 32 بت."
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "تمت إعادة معالجة الأغنية إلى WAV · ستيريو · 48 kHz · 32 بت.",
+ "Drop to add": "أفلت للإضافة",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "أفلت ملف أغنية هنا (WAV, MP3, FLAC, M4A…).",
+ "Drop a picture here (PNG, JPG, WEBP).": "أفلت صورة هنا (PNG, JPG, WEBP).",
+ "Drop an MP4 or WebM video here.": "أفلت فيديو MP4 أو WebM هنا.",
+ "Choose Picture or Video as the background first.": "اختر صورة أو فيديو كخلفية أولاً."
 }

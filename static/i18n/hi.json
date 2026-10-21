@@ -763,5 +763,10 @@
  "Remastering…": "रीमास्टर हो रहा है…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "WAV · स्टीरियो · 48 kHz · 32-बिट में बदला जा रहा है",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "WAV · स्टीरियो · 48 kHz · 32-बिट में रीमास्टर हो रहा है…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "गाना WAV · स्टीरियो · 48 kHz · 32-बिट में रीमास्टर हो गया।"
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "गाना WAV · स्टीरियो · 48 kHz · 32-बिट में रीमास्टर हो गया।",
+ "Drop to add": "जोड़ने के लिए छोड़ें",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "यहाँ गाने की फ़ाइल छोड़ें (WAV, MP3, FLAC, M4A…)।",
+ "Drop a picture here (PNG, JPG, WEBP).": "यहाँ तस्वीर छोड़ें (PNG, JPG, WEBP)।",
+ "Drop an MP4 or WebM video here.": "यहाँ MP4 या WebM वीडियो छोड़ें।",
+ "Choose Picture or Video as the background first.": "पहले बैकग्राउंड के लिए तस्वीर या वीडियो चुनें।"
 }

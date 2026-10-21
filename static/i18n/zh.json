@@ -763,5 +763,10 @@
  "Remastering…": "正在重新母带处理…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "正在转换为 WAV · 立体声 · 48 kHz · 32 位",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "正在重新母带处理为 WAV · 立体声 · 48 kHz · 32 位…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "歌曲已重新处理为 WAV · 立体声 · 48 kHz · 32 位。"
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "歌曲已重新处理为 WAV · 立体声 · 48 kHz · 32 位。",
+ "Drop to add": "松开即可添加",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "请拖入歌曲文件（WAV、MP3、FLAC、M4A…）。",
+ "Drop a picture here (PNG, JPG, WEBP).": "请拖入图片（PNG、JPG、WEBP）。",
+ "Drop an MP4 or WebM video here.": "请拖入 MP4 或 WebM 视频。",
+ "Choose Picture or Video as the background first.": "请先将背景设为图片或视频。"
 }

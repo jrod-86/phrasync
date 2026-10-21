@@ -763,5 +763,10 @@
  "Remastering…": "Remasterizando…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "Convertendo para WAV · estéreo · 48 kHz · 32 bits",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Remasterizando para WAV · estéreo · 48 kHz · 32 bits…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Música remasterizada para WAV · estéreo · 48 kHz · 32 bits."
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Música remasterizada para WAV · estéreo · 48 kHz · 32 bits.",
+ "Drop to add": "Solte para adicionar",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "Solte aqui um arquivo de áudio (WAV, MP3, FLAC, M4A…).",
+ "Drop a picture here (PNG, JPG, WEBP).": "Solte aqui uma imagem (PNG, JPG, WEBP).",
+ "Drop an MP4 or WebM video here.": "Solte aqui um vídeo MP4 ou WebM.",
+ "Choose Picture or Video as the background first.": "Primeiro escolha Imagem ou Vídeo como fundo."
 }

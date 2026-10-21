@@ -42,6 +42,7 @@ APP_SCRIPTS = [
     "app-home.js",
     "app-settings.js",
     "app-themes.js",
+    "app-drop-tiles.js",
     "app-render.js",
     "store-updates.js",
     "app-timeline.js",

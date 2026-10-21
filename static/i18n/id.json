@@ -763,5 +763,10 @@
  "Remastering…": "Me-remaster…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "Mengonversi ke WAV · stereo · 48 kHz · 32-bit",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Me-remaster ke WAV · stereo · 48 kHz · 32-bit…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Lagu di-remaster ke WAV · stereo · 48 kHz · 32-bit."
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Lagu di-remaster ke WAV · stereo · 48 kHz · 32-bit.",
+ "Drop to add": "Lepas untuk menambah",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "Lepas file lagu di sini (WAV, MP3, FLAC, M4A…).",
+ "Drop a picture here (PNG, JPG, WEBP).": "Lepas gambar di sini (PNG, JPG, WEBP).",
+ "Drop an MP4 or WebM video here.": "Lepas video MP4 atau WebM di sini.",
+ "Choose Picture or Video as the background first.": "Pilih Gambar atau Video sebagai latar dulu."
 }

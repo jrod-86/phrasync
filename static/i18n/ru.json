@@ -763,5 +763,10 @@
  "Remastering…": "Ремастеринг…",
  "Converting to WAV · stereo · 48 kHz · 32-bit": "Преобразование в WAV · стерео · 48 кГц · 32 бит",
  "Remastering to WAV · stereo · 48 kHz · 32-bit…": "Ремастеринг в WAV · стерео · 48 кГц · 32 бит…",
- "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Песня переведена в WAV · стерео · 48 кГц · 32 бит."
+ "Song remastered to WAV · stereo · 48 kHz · 32-bit.": "Песня переведена в WAV · стерео · 48 кГц · 32 бит.",
+ "Drop to add": "Отпустите, чтобы добавить",
+ "Drop a song file here (WAV, MP3, FLAC, M4A…).": "Перетащите сюда аудиофайл (WAV, MP3, FLAC, M4A…).",
+ "Drop a picture here (PNG, JPG, WEBP).": "Перетащите сюда изображение (PNG, JPG, WEBP).",
+ "Drop an MP4 or WebM video here.": "Перетащите сюда видео MP4 или WebM.",
+ "Choose Picture or Video as the background first.": "Сначала выберите фон «Изображение» или «Видео»."
 }
