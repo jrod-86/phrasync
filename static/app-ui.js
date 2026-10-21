@@ -12,13 +12,13 @@ async function api(path, options = {}) {
   try {
     response = await fetch(path, options);
   } catch (error) {
-    window.PhrasyncDiagnostics?.record("error", "api", `${options.method || "GET"} ${path} network failure: ${error.name}`);
+    window.KaraokeSeshDiagnostics?.record("error", "api", `${options.method || "GET"} ${path} network failure: ${error.name}`);
     throw error;
   }
   const contentType = response.headers.get("content-type") || "";
   const data = contentType.includes("application/json") ? await response.json() : await response.text();
   if (!response.ok) {
-    window.PhrasyncDiagnostics?.record("error", "api", `${options.method || "GET"} ${path} returned ${response.status}`);
+    window.KaraokeSeshDiagnostics?.record("error", "api", `${options.method || "GET"} ${path} returned ${response.status}`);
     const detail = typeof data === "object" ? data.detail || JSON.stringify(data) : data;
     throw new Error(detail || `${response.status} ${response.statusText}`);
   }
@@ -41,7 +41,7 @@ async function uploadAsset(kind, file, onProgress = null, remaster = false) {
       setAssetStatus(window.t(remaster ? "Remastering to WAV · stereo · 48 kHz · 32-bit…" : "Checking media…"));
       onProgress?.(100, remaster ? "remastering" : "checking");
     };
-    request.onerror = () => reject(new Error(window.t("Import interrupted. Check that Phrasync is still running and try again.")));
+    request.onerror = () => reject(new Error(window.t("Import interrupted. Check that KaraokeSesh is still running and try again.")));
     request.onabort = () => reject(new Error(window.t("Import cancelled.")));
     request.onload = () => {
       let data;

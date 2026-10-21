@@ -29,7 +29,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 async function run() {
   document.dispatchEvent(new Event('DOMContentLoaded'));
   $('settingsButton').click(); await tick();
-  assert.equal($('storeUpdateVersion').textContent, 'Phrasync 0.4.7');
+  assert.equal($('storeUpdateVersion').textContent, 'KaraokeSesh 0.4.7');
   $('storeUpdateCheck').click(); await tick();
   assert.equal($('storeUpdateInstall').hidden, false);
   for (const choice of ['cancel', '']) {

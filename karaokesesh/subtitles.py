@@ -360,7 +360,7 @@ def cues_to_ass(cues: list[dict[str, Any]], style: dict[str, Any] | None = None,
 
     This is the one interchange format that carries word-level timing into a
     real video pipeline — Aegisub, mpv, ffmpeg burn-in, Premiere and Resolve via
-    import — so the sync work survives outside Phrasync.
+    import — so the sync work survives outside KaraokeSesh.
     """
     from .kinetic import cue_words
 
@@ -401,7 +401,7 @@ def cues_to_ass(cues: list[dict[str, Any]], style: dict[str, Any] | None = None,
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,"
         " BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle,"
         " BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        f"Style: Phrasync,{font},{size},{primary},{secondary},{outline},&H64000000,"
+        f"Style: KaraokeSesh,{font},{size},{primary},{secondary},{outline},&H64000000,"
         f"-1,0,0,0,100,100,0,0,1,{max(1, round(size * 0.06))},{max(0, round(size * 0.04))},"
         f"2,{round(width * 0.06)},{round(width * 0.06)},{round(height * 0.08)},1",
         "",
@@ -426,6 +426,6 @@ def cues_to_ass(cues: list[dict[str, Any]], style: dict[str, Any] | None = None,
         body = body.replace(chr(10), chr(92) + "N")
         header.append(
             f"Dialogue: 0,{format_ass_time(cue['start'])},{format_ass_time(cue['end'])},"
-            f"Phrasync,,0,0,0,,{body}"
+            f"KaraokeSesh,,0,0,0,,{body}"
         )
     return "\n".join(header) + "\n"

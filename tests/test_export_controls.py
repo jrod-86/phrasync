@@ -8,9 +8,9 @@ from PIL import Image
 from fastapi.testclient import TestClient
 
 import app as app_module
-from phrasync.encoding import bitrate_bps, rate_control_args
-from phrasync.webgl_renderer import _encode_canvas_ffmpeg
-from phrasync.media import decode_test
+from karaokesesh.encoding import bitrate_bps, rate_control_args
+from karaokesesh.webgl_renderer import _encode_canvas_ffmpeg
+from karaokesesh.media import decode_test
 
 
 def test_custom_rate_is_not_capped_at_28_mbps():
@@ -47,9 +47,9 @@ def test_api_requires_selected_destination_even_for_desktop(tmp_path, monkeypatc
 def test_show_export_does_not_copy_or_create_a_second_mp4(tmp_path, monkeypatch):
     source = tmp_path / "My project.mp4"
     source.write_bytes(b"video")
-    monkeypatch.setattr("phrasync.desktop_export.manager.output_path", lambda _: source)
+    monkeypatch.setattr("karaokesesh.desktop_export.manager.output_path", lambda _: source)
     launched = Mock()
-    monkeypatch.setattr("phrasync.desktop_export.subprocess.Popen", launched)
+    monkeypatch.setattr("karaokesesh.desktop_export.subprocess.Popen", launched)
     assert app_module.desktop_export.show_render_file("job") == str(source)
     assert list(tmp_path.iterdir()) == [source]
     assert launched.call_args.args[0] == ["explorer.exe", "/select,", str(source)]
@@ -88,7 +88,7 @@ def test_cancelled_compatibility_render_removes_partial_stream(tmp_path):
 
 
 def test_project_named_outputs_do_not_overwrite_previous_exports(tmp_path, monkeypatch):
-    import phrasync.jobs as jobs
+    import karaokesesh.jobs as jobs
     from types import SimpleNamespace
     manager = jobs.JobManager()
     monkeypatch.setattr(manager, "_save", lambda job: None)

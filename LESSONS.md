@@ -2,7 +2,7 @@
 
 | Lesson | Scope | Evidence | Verified | Date |
 |---|---|---|---|---|
-| Any kinetic preset change must land in BOTH `phrasync/kinetic.py` and `static/kinetic.js`; `tests/test_kinetic.py` diffs Python vs Node-JS field-by-field | this fork | progress record Phase 3; parity test grid | yes | 2026-10-12 |
+| Any kinetic preset change must land in BOTH `karaokesesh/kinetic.py` and `static/kinetic.js`; `tests/test_kinetic.py` diffs Python vs Node-JS field-by-field | this fork | progress record Phase 3; parity test grid | yes | 2026-10-12 |
 | `tests/test_frontend.py` enforces a 400-line limit per static JS fragment (450 for i18n.js) and single ordered script tags in index.html — new UI code must go where there is headroom | this fork | guard test source; app-lyrics.js at 400 lines | yes | 2026-10-12 |
 | Browser QA needs 1920×1080 window + fontSize 100 so DOM wrap == engine char budget; `--lyric-size` floors at 18px on small stages | QA scripts | progress record Phase 7 pitfall | yes | 2026-10-12 |
 | At 1080p the shared glow bridges cue gaps; glyph band separation needs frac 0.5 and neighbour checks must be glow-robust (ink above/below anchor), not band-count-based | MP4 QA | progress record Phase 9 pitfall | yes | 2026-10-12 |

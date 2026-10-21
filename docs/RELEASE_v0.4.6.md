@@ -1,4 +1,4 @@
-# Phrasync 0.4.6 — Export reliability and speed
+# KaraokeSesh 0.4.6 — Export reliability and speed
 
 This maintenance update focuses on unblocking mixed-footage exports and removing unnecessary rendering work.
 

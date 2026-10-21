@@ -8,9 +8,9 @@ import numpy as np
 from fastapi.testclient import TestClient
 
 import app as app_module
-from phrasync import jobs as jobs_module
-from phrasync import stems
-from phrasync.storage import store_path
+from karaokesesh import jobs as jobs_module
+from karaokesesh import stems
+from karaokesesh.storage import store_path
 
 
 class EchoModel:

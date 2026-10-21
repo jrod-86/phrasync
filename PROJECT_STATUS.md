@@ -56,7 +56,7 @@
 - `scripts/qa_crawl_controls.py` — real dropdown interaction + malformed reload hydration test.
 
 ## Files created/changed (Phase 2 checkpoint)
-- `phrasync/kinetic.py` — `CRAWL_LIMITS`, `CRAWL_NUMERIC_RE`, `merge_crawl_overrides`, `resolved_preset` merge.
+- `karaokesesh/kinetic.py` — `CRAWL_LIMITS`, `CRAWL_NUMERIC_RE`, `merge_crawl_overrides`, `resolved_preset` merge.
 - `static/kinetic.js` — mirrored `CRAWL_LIMITS`, `CRAWL_NUMERIC_RE`, `mergeCrawlOverrides`; `resolvedPreset` merges `style.crawl`.
 - `static/app-modes.js` — crawl controls UI wiring (`crawlInputs`, `crawlStyleFromControls`, `applyCrawlControlsUI`).
 - `static/index.html` — `#crawlControls` panel with six range inputs.

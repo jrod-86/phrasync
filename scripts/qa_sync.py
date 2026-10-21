@@ -1,11 +1,11 @@
-"""Sync and visual QA for a Phrasync project.
+"""Sync and visual QA for a KaraokeSesh project.
 
 Renders a contact sheet using the same engine as the MP4 export and scores how
 closely the lyrics sit on the detected vocal attacks.
 
-    python scripts/qa_sync.py project.phrasync.json --out qa/ --preset kinetic-slam
+    python scripts/qa_sync.py project.karaokesesh.json --out qa/ --preset kinetic-slam
 
-With no project path it uses the newest file in the Phrasync projects folder.
+With no project path it uses the newest file in the KaraokeSesh projects folder.
 """
 
 from __future__ import annotations
@@ -19,12 +19,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from PIL import Image  # noqa: E402
 
-from phrasync.align import alignment_stats  # noqa: E402
-from phrasync.audio_analysis import analyze_audio  # noqa: E402
-from phrasync.config import PROJECTS_DIR  # noqa: E402
-from phrasync.kinetic import cue_words  # noqa: E402
-from phrasync.renderer import FrameComposer, _build_context  # noqa: E402
-from phrasync.storage import get_asset  # noqa: E402
+from karaokesesh.align import alignment_stats  # noqa: E402
+from karaokesesh.audio_analysis import analyze_audio  # noqa: E402
+from karaokesesh.config import PROJECTS_DIR  # noqa: E402
+from karaokesesh.kinetic import cue_words  # noqa: E402
+from karaokesesh.renderer import FrameComposer, _build_context  # noqa: E402
+from karaokesesh.storage import get_asset  # noqa: E402
 
 
 def newest_project() -> Path:

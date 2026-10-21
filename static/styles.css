@@ -104,12 +104,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .desktop-host .toast { background: var(--panel); }
 .desktop-host .modal::backdrop { backdrop-filter: none; }
 .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
-.brand svg { width: 31px; height: 31px; fill: var(--accent); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 30%, transparent)); }
-/* the playhead reads as a separate element from the lyric lines it crosses */
-.brand svg .ph { fill: var(--text); }
-.brand strong { display: block; font-size: 15px; letter-spacing: .075em; line-height: 1; }
-.brand strong span { color: var(--accent); }
-.brand small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+/* The KaraokeSesh banner keeps its own dark plate, so it reads on light themes too. */
+.brand-logo { display: block; flex: none; height: 32px; width: auto; border-radius: 6px; user-select: none; }
+.home-brand .brand-logo { height: auto; width: 100%; max-width: 212px; border-radius: 8px; }
 .project-name { justify-self: center; width: min(440px, 100%); position: relative; }
 .project-name span { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted-2); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
 .project-name input {
@@ -399,7 +396,7 @@ html[data-theme="light"] .stage-shell { background: #ddd9e1; }
   opacity: var(--fill-alpha, 1);
 }
 /* Credit Crawl countdown: three dots left of the returning line's first word.
-   Geometry in em matches phrasync/render_typography.py: dots 0.24em wide,
+   Geometry in em matches karaokesesh/render_typography.py: dots 0.24em wide,
    centres 0.38em apart, the nearest centre 0.34em from the word. */
 .lyric-word > i.crawl-countdown {
   position: absolute; right: 100%; top: 50%; margin-right: .22em;

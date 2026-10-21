@@ -5,9 +5,9 @@ import wave
 import numpy as np
 import pytest
 
-from phrasync import audio_analysis as analysis
-from phrasync import storage
-from phrasync.config import MAX_UPLOAD_BYTES
+from karaokesesh import audio_analysis as analysis
+from karaokesesh import storage
+from karaokesesh.config import MAX_UPLOAD_BYTES
 
 
 def test_stream_upload_and_partial_cleanup(tmp_path, monkeypatch):
@@ -88,7 +88,7 @@ def test_fft_tempo_finds_regular_pulses():
 
 
 def test_real_decoder_and_envelope_across_minute_boundary(tmp_path):
-    from phrasync.media import audio_envelope, decode_audio_mono
+    from karaokesesh.media import audio_envelope, decode_audio_mono
 
     rate, duration, fps = 8000, 61.25, 24
     path = tmp_path / "minute.wav"
@@ -131,7 +131,7 @@ def test_raw_upload_api_preserves_asset_schema(tmp_path, monkeypatch):
 @pytest.mark.parametrize("feature_size", [80, 128])
 def test_bounded_whisper_features_preserve_time_grid_and_global_normalization(padding, feature_size):
     from faster_whisper.feature_extractor import FeatureExtractor
-    from phrasync.long_audio import BoundedFeatureExtractor
+    from karaokesesh.long_audio import BoundedFeatureExtractor
 
     delegate = FeatureExtractor(feature_size=feature_size)
     # Quiet and loud regions deliberately span many batch boundaries.
@@ -145,7 +145,7 @@ def test_bounded_whisper_features_preserve_time_grid_and_global_normalization(pa
 
 
 def test_bounded_whisper_keeps_short_audio_on_original_path():
-    from phrasync.long_audio import BoundedFeatureExtractor
+    from karaokesesh.long_audio import BoundedFeatureExtractor
 
     class Delegate:
         sampling_rate = 16000

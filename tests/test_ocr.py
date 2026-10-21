@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from phrasync.ocr import capability_status, ocr_image
+from karaokesesh.ocr import capability_status, ocr_image
 
 
 def test_reference_image_ocr():

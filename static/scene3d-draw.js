@@ -1,5 +1,5 @@
 /*
- * Canvas painter for the Phrasync 3D corridor.
+ * Canvas painter for the KaraokeSesh 3D corridor.
  *
  * Consumes VFScene.sample() and rasterises it for the live preview.
  */

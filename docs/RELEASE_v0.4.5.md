@@ -1,4 +1,4 @@
-# Phrasync 0.4.5
+# KaraokeSesh 0.4.5
 
 A bigger local editing workspace, with more control over your video and export.
 

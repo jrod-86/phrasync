@@ -222,7 +222,7 @@ function bindControls() {
 
   const loadProject = async content => {
       const loaded = JSON.parse(content); await saveToLibrary(true);
-      replaceProject({ ...loaded, id: newLibraryId() }, "Project loaded. Media links refer to this local Phrasync workspace.");
+      replaceProject({ ...loaded, id: newLibraryId() }, "Project loaded. Media links refer to this local KaraokeSesh workspace.");
       hideHome();
   };
   els.loadProjectButton.addEventListener("click", async () => {
@@ -244,7 +244,7 @@ function bindControls() {
   });
   els.saveProjectButton.addEventListener("click", async () => {
     try {
-      const path = await saveTextFile(JSON.stringify(project, null, 2), `${safeFilename(project.title)}.phrasync.json`, "json", "application/json");
+      const path = await saveTextFile(JSON.stringify(project, null, 2), `${safeFilename(project.title)}.karaokesesh.json`, "json", "application/json");
       if (path) toast(`Project saved: ${path}`, "success");
     } catch (error) { toast(`Could not save project: ${error.message}`, "error"); }
   });
@@ -280,7 +280,7 @@ function bindControls() {
 }
 
 function safeFilename(value) {
-  return String(value || "phrasync_project").replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "").slice(0, 70) || "phrasync_project";
+  return String(value || "karaokesesh_project").replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "").slice(0, 70) || "karaokesesh_project";
 }
 
 function initTheme() {
@@ -288,14 +288,14 @@ function initTheme() {
 }
 
 async function shutdownServer() {
-  if (!confirm("Save the current project and stop Phrasync?")) return;
+  if (!confirm("Save the current project and stop KaraokeSesh?")) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
   try {
     const response = await fetch("/api/shutdown", { method: "POST" });
     if (!response.ok) throw new Error(await response.text());
-    window.pywebview?.api?.close_window?.(); document.body.innerHTML = '<main class="shutdown-screen"><h1>Phrasync stopped.</h1><p>You can close this tab. Port released.</p></main>';
+    window.pywebview?.api?.close_window?.(); document.body.innerHTML = '<main class="shutdown-screen"><h1>KaraokeSesh stopped.</h1><p>You can close this tab. Port released.</p></main>';
   } catch (error) {
-    toast(`Could not stop Phrasync: ${error.message}`, "error");
+    toast(`Could not stop KaraokeSesh: ${error.message}`, "error");
   }
 }
 
@@ -375,14 +375,14 @@ function init() {
     els.hfTokenReveal.textContent = reveal ? "Hide" : "Show";
   });
   els.shutdownButton.addEventListener("click", shutdownServer);
-  document.addEventListener("phrasync-language-change", () => {
+  document.addEventListener("karaokesesh-language-change", () => {
     applyModeUI();
     checkHealth();
     if (currentTranscriptionJob) pollTranscription();
   });
   if (project.audioAssetId) ensureAnalysis();
   requestAnimationFrame(animationLoop);
-  window.PhrasyncDiagnostics?.record("info", "frontend", "Editor controls initialized");
+  window.KaraokeSeshDiagnostics?.record("info", "frontend", "Editor controls initialized");
 }
 
 init();

@@ -29,7 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from phrasync import kinetic  # noqa: E402
+from karaokesesh import kinetic  # noqa: E402
 from qa_scene import DevTools, chrome_path, websocket_url  # noqa: E402
 
 CUES = [
@@ -126,7 +126,7 @@ def main() -> int:
     parser.add_argument("--origin", default="http://127.0.0.1:5507")
     args = parser.parse_args()
 
-    with tempfile.TemporaryDirectory(prefix="phrasync-crawl-controls-",
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-crawl-controls-",
                                      ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen(
             [str(chrome_path()), "--headless=new", "--no-first-run",
@@ -194,7 +194,7 @@ def main() -> int:
                 assert abs(value - spec.crawl[key]) < 1e-9, f"{key} preview/export mismatch"
 
             # --- 5. save + reload preserves style.crawl and the control values ---
-            dev.eval("localStorage.setItem('phrasync.project.v1', JSON.stringify(project));")
+            dev.eval("localStorage.setItem('karaokesesh.project.v1', JSON.stringify(project));")
             dev.call("Page.navigate", {"url": f"{args.origin}/?desktop=1"})
             time.sleep(1.5)
             dev.close()
@@ -208,7 +208,7 @@ def main() -> int:
 
             # --- 6. malformed saved-project reload (P2): sliders must show the
             # exact effective values both renderers resolve. ---
-            dev.eval("localStorage.setItem('phrasync.project.v1', JSON.stringify("
+            dev.eval("localStorage.setItem('karaokesesh.project.v1', JSON.stringify("
                      "{...project, style: {...project.style, preset: 'credit-crawl', "
                      "crawl: %s}}));" % json.dumps(MALFORMED))
             dev.call("Page.navigate", {"url": f"{args.origin}/?desktop=1"})
@@ -256,7 +256,7 @@ def main() -> int:
                     f"{key} changed unexpectedly after moving prev slider: {moved['effective']}"
 
             # Valid settings still round-trip after the malformed reload.
-            dev.eval("localStorage.setItem('phrasync.project.v1', JSON.stringify(project));")
+            dev.eval("localStorage.setItem('karaokesesh.project.v1', JSON.stringify(project));")
             dev.call("Page.navigate", {"url": f"{args.origin}/?desktop=1"})
             time.sleep(1.5)
             dev.close()

@@ -53,7 +53,7 @@ def _free_port() -> int:
 def _local_origin(value: Any) -> str:
     parsed = urlparse(str(value or ""))
     if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
-        raise RuntimeError("The WebGL export origin must be the running local Phrasync server.")
+        raise RuntimeError("The WebGL export origin must be the running local KaraokeSesh server.")
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
@@ -204,7 +204,7 @@ def render_webgl_video(
     bitrate = custom_bitrate or int(max(2_000_000, width * height * fps * 0.14))
     key_interval = max(1, fps * 2)
 
-    with tempfile.TemporaryDirectory(prefix="phrasync-webgl-", ignore_cleanup_errors=True) as folder:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-webgl-", ignore_cleanup_errors=True) as folder:
         temp_dir = Path(folder)
         profile = temp_dir / "profile"
         download = temp_dir / "download"
@@ -238,7 +238,7 @@ def render_webgl_video(
             devtools.call("Page.navigate", {"url": origin})
             time.sleep(1.0)
             devtools.evaluate(
-                "localStorage.setItem('phrasync.project.v1', "
+                "localStorage.setItem('karaokesesh.project.v1', "
                 + json.dumps(json.dumps(clean_project)) + "); true"
             )
             devtools.call("Page.reload")

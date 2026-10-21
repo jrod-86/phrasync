@@ -26,4 +26,4 @@ These figures include browser startup and are specific to the test project/hardw
 
 The newly reported user's slow-render log/project was not attached to the current request. The Downloads log is from 0.4.4; the user's exact complex project has not been reproduced.
 
-Generated results and videos are under `qa_out/render-046`, which is not a release asset. The candidate executable is `release/v0.4.6/dist/Phrasync/Phrasync.exe`. User project/media files and the existing 0.4.5 release are retained.
+Generated results and videos are under `qa_out/render-046`, which is not a release asset. The candidate executable is `release/v0.4.6/dist/KaraokeSesh/KaraokeSesh.exe`. User project/media files and the existing 0.4.5 release are retained.

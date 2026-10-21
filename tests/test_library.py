@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import app
-from phrasync import library
+from karaokesesh import library
 
 JPEG = "data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8\xff\xe0" + b"0" * 64).decode()
 

@@ -1,5 +1,17 @@
 "use strict";
 
+// The app was called Phrasync before KaraokeSesh. This is the first script to
+// load, so copy saved settings and the autosave across before anything reads them.
+(() => {
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (!key.startsWith("phrasync.")) continue;
+      const renamed = `karaokesesh.${key.slice("phrasync.".length)}`;
+      if (localStorage.getItem(renamed) === null) localStorage.setItem(renamed, localStorage.getItem(key));
+    }
+  } catch {}
+})();
+
 // Deliberately independent from app.js: support remains accessible even when
 // the editor fails before its usual event handlers are installed.
 (() => {
@@ -49,7 +61,7 @@
   window.addEventListener("unhandledrejection", event => {
     record("error", "javascript-promise", event.reason?.stack || event.reason || "Unhandled promise rejection");
   });
-  window.PhrasyncDiagnostics = { record, recent };
+  window.KaraokeSeshDiagnostics = { record, recent };
 
   async function refresh() {
     const output = document.querySelector("#diagnosticsOutput");
@@ -98,7 +110,7 @@
       const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Phrasync-support-${new Date().toISOString().slice(0, 10)}.txt`;
+      link.download = `KaraokeSesh-support-${new Date().toISOString().slice(0, 10)}.txt`;
       document.body.append(link);
       link.click();
       link.remove();

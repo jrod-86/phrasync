@@ -415,7 +415,7 @@ def render_project(
             return composer.frame(ctx.start_time + frame_index / ctx.fps, frame_index).tobytes()
 
         workers = frame_workers(composer)
-        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="phrasync-frame") as pool:
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="karaokesesh-frame") as pool:
             # Frames are pure in t, so several are drawn at once (PIL and NumPy
             # release the GIL) and written to the encoder strictly in order.
             pending: deque = deque()

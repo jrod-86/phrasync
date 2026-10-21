@@ -4,9 +4,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from phrasync import kinetic
-from phrasync.renderer import RenderContext
-from phrasync.render_typography import render_text_layer
+from karaokesesh import kinetic
+from karaokesesh.renderer import RenderContext
+from karaokesesh.render_typography import render_text_layer
 import numpy as np
 
 

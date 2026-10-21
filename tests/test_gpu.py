@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
-import phrasync.cuda as cuda_module
-import phrasync.transcribe as transcribe_module
+import karaokesesh.cuda as cuda_module
+import karaokesesh.transcribe as transcribe_module
 
 SMI = "0, NVIDIA GeForce RTX 3090, 18000, 24576, 97\n1, NVIDIA RTX A4500, 600, 20470, 0\n"
 

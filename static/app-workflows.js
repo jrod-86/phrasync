@@ -335,8 +335,8 @@ async function checkHealth() {
       els.engineStatus.title = health.transcription.gpu?.reason || t("Local engine status");
     } else {
       els.transcriptionNote.textContent = document.documentElement.lang === "it"
-        ? "Componenti AI non installati. Reinstalla Phrasync o esegui lo script install_ai, quindi riavvia."
-        : "AI pack not installed. Reinstall Phrasync or run the install_ai script, then restart.";
+        ? "Componenti AI non installati. Reinstalla KaraokeSesh o esegui lo script install_ai, quindi riavvia."
+        : "AI pack not installed. Reinstall KaraokeSesh or run the install_ai script, then restart.";
     }
     if (!health.ocr.available) setAssetStatus("OCR engine not installed. Run the AI installer to enable it.", "error");
   } catch (error) {

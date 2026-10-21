@@ -12,7 +12,7 @@ let selectedEffectId = null;
 let armedEffectId = null;
 let effectDrag = null;
 let effectsViewKey = "";
-const SNAP_KEY = "phrasync.effectSnap";
+const SNAP_KEY = "karaokesesh.effectSnap";
 let effectSnap = true;
 try { effectSnap = localStorage.getItem(SNAP_KEY) !== "off"; } catch { /* storage blocked */ }
 
@@ -170,7 +170,7 @@ function buildEffectLibrary() {
     $("strong", card).textContent = t(info.name);
     card.addEventListener("click", () => addEffect(info.id));
     card.addEventListener("dragstart", event => {
-      event.dataTransfer.setData("application/x-phrasync-effect", info.id);
+      event.dataTransfer.setData("application/x-karaokesesh-effect", info.id);
       event.dataTransfer.effectAllowed = "copy";
     });
     grid.append(card);
@@ -242,7 +242,7 @@ function initEffects() {
     else timeline.setView(timeline.viewStart + (event.deltaX || event.deltaY) / 400 * timeline.viewSpan, timeline.viewSpan);
   }, { passive: false });
   // Drag an effect card from the Effects tab straight onto the track.
-  const carriesEffect = event => [...(event.dataTransfer?.types || [])].includes("application/x-phrasync-effect");
+  const carriesEffect = event => [...(event.dataTransfer?.types || [])].includes("application/x-karaokesesh-effect");
   lane.addEventListener("dragover", event => { if (!carriesEffect(event)) return; event.preventDefault(); lane.classList.add("drop-active"); });
   lane.addEventListener("dragleave", () => lane.classList.remove("drop-active"));
   lane.addEventListener("drop", event => {
@@ -251,7 +251,7 @@ function initEffects() {
     const start = timeline.xToTime(event.clientX - lane.getBoundingClientRect().left) + (project.timing.offset || 0);
     const track = laneTrackAt(lane, event.clientY);
     const busy = effectList().some(clip => (clip.track || 0) === track && clip.start < start + EFFECT_LENGTH && clip.end > start);
-    addEffect(event.dataTransfer.getData("application/x-phrasync-effect"), start, busy ? null : track);
+    addEffect(event.dataTransfer.getData("application/x-karaokesesh-effect"), start, busy ? null : track);
   });
   // Delete removes the effect you just clicked; clicking anywhere else disarms it.
   document.addEventListener("pointerdown", event => {
@@ -276,7 +276,7 @@ function initEffects() {
     const clip = selectedEffect(); if (!clip) return;
     clip.params = VFEffects.defaults(clip.type); refreshEffectEditor(); scheduleSave();
   });
-  document.addEventListener("phrasync-language-change", () => {
+  document.addEventListener("karaokesesh-language-change", () => {
     $$("#effectGrid .effect-card").forEach(card => { $("strong", card).textContent = t(VFEffects.BY_ID[card.dataset.effect].name); });
     refreshEffectEditor(); effectsViewKey = ""; renderEffectsLane();
   });

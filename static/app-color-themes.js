@@ -5,7 +5,7 @@
 // working through the same style values.
 
 const COLOR_THEMES = [
-  ["Phrasync Neon", "#ffffff", "#ff3d7f", "#8f5bff", "#05040c"],
+  ["KaraokeSesh Neon", "#ffffff", "#ff3d7f", "#8f5bff", "#05040c"],
   ["Classic Karaoke", "#ffffff", "#2f7bff", "#00d4ff", "#000000"],
   ["Golden Hour", "#fff4e0", "#ffb627", "#ff6b35", "#2b1400"],
   ["Fire", "#fff1d6", "#ff4500", "#ffae00", "#1a0000"],

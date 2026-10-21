@@ -1,7 +1,7 @@
 import pytest
 
-from phrasync.loudness import DEFAULT_TARGET, loudness_filter, measure, normalize_target
-from phrasync.media import run_ffmpeg
+from karaokesesh.loudness import DEFAULT_TARGET, loudness_filter, measure, normalize_target
+from karaokesesh.media import run_ffmpeg
 
 
 def song(path, volume_db):

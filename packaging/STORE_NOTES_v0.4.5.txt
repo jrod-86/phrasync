@@ -1,4 +1,4 @@
-Phrasync 0.4.5
+KaraokeSesh 0.4.5
 
 NEW EDITING TOOLS
 - Media bin with drag-and-drop images, videos and built-in 2D/3D visuals on up to four background tracks.
@@ -19,4 +19,4 @@ OTHER CHANGES
 - App version, author contacts and optional Buy Me a Coffee support in Settings.
 - Welcome popup includes optional support and Don't show this again.
 
-Phrasync remains free. Footage audio is muted; the song/source audio is the master track. Transcription requires manual review. Bright flash effects are optional and may affect photosensitive viewers.
+KaraokeSesh remains free. Footage audio is muted; the song/source audio is the master track. Transcription requires manual review. Bright flash effects are optional and may affect photosensitive viewers.

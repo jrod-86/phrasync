@@ -1,5 +1,5 @@
 /*
- * Phrasync timeline — waveform, onset/beat grid, draggable phrase and word
+ * KaraokeSesh timeline — waveform, onset/beat grid, draggable phrase and word
  * lanes. Canvas based so a four-minute song with a thousand words still pans
  * and zooms at 60fps.
  */

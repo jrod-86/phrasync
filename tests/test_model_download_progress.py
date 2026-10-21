@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from phrasync import model_download as download
+from karaokesesh import model_download as download
 
 
 def test_headless_hub_callbacks_keep_transfer_and_reconstruction_separate():

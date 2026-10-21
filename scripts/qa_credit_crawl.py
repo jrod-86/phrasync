@@ -32,9 +32,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from PIL import Image  # noqa: E402
-from phrasync import kinetic  # noqa: E402
-from phrasync.renderer import RenderContext  # noqa: E402
-from phrasync.render_typography import render_text_layer  # noqa: E402
+from karaokesesh import kinetic  # noqa: E402
+from karaokesesh.renderer import RenderContext  # noqa: E402
+from karaokesesh.render_typography import render_text_layer  # noqa: E402
 from qa_scene import DevTools, chrome_path, websocket_url  # noqa: E402
 
 CUES = [
@@ -110,7 +110,7 @@ def main() -> int:
 
     host_port = args.origin.split("//", 1)[1]
     cdp_port = 9241
-    with tempfile.TemporaryDirectory(prefix="phrasync-crawl-qa-", ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-crawl-qa-", ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen(
             [str(chrome_path()), "--headless=new", "--no-first-run",
              f"--remote-debugging-port={cdp_port}", "--remote-allow-origins=*",
@@ -304,7 +304,7 @@ def main() -> int:
                         f"t={t} opacity mismatch {item['opacity']} vs {cue_state['opacity']}")
 
             # --- 8. save/reload preserves the preset ---
-            dev.eval("localStorage.setItem('phrasync.project.v1', JSON.stringify(project));")
+            dev.eval("localStorage.setItem('karaokesesh.project.v1', JSON.stringify(project));")
             dev.call("Page.navigate", {"url": f"{args.origin}/?desktop=1"})
             time.sleep(2.0)
             dev.close()

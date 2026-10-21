@@ -21,8 +21,8 @@ from pathlib import Path
 from .config import APP_VERSION, WORKSPACE
 
 LOG_DIR = WORKSPACE / "logs"
-LOG_FILE = LOG_DIR / "phrasync.log"
-_logger = logging.getLogger("phrasync.support")
+LOG_FILE = LOG_DIR / "karaokesesh.log"
+_logger = logging.getLogger("karaokesesh.support")
 
 
 def configure_logging() -> logging.Logger:
@@ -102,7 +102,7 @@ def system_summary() -> dict[str, str]:
     except OSError:
         free_gib = "Unknown"
     return {
-        "Phrasync": APP_VERSION,
+        "KaraokeSesh": APP_VERSION,
         "Windows / OS": platform.platform(),
         "Architecture": platform.machine(),
         "CPU": hardware.get("cpu") or platform.processor() or "Unknown",
@@ -125,7 +125,7 @@ def recent_log(max_bytes: int = 180_000) -> str:
 
 
 def support_report() -> str:
-    lines = ["Phrasync support report", f"Generated: {datetime.now(timezone.utc).isoformat()}", "",
+    lines = ["KaraokeSesh support report", f"Generated: {datetime.now(timezone.utc).isoformat()}", "",
              "System", "------"]
     lines.extend(f"{key}: {value}" for key, value in system_summary().items())
     lines.extend(["", "Recent events", "-------------", recent_log()])

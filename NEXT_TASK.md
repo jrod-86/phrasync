@@ -11,7 +11,7 @@
 - `static/app-modes.js` (`crawlStyleFromControls` effective-value resolution, `applyCrawlControlsUI` hydration)
 - `tests/test_frontend.py` (`test_style_preset_change_refreshes_crawl_controls`)
 - `scripts/qa_crawl_controls.py` (real dropdown interaction + malformed reload hydration)
-- `phrasync/kinetic.py` / `static/kinetic.js` (unchanged this round — renderer resolution and parity grid)
+- `karaokesesh/kinetic.py` / `static/kinetic.js` (unchanged this round — renderer resolution and parity grid)
 
 **Acceptance checks:**
 1. Review round returns no open defects → Phase 2 signed off.

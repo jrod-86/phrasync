@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 import wave
 
 from qa_scene import DevTools, chrome_path, websocket_url
-from phrasync.media import ffmpeg_exe
+from karaokesesh.media import ffmpeg_exe
 
 
 def main():
@@ -28,12 +28,12 @@ def main():
         wav.writeframes((fixture * 32767).astype('<i2').tobytes())
     first_audible = float(np.flatnonzero(np.abs(fixture) > .002)[0] / rate)
     assert first_audible == 1
-    original = Path('C:/Users/w4k3/.phrasync/projects/I_Still_Wait.verseframe.json')
+    original = Path('C:/Users/w4k3/.karaokesesh/projects/I_Still_Wait.verseframe.json')
     song_project = json.loads(original.read_text(encoding='utf-8'))
-    song = Path('C:/Users/w4k3/.phrasync/uploads') / song_project['audioAssetId']
+    song = Path('C:/Users/w4k3/.karaokesesh/uploads') / song_project['audioAssetId']
     subprocess.run([ffmpeg_exe(), '-y', '-ss', '11.8', '-i', str(song), '-t', '7',
                     str(out / 'timing-original-song.wav')], check=True, capture_output=True)
-    with tempfile.TemporaryDirectory(prefix='phrasync-onset-', ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix='karaokesesh-onset-', ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen([str(chrome_path()), '--headless=new', '--no-first-run',
             '--remote-debugging-port=9236', '--remote-allow-origins=*', '--window-size=960,620',
             f'--user-data-dir={profile}', 'http://127.0.0.1:5510/?desktop=1'],
@@ -42,7 +42,7 @@ def main():
         try:
             dev = DevTools(websocket_url(9236)); time.sleep(2)
             dev.eval("document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
-            dev.eval("window.qaBase=structuredClone(DEFAULT_PROJECT);qaBase.background.type='color';qaBase.background.backgroundColor='#080812';qaBase.style.beatReact=false;qaBase.style.fontSize=68;qaBase.style.wordLead=.5;qaBase.timing.offset=0;qaBase.cues=[{id:'onset',start:1,end:3,text:'Phrasync makes words move.',words:[{text:'Phrasync',start:1,end:1.5},{text:'makes',start:1.5,end:1.9},{text:'words',start:1.9,end:2.4},{text:'move.',start:2.4,end:3}]}]")
+            dev.eval("window.qaBase=structuredClone(DEFAULT_PROJECT);qaBase.background.type='color';qaBase.background.backgroundColor='#080812';qaBase.style.beatReact=false;qaBase.style.fontSize=68;qaBase.style.wordLead=.5;qaBase.timing.offset=0;qaBase.cues=[{id:'onset',start:1,end:3,text:'KaraokeSesh makes words move.',words:[{text:'KaraokeSesh',start:1,end:1.5},{text:'makes',start:1.5,end:1.9},{text:'words',start:1.9,end:2.4},{text:'move.',start:2.4,end:3}]}]")
             presets = dev.eval('VFKinetic.PRESET_ORDER')
             rows, records = [], []
             for space in ['screen', 'scene']:

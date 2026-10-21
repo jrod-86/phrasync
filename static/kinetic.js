@@ -1,8 +1,8 @@
 /*
- * Phrasync kinetic engine — shared timing + per-word animation model.
+ * KaraokeSesh kinetic engine — shared timing + per-word animation model.
  *
  * This file is the single source of truth for how a lyric word looks at any
- * point in time. phrasync/kinetic.py mirrors the same math so the MP4 export
+ * point in time. karaokesesh/kinetic.py mirrors the same math so the MP4 export
  * matches the browser preview frame for frame.
  */
 (() => {

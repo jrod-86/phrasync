@@ -3,8 +3,8 @@
 import subprocess
 from pathlib import Path
 
-from phrasync.media import ffmpeg_exe
-from phrasync.renderer import render_project
+from karaokesesh.media import ffmpeg_exe
+from karaokesesh.renderer import render_project
 
 
 def main() -> None:

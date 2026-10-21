@@ -1,5 +1,5 @@
 /*
- * Odyssey 3D — a real WebGL flythrough for Phrasync.
+ * Odyssey 3D — a real WebGL flythrough for KaraokeSesh.
  *
  * Everything here is a pure function of the playback clock: given the same t the
  * scene composes identically, which is what lets the exporter render frames out

@@ -2,9 +2,9 @@
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from phrasync import webgl_renderer
-from phrasync.renderer import render_project
-from phrasync.media import decode_test, run_ffmpeg
+from karaokesesh import webgl_renderer
+from karaokesesh.renderer import render_project
+from karaokesesh.media import decode_test, run_ffmpeg
 
 original = webgl_renderer.subprocess.Popen
 def software_browser(command, *args, **kwargs):

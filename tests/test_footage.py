@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from phrasync.footage import prepare_footage, effects_enabled
-from phrasync.storage import store_path, delete_asset
-from phrasync.audio_spectrum import SpectrumSource
+from karaokesesh.footage import prepare_footage, effects_enabled
+from karaokesesh.storage import store_path, delete_asset
+from karaokesesh.audio_spectrum import SpectrumSource
 
 
 def test_footage_rewrites_client_url_and_keeps_original_project(tmp_path):

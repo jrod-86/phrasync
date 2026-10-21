@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--out', default='qa_out/ocean-review')
     args = parser.parse_args()
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='phrasync-ocean-qa-', ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix='karaokesesh-ocean-qa-', ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen([str(chrome_path()), '--headless=new', '--no-first-run',
             '--remote-debugging-port=9237', '--remote-allow-origins=*', '--window-size=1280,800',
             f'--user-data-dir={profile}', args.url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from phrasync.render_typography import render_text_layer
-from phrasync.renderer import RenderContext
+from karaokesesh.render_typography import render_text_layer
+from karaokesesh.renderer import RenderContext
 
 ACCENT = (255, 40, 40)
 CUES = [

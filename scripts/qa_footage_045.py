@@ -13,16 +13,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
 from PIL import Image
 from qa_scene import DevTools, chrome_path, websocket_url
-from phrasync.storage import store_path, delete_asset
-from phrasync.renderer import render_project
-from phrasync.media import run_ffmpeg, decode_test
+from karaokesesh.storage import store_path, delete_asset
+from karaokesesh.renderer import render_project
+from karaokesesh.media import run_ffmpeg, decode_test
 
 
 def main():
     origin = "http://127.0.0.1:5514"
     out = Path("qa_out/footage-045"); out.mkdir(parents=True, exist_ok=True)
     assets = []
-    with tempfile.TemporaryDirectory(prefix="phrasync-footage-qa-", ignore_cleanup_errors=True) as folder:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-footage-qa-", ignore_cleanup_errors=True) as folder:
         folder = Path(folder)
         red = folder / "red.png"; blue = folder / "blue.png"; video = folder / "test.mp4"; audio = folder / "song.wav"
         Image.new("RGB", (640, 360), "red").save(red)
@@ -49,7 +49,7 @@ def main():
             assert len(project["background"]["clips"]) == 0, "Import must not modify the edit"
             assert dev.eval("document.querySelectorAll('.media-card[draggable]').length") == 3
             # Use the browser's actual drag/drop handlers, placing all imported media.
-            dev.eval("project.background.mediaLibrary.forEach((a,i)=>{const dt=new DataTransfer();dt.setData('application/x-phrasync-media',a.id);const lane=document.getElementById('footageLane');lane.dispatchEvent(new DragEvent('drop',{dataTransfer:dt,clientX:lane.getBoundingClientRect().left+i*30,bubbles:true,cancelable:true}));})")
+            dev.eval("project.background.mediaLibrary.forEach((a,i)=>{const dt=new DataTransfer();dt.setData('application/x-karaokesesh-media',a.id);const lane=document.getElementById('footageLane');lane.dispatchEvent(new DragEvent('drop',{dataTransfer:dt,clientX:lane.getBoundingClientRect().left+i*30,bubbles:true,cancelable:true}));})")
             assert dev.eval("project.background.clips.length") == 3
             assert dev.eval("project.background.footageEnabled")
             dev.eval("project.cues=[{id:'test',start:0,end:1.2,text:'MEDIA TEST',manual:true}];project.duration=1.2;project.canvas={width:640,height:360,fps:25,aspect:'16:9'};project.audioAssetId=" + json.dumps(song.id) + ";project.audio=" + json.dumps({"id": song.id,"url": song.url,"duration":1.2,"name":"QA tone"}) + ";project.background.clips.forEach((c,i)=>{c.start=i*.4;c.end=(i+1)*.4;c.in=i===1?.2:0;c.rate=1;c.zoomStart=1.2;c.zoomEnd=1.4;c.xStart=-1;c.xEnd=1});project.background.effects={bw:100,pendulum:3,shake:1,flash:4,gradient:20,particles:20,spectrum:70,bpm:120,color1:'#7c3aed',color2:'#db2777'};project.export={crf:28,preset:'ultrafast',bitrateMbps:50};applyProjectToControls();timeline.fitAll();refreshFootageControls()")

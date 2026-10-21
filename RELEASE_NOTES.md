@@ -1,9 +1,9 @@
-# Phrasync v0.4.7 — Microsoft Store update fixes
+# KaraokeSesh v0.4.7 — Microsoft Store update fixes
 
 GitHub source release. The matching 0.4.7.0 Store package was submitted for certification on October 18, 2026. Availability follows approval and rollout. This maintenance update focuses on the in-app Microsoft Store update flow.
 
-- Replaced browser-native update confirmation (which displayed the localhost origin) with an accessible, branded Phrasync dialog, with English/Italian text and a safe default cancel action.
-- Initiate Store update installation on the desktop STA/UI thread and bind StoreContext to the actual Phrasync HWND before requesting Store consent. The asynchronous operation is awaited off the UI thread so the desktop stays responsive.
+- Replaced browser-native update confirmation (which displayed the localhost origin) with an accessible, branded KaraokeSesh dialog, with English/Italian text and a safe default cancel action.
+- Initiate Store update installation on the desktop STA/UI thread and bind StoreContext to the actual KaraokeSesh HWND before requesting Store consent. The asynchronous operation is awaited off the UI thread so the desktop stays responsive.
 - Decode numeric WinRT update states correctly; distinguish completion, cancellation, pending deployment, low battery and Wi-Fi requirements.
 - Retain original exception details and HRESULT codes in Diagnostics, rather than replacing everything with a generic error.
 - Prevent overlapping install requests and provide an explicit Microsoft Store fallback button. Local/GitHub builds still cannot install Store updates over source.
@@ -12,7 +12,7 @@ Local tests can verify window ownership, thread dispatch, consent and error/stat
 
 ---
 
-# Phrasync v0.4.6 — Export reliability and speed
+# KaraokeSesh v0.4.6 — Export reliability and speed
 
 GitHub source release. The matching 0.4.6.0 Microsoft Store package was submitted for certification on October 17, 2026; the previous Store build remains available until approval and rollout.
 
@@ -27,7 +27,7 @@ Measured locally: the same two-second 1080p30 effects export decreased from 36.7
 
 ---
 
-# Phrasync v0.4.5
+# KaraokeSesh v0.4.5
 
 GitHub source release; the matching 0.4.5.0 Microsoft Store package was submitted for certification on October 6, 2026. Store availability follows Microsoft's certification and rollout; the previous build remains available until then.
 
@@ -60,7 +60,7 @@ GitHub source release; the matching 0.4.5.0 Microsoft Store package was submitte
 
 ---
 
-# Phrasync v0.4.4 — GitHub source release
+# KaraokeSesh v0.4.4 — GitHub source release
 
 - Manually added lyric cues remain visible during playback and MP4 export even when they overlap transcribed cues. Existing projects with untimed manual cues are also handled.
 - New manual cues use the playhead's lyric timing offset correctly, and editing an active cue refreshes its preview immediately.
@@ -68,22 +68,22 @@ GitHub source release; the matching 0.4.5.0 Microsoft Store package was submitte
 
 ---
 
-# Phrasync v0.4.3 — Microsoft Store submission
+# KaraokeSesh v0.4.3 — Microsoft Store submission
 
 This release makes updates and troubleshooting more reliable.
 
 - Fixed a WebView2 cache mismatch that could leave controls unresponsive after an in-place Store update. The desktop document and static resources now use versioned URLs and fresh-cache rules.
-- Added Settings → App updates. Store-installed copies can check for future releases and request installation directly from Phrasync, with the user's consent. Portable preview copies explain why Store updates are unavailable.
+- Added Settings → App updates. Store-installed copies can check for future releases and request installation directly from KaraokeSesh, with the user's consent. Portable preview copies explain why Store updates are unavailable.
 - Added a Diagnostics panel with recent errors and relevant Windows, CPU, GPU, RAM, app-version, and disk information. Reports can be copied or downloaded for support; users should review them before sharing.
 - Kept the 0.4.2 export fixes: choose an output folder before rendering, open selected or default render folders, save MP4 through the native Windows dialog, and render Japanese lyrics with a suitable fallback font.
 
-**One-time transition for existing users:** If an earlier Phrasync version is installed, manually uninstall it and install v0.4.3 from Microsoft Store. This is recommended once to clear any stale WebView2 data from the previous installation. Back up important projects before uninstalling. Future Store updates can be checked and installed from Settings → App updates without manually visiting the Store listing.
+**One-time transition for existing users:** If an earlier KaraokeSesh version is installed, manually uninstall it and install v0.4.3 from Microsoft Store. This is recommended once to clear any stale WebView2 data from the previous installation. Back up important projects before uninstalling. Future Store updates can be checked and installed from Settings → App updates without manually visiting the Store listing.
 
 The Store's in-app installation path cannot be exercised end-to-end in this portable preview; it must be verified with a Store-installed package when a subsequent release becomes available.
 
 ---
 
-# Phrasync v0.4.2
+# KaraokeSesh v0.4.2
 
 This update fixes Windows desktop video export.
 
@@ -91,12 +91,12 @@ This update fixes Windows desktop video export.
 - Open the renders folder from the export window, including the folder containing a completed video.
 - Download MP4 now opens a native Save As dialog in the Windows app; the browser version keeps a normal download link.
 - Export controls are available in English and Italian.
-- The built-in Phrasync renders folder has a dedicated button even when a different export folder is selected.
+- The built-in KaraokeSesh renders folder has a dedicated button even when a different export folder is selected.
 - Japanese lyrics now use a Japanese-capable font only where the selected font lacks glyphs; a freely licensed fallback font is bundled for PCs without Japanese system fonts.
 
 ---
 
-# Phrasync v0.3.0
+# KaraokeSesh v0.3.0
 
 Released 2026-09-08.
 
@@ -110,7 +110,7 @@ This release makes the Store desktop experience substantially lighter and fixes 
 - High-DPI preview and timeline buffers are constrained inside the desktop host, eliminating unnecessary multi-million-pixel redraws.
 - The timeline no longer repaints continuously while playback is stopped, and hidden windows pause preview work.
 - Costly translucent backdrop blurs are replaced with opaque desktop surfaces while preserving the same visual hierarchy.
-- The Phrasync logo is now embedded in the Windows executable for the window, taskbar, and application switcher.
+- The KaraokeSesh logo is now embedded in the Windows executable for the window, taskbar, and application switcher.
 
 ## Verified for this release
 
@@ -120,7 +120,7 @@ This release makes the Store desktop experience substantially lighter and fixes 
 
 ---
 
-# Phrasync v0.2.0
+# KaraokeSesh v0.2.0
 
 Released 2026-09-08.
 
@@ -128,7 +128,7 @@ This release turns the Store build into a native Windows experience and makes fi
 
 ## Highlights
 
-- Phrasync now opens in its own Windows WebView2 application window, with no Command Prompt and no browser tab.
+- KaraokeSesh now opens in its own Windows WebView2 application window, with no Command Prompt and no browser tab.
 - The first-run overlay explains that each Whisper model is downloaded once and stored locally.
 - Model downloads now show percentage, transferred size, and estimated time remaining before transcription begins.
 - English is the default interface language; users can switch between English and Italian from the onboarding overlay or the main toolbar.
@@ -137,15 +137,15 @@ This release turns the Store build into a native Windows experience and makes fi
 
 ## Verified for this release
 
-- The packaged GUI executable opens a native window titled **Phrasync** and does not create a console window.
-- The packaged health check reports Phrasync 0.2.0, Faster-Whisper available, CUDA available, and one NVIDIA device on an RTX 3090 test system.
+- The packaged GUI executable opens a native window titled **KaraokeSesh** and does not create a console window.
+- The packaged health check reports KaraokeSesh 0.2.0, Faster-Whisper available, CUDA available, and one NVIDIA device on an RTX 3090 test system.
 - English and Italian onboarding layouts were visually verified at 1440 × 1000.
 - The complete suite reports **56 passing tests**.
 - The Microsoft Store MSIX uses the existing product identity and version **0.2.0.0**.
 
 ---
 
-# Phrasync v0.1.1
+# KaraokeSesh v0.1.1
 
 Released 2026-08-27.
 
@@ -177,7 +177,7 @@ This patch removes the final-export limitation for Odyssey and world-space typog
 
 ---
 
-# Phrasync v0.1.0
+# KaraokeSesh v0.1.0
 
 This is the first public release: useful today, intentionally honest about what still needs engineering.
 
@@ -210,7 +210,7 @@ This is the first public release: useful today, intentionally honest about what 
 
 - Odyssey Flat, Odyssey 3D, and 3D typography are preview-only in v0.1.0. MP4 preflight blocks them explicitly because the Python renderer does not yet reproduce WebGL output faithfully.
 - Full song-length output has not yet been rendered. Current verification uses short engineering renders; complete music videos will be added after publication.
-- Projects reference media in the local Phrasync workspace rather than embedding it into a portable archive.
+- Projects reference media in the local KaraokeSesh workspace rather than embedding it into a portable archive.
 - Browser video preview is intentionally limited to MP4 and WebM; convert MOV, MKV, AVI, and unusual codecs before import.
 - The transcription workflow performs strongly on the tested songs, but expressive singing, unusual pronunciation, effects, and closely related languages can still need human review.
 - There is no signed installer, automatic updater, or hosted web version.
@@ -222,4 +222,4 @@ This is the first public release: useful today, intentionally honest about what 
 - Three.js Sky for physically based atmosphere when deterministic export parity is ready.
 - three.quarks only if future VFX outgrow the lightweight deterministic weather system.
 
-Phrasync is created by jaydemks and distributed under Apache-2.0 with attribution preserved through `NOTICE`. Output belongs to its creator, subject to the rights they hold in the source music, text, footage, images, and fonts.
+KaraokeSesh is created by jaydemks and distributed under Apache-2.0 with attribution preserved through `NOTICE`. Output belongs to its creator, subject to the rights they hold in the source music, text, footage, images, and fonts.

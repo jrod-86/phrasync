@@ -2,7 +2,7 @@
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap rescap" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
   <Identity Name="GiovanniDeMiccoli.Phrasync-LyricVideoStudio" Publisher="CN=6E71DA52-20A6-40E0-A35A-0947959BB0F1" Version="0.4.7.0" ProcessorArchitecture="x64" />
   <Properties>
-    <DisplayName>Phrasync - Lyric Video Studio</DisplayName>
+    <DisplayName>KaraokeSesh - Lyric Video Studio</DisplayName>
     <PublisherDisplayName>Giovanni De Miccoli</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -13,8 +13,8 @@
     <Resource Language="en-us" />
   </Resources>
   <Applications>
-    <Application Id="Phrasync" Executable="Phrasync.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="Phrasync" Description="Create local lyric and subtitle videos with GPU acceleration, synchronized 3D typography and cinematic procedural worlds." BackgroundColor="#0b0a13" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+    <Application Id="KaraokeSesh" Executable="KaraokeSesh.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="KaraokeSesh" Description="Create local lyric and subtitle videos with GPU acceleration, synchronized 3D typography and cinematic procedural worlds." BackgroundColor="#0b0a13" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" />
       </uap:VisualElements>
     </Application>

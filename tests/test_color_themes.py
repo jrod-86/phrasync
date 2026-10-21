@@ -16,6 +16,6 @@ def test_twenty_colour_themes_with_valid_colours():
 def test_the_default_project_colours_are_the_first_theme():
     source = (STATIC / "app-color-themes.js").read_text(encoding="utf-8")
     state = (STATIC / "app-state.js").read_text(encoding="utf-8")
-    first = re.search(r'\["Phrasync Neon", "(#\w+)", "(#\w+)", "(#\w+)", "(#\w+)"\]', source).groups()
+    first = re.search(r'\["KaraokeSesh Neon", "(#\w+)", "(#\w+)", "(#\w+)", "(#\w+)"\]', source).groups()
     for key, colour in zip(["textColor", "accentColor", "accentColor2", "strokeColor"], first):
         assert f'{key}: "{colour}"' in state

@@ -1,7 +1,7 @@
 from PIL import ImageFont
 
-from phrasync.config import ASSETS_DIR
-from phrasync.font_utils import load_font, load_font_for_text
+from karaokesesh.config import ASSETS_DIR
+from karaokesesh.font_utils import load_font, load_font_for_text
 
 
 def _glyph_signature(font, char):

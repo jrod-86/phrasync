@@ -18,5 +18,5 @@ if errorlevel 1 (
   echo Core app installed, but the optional AI pack failed. Run scripts\install_ai_windows.bat later.
 )
 echo.
-echo Phrasync installation complete. Start with run_windows.bat.
+echo KaraokeSesh installation complete. Start with run_windows.bat.
 pause

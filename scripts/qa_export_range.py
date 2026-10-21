@@ -2,8 +2,8 @@
 from pathlib import Path
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from phrasync.renderer import render_project
-from phrasync.media import probe_duration, decode_test
+from karaokesesh.renderer import render_project
+from karaokesesh.media import probe_duration, decode_test
 
 root=Path("qa_out/export-range")
 root.mkdir(parents=True,exist_ok=True)

@@ -4,12 +4,12 @@ import pytest
 
 import webview
 
-from phrasync.desktop_export import DesktopExportBridge
+from karaokesesh.desktop_export import DesktopExportBridge
 
 
 def test_author_links_open_only_https_allowlisted_sites(monkeypatch):
     opened = Mock(return_value=True)
-    monkeypatch.setattr("phrasync.desktop_export.webbrowser.open", opened)
+    monkeypatch.setattr("karaokesesh.desktop_export.webbrowser.open", opened)
     bridge = DesktopExportBridge()
     assert bridge.open_external_url("https://buymeacoffee.com/jaydemks")
     assert bridge.open_external_url("https://www.giovannidemiccoli.com")
@@ -33,7 +33,7 @@ def test_native_text_save_uses_chosen_destination_and_preserves_unicode(tmp_path
 def test_native_project_load_and_dialog_cancellation(tmp_path):
     bridge = DesktopExportBridge()
     bridge._window = Mock()
-    target = tmp_path / "project.phrasync.json"
+    target = tmp_path / "project.karaokesesh.json"
     target.write_text('{"title":"日本語"}', encoding="utf-8-sig")
     bridge._window.create_file_dialog.return_value = (str(target),)
     assert bridge.load_project_file() == {"path": str(target), "content": '{"title":"日本語"}'}
@@ -62,7 +62,7 @@ def test_choose_directory_and_save_completed_mp4(tmp_path, monkeypatch):
     copy_path = tmp_path / "copy.mp4"
     bridge._window = Mock()
     bridge._window.create_file_dialog.side_effect = [(str(export_dir),), (str(copy_path),)]
-    monkeypatch.setattr("phrasync.desktop_export.manager.output_path", lambda job_id: source if job_id == "done" else None)
+    monkeypatch.setattr("karaokesesh.desktop_export.manager.output_path", lambda job_id: source if job_id == "done" else None)
 
     assert bridge.choose_render_directory() == str(export_dir.resolve())
     assert bridge.get_render_directory() == str(export_dir.resolve())
@@ -85,9 +85,9 @@ def test_open_render_folder_uses_completed_job_location(tmp_path, monkeypatch):
     bridge = DesktopExportBridge()
     source = tmp_path / "render.mp4"
     source.write_bytes(b"video")
-    monkeypatch.setattr("phrasync.desktop_export.manager.output_path", lambda _: source)
+    monkeypatch.setattr("karaokesesh.desktop_export.manager.output_path", lambda _: source)
     launched = []
-    monkeypatch.setattr("phrasync.desktop_export.subprocess.Popen", lambda args, **kwargs: launched.append(args))
+    monkeypatch.setattr("karaokesesh.desktop_export.subprocess.Popen", lambda args, **kwargs: launched.append(args))
     assert bridge.open_render_directory("done") == str(tmp_path)
     assert launched == [["explorer.exe", str(tmp_path)]]
 
@@ -95,10 +95,10 @@ def test_open_render_folder_uses_completed_job_location(tmp_path, monkeypatch):
 def test_open_default_folder_ignores_selected_export_folder(tmp_path, monkeypatch):
     bridge = DesktopExportBridge()
     bridge._directory = tmp_path / "chosen"
-    default = tmp_path / ".phrasync" / "renders"
-    monkeypatch.setattr("phrasync.desktop_export.RENDERS_DIR", default)
+    default = tmp_path / ".karaokesesh" / "renders"
+    monkeypatch.setattr("karaokesesh.desktop_export.RENDERS_DIR", default)
     launched = []
-    monkeypatch.setattr("phrasync.desktop_export.subprocess.Popen", lambda args, **kwargs: launched.append(args))
+    monkeypatch.setattr("karaokesesh.desktop_export.subprocess.Popen", lambda args, **kwargs: launched.append(args))
     assert bridge.open_default_render_directory() == str(default)
     assert default.is_dir()
     assert launched == [["explorer.exe", str(default)]]

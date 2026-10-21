@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 import numpy as np
-from phrasync.transcription_guard import gauntlet_report, pathological_repetition, whisper_options
-from phrasync.transcribe import _decode_pass
+from karaokesesh.transcription_guard import gauntlet_report, pathological_repetition, whisper_options
+from karaokesesh.transcribe import _decode_pass
 
 
 def segment(text,start=0,end=4):

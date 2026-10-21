@@ -21,10 +21,10 @@ def main() -> None:
         "--noconfirm",
         "--clean",
         "--name",
-        "Phrasync",
+        "KaraokeSesh",
         "--windowed",
         "--icon",
-        str(ROOT / "assets" / "Phrasync.ico"),
+        str(ROOT / "assets" / "KaraokeSesh.ico"),
         "--add-data",
         f"{ROOT / 'static'}{separator}static",
         "--add-data",
@@ -69,7 +69,7 @@ def main() -> None:
                         "--specpath", str(output / "spec")])
     print("Building a portable folder for the current operating system…")
     subprocess.run(command, cwd=ROOT, check=True)
-    print(f"Done: {(args.out.resolve() / 'dist' if args.out else ROOT / 'dist') / 'Phrasync'}")
+    print(f"Done: {(args.out.resolve() / 'dist' if args.out else ROOT / 'dist') / 'KaraokeSesh'}")
     print("Build separately on Windows, macOS and Linux for native binaries on each platform.")
 
 

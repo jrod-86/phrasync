@@ -14,7 +14,7 @@ def main():
     args = parser.parse_args()
     out = Path('qa_out')
     out.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='phrasync-update-', ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix='karaokesesh-update-', ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen([str(chrome_path()), '--headless=new', '--no-first-run',
             '--remote-debugging-port=9232', '--remote-allow-origins=*', '--window-size=1480,940',
             f'--user-data-dir={profile}', args.url],
@@ -27,17 +27,17 @@ def main():
             dev.eval("document.getElementById('diagnosticsButton').click()")
             for _ in range(20):
                 diagnostics = dev.eval("({open:document.getElementById('diagnosticsDialog').open,report:document.getElementById('diagnosticsOutput').textContent})")
-                if 'Phrasync: 0.4.4' in diagnostics['report']:
+                if 'KaraokeSesh: 0.4.4' in diagnostics['report']:
                     break
                 time.sleep(.25)
-            assert diagnostics['open'] and 'Phrasync: 0.4.4' in diagnostics['report']
+            assert diagnostics['open'] and 'KaraokeSesh: 0.4.4' in diagnostics['report']
             assert 'GPU:' in diagnostics['report'] and 'Windows' in diagnostics['report']
             dev.shot('body').save(out / 'diagnostics-dialog.png')
             dev.eval("document.getElementById('diagnosticsClose').click()")
             dev.eval("document.getElementById('settingsButton').click()")
             for _ in range(20):
                 update_panel = dev.eval("({open:document.getElementById('settingsDialog').open,version:document.getElementById('storeUpdateVersion').textContent,message:document.getElementById('storeUpdateMessage').textContent,disabled:document.getElementById('storeUpdateCheck').disabled})")
-                if 'Phrasync 0.4.4' in update_panel['version']:
+                if 'KaraokeSesh 0.4.4' in update_panel['version']:
                     break
                 time.sleep(.25)
             assert update_panel['open'] and update_panel['disabled']

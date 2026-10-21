@@ -1,7 +1,7 @@
 import urllib.request
 import urllib.error
 import pytest
-from phrasync.frame_bridge import frame_bridge
+from karaokesesh.frame_bridge import frame_bridge
 
 
 def post(url, data, origin):

@@ -10,8 +10,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from phrasync.settings import apply_saved_settings
-from phrasync.transcribe import transcribe_audio
+from karaokesesh.settings import apply_saved_settings
+from karaokesesh.transcribe import transcribe_audio
 
 
 def main() -> int:

@@ -4,9 +4,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import app
-from phrasync import storage
-from phrasync.media import run_ffmpeg
-from phrasync.remaster import remaster_file
+from karaokesesh import storage
+from karaokesesh.media import run_ffmpeg
+from karaokesesh.remaster import remaster_file
 
 
 def tone(path, rate=44100, channels=1, codec="libmp3lame"):

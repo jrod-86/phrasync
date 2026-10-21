@@ -3,9 +3,9 @@ from pathlib import Path
 import json
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from phrasync.transcribe import _load_model, _device_config, MODEL_DIR, _decode_pass, transcribe_audio
-from phrasync.language_map import load_audio
-from phrasync.transcription_guard import whisper_options
+from karaokesesh.transcribe import _load_model, _device_config, MODEL_DIR, _decode_pass, transcribe_audio
+from karaokesesh.language_map import load_audio
+from karaokesesh.transcription_guard import whisper_options
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

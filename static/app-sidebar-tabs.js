@@ -5,7 +5,7 @@
 // controls themselves are the existing ones, moved (never cloned) into their
 // category, so every id and listener keeps working.
 
-const SIDEBAR_KEY = "phrasync.sidebar";
+const SIDEBAR_KEY = "karaokesesh.sidebar";
 
 const SIDEBAR_ICONS = {
   audio: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',

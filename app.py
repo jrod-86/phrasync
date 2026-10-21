@@ -22,14 +22,14 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTex
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
-from phrasync import APP_NAME, APP_VERSION
-from phrasync.remaster import MASTER_LABEL, remaster_asset
-from phrasync.cuda import configure_cuda_paths, cuda_diagnostics, list_gpus
-from phrasync.diagnostics import install_exception_hooks, log_event, log_exception, support_report
+from karaokesesh import APP_NAME, APP_VERSION
+from karaokesesh.remaster import MASTER_LABEL, remaster_asset
+from karaokesesh.cuda import configure_cuda_paths, cuda_diagnostics, list_gpus
+from karaokesesh.diagnostics import install_exception_hooks, log_event, log_exception, support_report
 
 CUDA_PATHS = configure_cuda_paths()
 
-from phrasync.config import (
+from karaokesesh.config import (
     ASSETS_DIR,
     DEFAULT_HOST,
     DEFAULT_PORT,
@@ -40,26 +40,26 @@ from phrasync.config import (
     UPLOADS_DIR,
     WORKSPACE,
 )
-from phrasync.align import align_cues, alignment_stats, estimate_offset
-from phrasync.audio_analysis import AnalysisUnavailable, analyze_audio
-from phrasync.font_utils import font_status
-from phrasync.jobs import manager
-from phrasync import library
-from phrasync.lyric_sync import apply_lyric_sync
-from phrasync.desktop_export import DesktopExportBridge
-from phrasync.media import ffmpeg_exe, probe_duration
-from phrasync.ocr import OCRUnavailable, capability_status as ocr_status, ocr_image
-from phrasync.qa import preflight_project
-from phrasync.storage import delete_asset, get_asset, get_av_asset, list_assets, store_stream, store_chunks
-from phrasync.store_updates import StoreUpdateUnavailable, check_updates, install_updates, package_identity, bind_window
-from phrasync.server import (
+from karaokesesh.align import align_cues, alignment_stats, estimate_offset
+from karaokesesh.audio_analysis import AnalysisUnavailable, analyze_audio
+from karaokesesh.font_utils import font_status
+from karaokesesh.jobs import manager
+from karaokesesh import library
+from karaokesesh.lyric_sync import apply_lyric_sync
+from karaokesesh.desktop_export import DesktopExportBridge
+from karaokesesh.media import ffmpeg_exe, probe_duration
+from karaokesesh.ocr import OCRUnavailable, capability_status as ocr_status, ocr_image
+from karaokesesh.qa import preflight_project
+from karaokesesh.storage import delete_asset, get_asset, get_av_asset, list_assets, store_stream, store_chunks
+from karaokesesh.store_updates import StoreUpdateUnavailable, check_updates, install_updates, package_identity, bind_window
+from karaokesesh.server import (
     available_port,
     browser_host,
     install_windows_transport_error_filter,
     instance_url,
 )
-from phrasync.settings import apply_saved_settings, hf_token_status, preferences, remove_hf_token, save_hf_token, save_preferences
-from phrasync.subtitles import (
+from karaokesesh.settings import apply_saved_settings, hf_token_status, preferences, remove_hf_token, save_hf_token, save_preferences
+from karaokesesh.subtitles import (
     cues_to_ass,
     cues_to_enhanced_lrc,
     cues_to_lrc,
@@ -67,7 +67,7 @@ from phrasync.subtitles import (
     cues_to_vtt,
     parse_lyrics_file,
 )
-from phrasync.transcribe import (
+from karaokesesh.transcribe import (
     TranscriptionUnavailable,
     capability_status as transcription_status,
     transcribe_audio,
@@ -235,7 +235,7 @@ def _require_same_origin(request: Request) -> None:
     origin = request.headers.get("origin", "")
     expected = f"{request.url.scheme}://{request.headers.get('host', '')}"
     if origin != expected:
-        raise HTTPException(status_code=403, detail="This action must be started in Phrasync")
+        raise HTTPException(status_code=403, detail="This action must be started in KaraokeSesh")
 
 
 @app.post("/api/shutdown")
@@ -611,14 +611,14 @@ def create_render(payload: dict[str, Any] = Body(...)) -> JSONResponse:
     project = payload.get("project")
     if not isinstance(project, dict):
         raise HTTPException(status_code=400, detail="Missing project payload")
-    title = str(payload.get("title") or project.get("title") or "phrasync_export")
+    title = str(payload.get("title") or project.get("title") or "karaokesesh_export")
     destination = desktop_export.get_selected_render_directory() if desktop_export._window else payload.get("outputDirectory")
     if not destination:
         raise HTTPException(status_code=400, detail="Choose where to save your exports before starting a render.")
     output_dir = Path(str(destination)).expanduser()
     if not output_dir.is_absolute() or not output_dir.is_dir():
         raise HTTPException(status_code=400, detail="Choose an existing absolute export folder.")
-    from phrasync.encoding import bitrate_bps
+    from karaokesesh.encoding import bitrate_bps
     try:
         bitrate_bps(project)
     except ValueError as exc:
@@ -663,7 +663,7 @@ def save_project(payload: dict[str, Any] = Body(...)) -> dict[str, Any]:
     project = payload.get("project", payload)
     title = str(project.get("title") or "untitled")
     safe = "".join(char if char.isalnum() or char in "-_" else "_" for char in title)[:64] or "untitled"
-    path = PROJECTS_DIR / f"{safe}.phrasync.json"
+    path = PROJECTS_DIR / f"{safe}.karaokesesh.json"
     path.write_text(json.dumps(project, indent=2, ensure_ascii=False), encoding="utf-8")
     return {"saved": True, "path": str(path), "filename": path.name}
 
@@ -755,12 +755,12 @@ def _open_desktop_window(url: str) -> None:
         import webview
     except Exception as exc:  # pragma: no cover - packaging/runtime failure
         raise RuntimeError(
-            "The desktop interface is unavailable. Reinstall Phrasync from Microsoft Store."
+            "The desktop interface is unavailable. Reinstall KaraokeSesh from Microsoft Store."
         ) from exc
 
     if os.name == "nt":
         import ctypes
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Phrasync.Desktop")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("KaraokeSesh.Desktop")
     # A new document URL bypasses WebView2's persisted HTML cache after an
     # MSIX in-place upgrade. Query parameters do not change the local route.
     document_url = f"{url}{'&' if '?' in url else '?'}desktop=1&app_version={APP_VERSION}"
@@ -777,15 +777,15 @@ def _open_desktop_window(url: str) -> None:
     bind_window(desktop_export._window)
     # The window's X returns to the start page from the editor (CapCut-style).
     desktop_export._window.events.closing += desktop_export._on_closing
-    # Edge Chromium uses the Windows WebView2 runtime and keeps Phrasync inside
+    # Edge Chromium uses the Windows WebView2 runtime and keeps KaraokeSesh inside
     # its own app window instead of exposing a browser tab to the user.
-    webview.start(gui="edgechromium", debug=False, private_mode=False, icon=str(ASSETS_DIR / "Phrasync.ico"))
+    webview.start(gui="edgechromium", debug=False, private_mode=False, icon=str(ASSETS_DIR / "KaraokeSesh.ico"))
 
 
 def main() -> None:
     global server
     install_exception_hooks()
-    log_event("info", "startup", f"Phrasync {APP_VERSION} launcher starting")
+    log_event("info", "startup", f"KaraokeSesh {APP_VERSION} launcher starting")
     parser = argparse.ArgumentParser(description=f"Run {APP_NAME}")
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -844,7 +844,7 @@ def main() -> None:
         server.run()
         return
 
-    server_thread = threading.Thread(target=server.run, name="phrasync-server", daemon=True)
+    server_thread = threading.Thread(target=server.run, name="karaokesesh-server", daemon=True)
     server_thread.start()
     try:
         url = _wait_for_server(args.host, selected_port)

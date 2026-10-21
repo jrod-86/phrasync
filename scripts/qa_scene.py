@@ -114,7 +114,7 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     kits = [k.strip() for k in args.kits.split(",") if k.strip()]
 
-    with tempfile.TemporaryDirectory(prefix="phrasync-qa-", ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-qa-", ignore_cleanup_errors=True) as profile:
         process = subprocess.Popen(
             [str(chrome_path()), "--headless=new", "--disable-gpu", "--hide-scrollbars",
              "--remote-debugging-port=9225", "--remote-allow-origins=*",
@@ -136,7 +136,7 @@ def main() -> int:
                 # push the real one in and reload to see actual lyrics in 3D.
                 payload = json.loads(args.project.read_text(encoding="utf-8"))
                 devtools.eval(
-                    "(() => { localStorage.setItem('phrasync.project.v1', %s); return true; })()"
+                    "(() => { localStorage.setItem('karaokesesh.project.v1', %s); return true; })()"
                     % json.dumps(json.dumps(payload.get("project", payload)))
                 )
                 devtools.call("Page.reload", {})

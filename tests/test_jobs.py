@@ -2,9 +2,9 @@ import threading
 import time
 from pathlib import Path
 
-import phrasync.jobs as jobs_module
-from phrasync.jobs import JobManager
-from phrasync.transcribe import TranscriptionCancelled
+import karaokesesh.jobs as jobs_module
+from karaokesesh.jobs import JobManager
+from karaokesesh.transcribe import TranscriptionCancelled
 
 
 def test_transcription_job_reports_progress_and_cancels(monkeypatch):

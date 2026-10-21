@@ -13,7 +13,7 @@ from System.Threading import Thread, ThreadStart, ApartmentState
 from System.Windows.Forms import Application, ApplicationContext, Form
 from winrt.windows.services.store import StoreContext
 from winrt.runtime.interop import initialize_with_window
-from phrasync import store_updates
+from karaokesesh import store_updates
 
 ready = threading.Event()
 state = {}

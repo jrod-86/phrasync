@@ -1,4 +1,4 @@
-Phrasync 0.4.6.0 — Export reliability and speed
+KaraokeSesh 0.4.6.0 — Export reliability and speed
 
 This maintenance update focuses on mixed-footage export failures and unnecessary rendering work.
 

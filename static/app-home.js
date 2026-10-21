@@ -8,7 +8,7 @@ const HOME_FEATURES = [
   { id: "karaoke", title: "Karaoke video", text: "Lyrics roll up in time with the song", icon: '<path d="M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>' },
   { id: "lyric", title: "Lyric video", text: "Song + lyrics, synced word by word", icon: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>' },
   { id: "vocals", title: "Remove vocals", text: "Make an instrumental for karaoke", icon: '<path d="M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M4 4l16 16"/>' },
-  { id: "import", title: "Open project file", text: "Load a .phrasync.json you saved", icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/>' }
+  { id: "import", title: "Open project file", text: "Load a .karaokesesh.json you saved", icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/>' }
 ];
 
 let homeProjects = [];

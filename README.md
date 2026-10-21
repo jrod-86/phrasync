@@ -1,16 +1,16 @@
-<p align="center"><img src="docs/media/phrasync-mark.svg" alt="Phrasync" width="76"></p>
+<p align="center"><img src="static/brand/karaokesesh-banner.png" alt="KaraokeSesh" width="460"></p>
 
-# Phrasync
+# KaraokeSesh
 
-Phrasync is a free, local studio for lyric videos and subtitles. Bring in a song or video, transcribe it on your computer, correct the words and their timing, choose how it looks, and export an MP4. Your media is not uploaded to a Phrasync service.
+KaraokeSesh is a free, local studio for lyric videos and subtitles. Bring in a song or video, transcribe it on your computer, correct the words and their timing, choose how it looks, and export an MP4. Your media is not uploaded to a KaraokeSesh service.
 
-Created by [jaydemks](https://github.com/jaydemks).
+Based on [Phrasync](https://github.com/jaydemks/phrasync), created by [jaydemks](https://github.com/jaydemks).
 
-## Watch Phrasync in action
+## Watch KaraokeSesh in action
 
 https://github.com/user-attachments/assets/9ec2387b-2c79-4257-980f-3e578a12f39b
 
-![Phrasync editor with preview, lyric cues and timeline](docs/media/editor-overview.png)
+![KaraokeSesh editor with preview, lyric cues and timeline](docs/media/editor-overview.png)
 
 ## What you can make
 
@@ -38,19 +38,19 @@ The editor, timeline, and first-run explanation are shown here:
 
 **0.4.7** focuses on Microsoft Store updates: a branded confirmation replaces the localhost popup, installation requests use the desktop window/UI thread, and update states and Diagnostics errors are clearer. Install this release from Microsoft Store if the older in-app updater fails; complete in-app installation will be verified with a later Store upgrade, such as a future 0.4.8. All 0.4.6 export improvements and the editing/creative tools remain included. The [release notes](RELEASE_NOTES.md) cover the changes and earlier fixes.
 
-## Get Phrasync
+## Get KaraokeSesh
 
 **Microsoft Store:** [Install the free Windows app](https://apps.microsoft.com/detail/9NF9JBG2PKHX). The Store build packages the same local editor in a dedicated window with Windows file dialogs and an in-app update check. GitHub and Store releases use the same version line; Store availability follows Microsoft's certification and rollout. The 0.4.7 Windows package was submitted for certification on October 18, 2026, so the Store may still offer an earlier version until rollout completes. Check the listing for the version currently available.
 
 **GitHub source:** The current source release is [v0.4.7](https://github.com/jaydemks/phrasync/releases/tag/v0.4.7). On Windows, install [Python 3.11 or 3.12](https://www.python.org/downloads/) with its `py` launcher, clone or download the repository, and run `run_windows.bat`. The first launch installs dependencies. For the same editor in your local browser, run `.venv\Scripts\python.exe app.py --external-browser` after setup. The GitHub release has source code, not a ready-to-install Windows package. Linux and macOS launch scripts are included but are not release-tested like Windows.
 
-Phrasync began as a local browser editor. The Windows app is a more convenient way to install and use it; both modes share the same code and local engine. You can modify the open-source project and run your changes in either mode. You cannot directly edit the installed Store package.
+KaraokeSesh began as a local browser editor. The Windows app is a more convenient way to install and use it; both modes share the same code and local engine. You can modify the open-source project and run your changes in either mode. You cannot directly edit the installed Store package.
 
 If you have a Store installation older than 0.4.3, back up important projects and reinstall once when 0.4.3 or later becomes available; this clears stale app data that could leave controls unresponsive after an in-place update. **Settings → App updates** checks for later versions. If an older in-app updater cannot install, update to 0.4.7 through Microsoft Store itself; this updater defect does not inherently require uninstalling. The corrected in-app installation flow still needs confirmation with a later live Store upgrade.
 
 ## First run and practical limits
 
-The first transcription downloads the selected speech model to your computer. Phrasync shows its progress, size, and estimated time remaining; later uses of that model work from the local copy. Internet access is needed to install dependencies and download a new model, not to upload your media. Smaller models run with less memory; a compatible NVIDIA GPU speeds up transcription, while CPU mode also works. MP4 rendering, particularly long or high-resolution video, can still take substantial time and disk space.
+The first transcription downloads the selected speech model to your computer. KaraokeSesh shows its progress, size, and estimated time remaining; later uses of that model work from the local copy. Internet access is needed to install dependencies and download a new model, not to upload your media. Smaller models run with less memory; a compatible NVIDIA GPU speeds up transcription, while CPU mode also works. MP4 rendering, particularly long or high-resolution video, can still take substantial time and disk space.
 
 Automatic transcription and alignment are starting points, not a replacement for listening and checking the result—especially with expressive singing, effects, or mixed languages. Saved project files refer to local media rather than embedding every source file, so move the media too if you move a project to another computer.
 
@@ -58,4 +58,4 @@ To run the automated tests from a Windows source checkout, use `scripts/run_test
 
 ## License
 
-Phrasync is open source under [Apache-2.0](LICENSE). Preserve [NOTICE](NOTICE) and applicable [third-party notices](THIRD_PARTY_NOTICES.md) when redistributing it. Videos you create remain yours, subject to your rights in the music, lyrics, footage, images, and fonts you use.
+KaraokeSesh is open source under [Apache-2.0](LICENSE). Preserve [NOTICE](NOTICE) and applicable [third-party notices](THIRD_PARTY_NOTICES.md) when redistributing it. Videos you create remain yours, subject to your rights in the music, lyrics, footage, images, and fonts you use.

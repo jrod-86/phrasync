@@ -1,6 +1,6 @@
-from phrasync.media import run_ffmpeg
-from phrasync.qa import preflight_project
-from phrasync.storage import delete_asset, store_path
+from karaokesesh.media import run_ffmpeg
+from karaokesesh.qa import preflight_project
+from karaokesesh.storage import delete_asset, store_path
 import pytest
 
 

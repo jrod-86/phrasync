@@ -6,7 +6,7 @@ import socket
 from typing import Any
 from urllib.request import urlopen
 
-from phrasync import APP_NAME
+from karaokesesh import APP_NAME
 
 
 def install_windows_transport_error_filter(
@@ -45,7 +45,7 @@ def browser_host(host: str) -> str:
 
 
 def instance_url(host: str, port: int, timeout: float = 0.4) -> str | None:
-    """Return the root URL when *port* belongs to a Phrasync instance."""
+    """Return the root URL when *port* belongs to a KaraokeSesh instance."""
     root = f"http://{browser_host(host)}:{port}"
     try:
         with urlopen(f"{root}/api/instance", timeout=timeout) as response:

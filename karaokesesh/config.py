@@ -3,14 +3,20 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-APP_NAME = "Phrasync"
+APP_NAME = "KaraokeSesh"
 APP_VERSION = "0.4.7"
-LEGACY_PREFIX = "VERSEFRAME"  # the app shipped under this name before Phrasync
+# Earlier names of the app, newest first: Phrasync, and VerseFrame before it.
+LEGACY_PREFIXES = ("PHRASYNC", "VERSEFRAME")
+LEGACY_PREFIX = LEGACY_PREFIXES[-1]
 
 
 def _env(name: str, default: str) -> str:
-    """Read PHRASYNC_<name>, falling back to the pre-rename VERSEFRAME_<name>."""
-    return os.environ.get(f"PHRASYNC_{name}") or os.environ.get(f"{LEGACY_PREFIX}_{name}") or default
+    """Read KARAOKESESH_<name>, falling back to the pre-rename PHRASYNC_/VERSEFRAME_<name>."""
+    for prefix in ("KARAOKESESH", *LEGACY_PREFIXES):
+        value = os.environ.get(f"{prefix}_{name}")
+        if value:
+            return value
+    return default
 
 
 DEFAULT_HOST = _env("HOST", "127.0.0.1")
@@ -21,19 +27,19 @@ ASSETS_DIR = PROJECT_ROOT / "assets"
 
 
 def workspace_root() -> Path:
-    """Resolve the workspace, adopting a pre-rename ~/.verseframe folder once.
+    """Resolve the workspace, adopting a pre-rename ~/.phrasync or ~/.verseframe folder once.
 
     That folder holds uploaded songs, saved projects and multi-gigabyte Whisper
     models, so the rename renames the directory rather than orphaning it. If the
     move is not possible the old folder keeps being used in place.
     """
-    override = os.environ.get("PHRASYNC_HOME") or os.environ.get(f"{LEGACY_PREFIX}_HOME")
+    override = _env("HOME", "")
     if override:
         root = Path(override).expanduser()
     else:
-        root = Path.home() / ".phrasync"
-        legacy = Path.home() / ".verseframe"
-        if not root.exists() and legacy.is_dir():
+        root = Path.home() / ".karaokesesh"
+        legacy = next((path for path in (Path.home() / ".phrasync", Path.home() / ".verseframe") if path.is_dir()), None)
+        if not root.exists() and legacy is not None:
             try:
                 legacy.rename(root)
             except OSError:
@@ -59,5 +65,6 @@ SUPPORTED_FONT = {".ttf", ".otf", ".ttc"}
 SUPPORTED_LYRICS = {".srt", ".lrc", ".txt", ".json", ".vtt"}
 
 # Project files saved before the rename still open normally.
-PROJECT_SUFFIX = ".phrasync.json"
+PROJECT_SUFFIX = ".karaokesesh.json"
 LEGACY_PROJECT_SUFFIX = ".verseframe.json"
+LEGACY_PROJECT_SUFFIXES = (".phrasync.json", LEGACY_PROJECT_SUFFIX)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from phrasync.model_download import downloaded_bytes
+from karaokesesh.model_download import downloaded_bytes
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -37,8 +37,8 @@ def test_launcher_uses_native_window_by_default():
 
 
 def test_model_download_reports_progress_and_eta():
-    source = (ROOT / "phrasync" / "model_download.py").read_text(encoding="utf-8")
-    jobs = (ROOT / "phrasync" / "jobs.py").read_text(encoding="utf-8")
+    source = (ROOT / "karaokesesh" / "model_download.py").read_text(encoding="utf-8")
+    jobs = (ROOT / "karaokesesh" / "jobs.py").read_text(encoding="utf-8")
     assert '"phase": "model-download"' in source
     assert '"downloadedBytes": current_bytes' in source
     assert '"etaSeconds": round(eta)' in source
@@ -62,5 +62,5 @@ def test_model_download_counts_active_huggingface_payload(tmp_path):
 def test_store_build_embeds_application_icon():
     build = (ROOT / "scripts" / "build_portable.py").read_text(encoding="utf-8")
     assert '"--icon"' in build
-    assert '"Phrasync.ico"' in build
-    assert (ROOT / "assets" / "Phrasync.ico").is_file()
+    assert '"KaraokeSesh.ico"' in build
+    assert (ROOT / "assets" / "KaraokeSesh.ico").is_file()

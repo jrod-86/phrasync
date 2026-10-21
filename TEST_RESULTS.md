@@ -16,7 +16,7 @@
 | 9 | full suite after Codex round 2 | 177 passed |
 | 9 | browser QA incl. realistic 1080p bounds section | PASS |
 | 9 | MP4 QA incl. realistic 1920×1080 export bounds section | PASS |
-| 9 | `node --check` all static JS; `compileall` phrasync/scripts/tests/app.py | clean |
+| 9 | `node --check` all static JS; `compileall` karaokesesh/scripts/tests/app.py | clean |
 
 ## Phase 2 (crawl controls) — this session
 | Check | Command | Result |
@@ -27,7 +27,7 @@
 | Credit-crawl browser QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl.py --origin http://127.0.0.1:5507` | **PASS** (preview stack, roll, seek, wrap, gap, save/reload, export parity, realistic 1080p bounds) |
 | Credit-crawl MP4 export QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl_mp4.py` | **PASS** (640×360 + realistic 1920×1080 renders) |
 | Static JS syntax | `node --check` on every `static/*.js` (absolute paths) | clean |
-| Python syntax | `.venv\Scripts\python.exe -m compileall -q phrasync scripts tests app.py` | clean |
+| Python syntax | `.venv\Scripts\python.exe -m compileall -q karaokesesh scripts tests app.py` | clean |
 
 ## Codex round-3 remediation — this session
 | Check | Command | Result |
@@ -38,5 +38,5 @@
 | Credit-crawl browser QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl.py --origin http://127.0.0.1:5507` | **PASS** (preview stack, roll, seek, wrap, gap, save/reload, export parity, realistic 1080p bounds) |
 | Credit-crawl MP4 export QA (regression) | `.venv\Scripts\python.exe scripts\qa_credit_crawl_mp4.py` | **PASS** (640×360 + realistic 1920×1080 renders) |
 | Static JS syntax | `node --check` on `static/app.js`, `static/app-modes.js`, `static/kinetic.js` | clean |
-| Python syntax | `py_compile` on `tests/test_frontend.py`, `scripts/qa_crawl_controls.py`; `compileall` phrasync/scripts/tests/app.py | clean |
+| Python syntax | `py_compile` on `tests/test_frontend.py`, `scripts/qa_crawl_controls.py`; `compileall` karaokesesh/scripts/tests/app.py | clean |
 | Whitespace | `git diff --check` | clean |

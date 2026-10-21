@@ -6,10 +6,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from phrasync.media import run_ffmpeg, decode_test, probe_duration
-from phrasync.qa import preflight_project
-from phrasync.renderer import render_project
-from phrasync.storage import store_path, delete_asset
+from karaokesesh.media import run_ffmpeg, decode_test, probe_duration
+from karaokesesh.qa import preflight_project
+from karaokesesh.renderer import render_project
+from karaokesesh.storage import store_path, delete_asset
 
 
 def main():

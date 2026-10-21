@@ -1,8 +1,8 @@
 from pathlib import Path
 import pytest
-from phrasync.renderer import _build_context, render_project
-from phrasync.media import probe_duration, decode_test, run_ffmpeg
-from phrasync.storage import store_path
+from karaokesesh.renderer import _build_context, render_project
+from karaokesesh.media import probe_duration, decode_test, run_ffmpeg
+from karaokesesh.storage import store_path
 
 
 def project():

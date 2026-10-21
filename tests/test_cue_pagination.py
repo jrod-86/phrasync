@@ -61,7 +61,7 @@ assert.equal(nav().children[2].disabled, true);
 const jump = nav().children[3]; jump.value = '205'; jump.events.change();
 assert.equal(selectedCueId, project.cues[204].id);
 assert.ok(cards().some(c => c.dataset.id === selectedCueId));
-document.documentElement.lang = 'it'; document.events['phrasync-language-change']();
+document.documentElement.lang = 'it'; document.events['karaokesesh-language-change']();
 assert.equal(nav().children[0].textContent, 'Precedente');
 project.cues = project.cues.slice(0, 3); selectedCueId = project.cues[0].id; renderCueList();
 assert.equal(cards().length, 3);

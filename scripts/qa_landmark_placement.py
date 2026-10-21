@@ -12,7 +12,7 @@ from qa_scene import DevTools, chrome_path, websocket_url
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--url',default='http://127.0.0.1:5510')
     args=parser.parse_args()
-    with tempfile.TemporaryDirectory(prefix='phrasync-footprint-',ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix='karaokesesh-footprint-',ignore_cleanup_errors=True) as profile:
         browser=subprocess.Popen([str(chrome_path()),'--headless=new','--no-first-run',
             '--remote-debugging-port=9238','--remote-allow-origins=*','--window-size=960,620',
             f'--user-data-dir={profile}',args.url],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

@@ -5,9 +5,9 @@
 // the start page and Settings › General pick the family. Only the editor's
 // look changes, never the video. A theme is stored as "family:mode".
 
-const UI_THEME_KEY = "phrasync.uiTheme";
+const UI_THEME_KEY = "karaokesesh.uiTheme";
 const UI_THEMES = [
-  { id: "phrasync", name: "Phrasync", hue: 300, tint: 6, cleanLight: true, accent: "#e487cd", accent2: "#b67ce0" },
+  { id: "karaokesesh", name: "KaraokeSesh", hue: 300, tint: 6, cleanLight: true, accent: "#e487cd", accent2: "#b67ce0" },
   { id: "capcut", name: "Studio Cyan", hue: 200, tint: 6, cleanLight: true, accent: "#00c4cc", accent2: "#20e3b2" },
   { id: "midnight", name: "Midnight Blue", hue: 225, tint: 32, accent: "#5aa9ff", accent2: "#7c6cff" },
   { id: "synthwave", name: "Neon Synthwave", hue: 272, tint: 38, accent: "#ff2fd0", accent2: "#00e5ff" },
@@ -30,7 +30,7 @@ const UI_THEMES = [
 ];
 // Themes saved by the earlier 16-theme version.
 const LEGACY_UI_THEMES = {
-  "phrasync-dark": "phrasync:dark", "phrasync-light": "phrasync:light", paper: "coffee:light",
+  "phrasync-dark": "karaokesesh:dark", "phrasync-light": "karaokesesh:light", paper: "coffee:light",
   lavender: "lavender:light", mint: "mint:light", rose: "rose:light"
 };
 
@@ -56,7 +56,7 @@ function themeColors(family, mode) {
   if (mode === "light") {
     const accents = { accent: family.lightAccent || lightAccent(family.accent), accent2: family.lightAccent2 || lightAccent(family.accent2) };
     if (family.pure || family.cleanLight || !t) {
-      // Clean white light themes: Phrasync, Studio Cyan, Pure (and grey Graphite).
+      // Clean white light themes: KaraokeSesh, Studio Cyan, Pure (and grey Graphite).
       return {
         bg: family.pure ? "#f6f6f7" : hsl(h, t, 94), elevated: family.pure ? "#fbfbfc" : hsl(h, t, 97), panel: "#ffffff",
         panel2: hsl(h, t, 96.5), panel3: hsl(h, t, 92.5), border: hsl(h, Math.min(t, 24), 80), soft: hsl(h, Math.min(t, 24), 86),
@@ -90,8 +90,8 @@ function currentUiThemeId() {
   try {
     const saved = localStorage.getItem(UI_THEME_KEY);
     if (saved) { const { family, mode } = parseUiTheme(saved.includes(":") || LEGACY_UI_THEMES[saved] ? saved : `${saved}:dark`); return `${family.id}:${mode}`; }
-    return localStorage.getItem(THEME_KEY) === "light" ? "phrasync:light" : "phrasync:dark";
-  } catch { return "phrasync:dark"; }
+    return localStorage.getItem(THEME_KEY) === "light" ? "karaokesesh:light" : "karaokesesh:dark";
+  } catch { return "karaokesesh:dark"; }
 }
 
 /** The theme on screen right now (which may be a Settings preview). */

@@ -1,6 +1,6 @@
 """Preview/export parity for the kinetic lyric engine.
 
-static/kinetic.js drives the browser preview and phrasync/kinetic.py drives the
+static/kinetic.js drives the browser preview and karaokesesh/kinetic.py drives the
 MP4 export. They must agree, so this evaluates the JavaScript in Node and
 compares it against the Python implementation over a grid of inputs. When Node
 is unavailable the JS half is skipped and the Python invariants still run.
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from phrasync import kinetic
+from karaokesesh import kinetic
 
 ROOT = Path(__file__).resolve().parent.parent
 KINETIC_JS = ROOT / "static" / "kinetic.js"

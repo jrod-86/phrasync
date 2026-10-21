@@ -4,10 +4,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from phrasync.transcribe import _device_config, _load_model
+from karaokesesh.transcribe import _device_config, _load_model
 
 device, compute = _device_config()
-model = _load_model('C:/Users/w4k3/.phrasync/models/large-v3', device, compute)
+model = _load_model('C:/Users/w4k3/.karaokesesh/models/large-v3', device, compute)
 segments, info = model.transcribe('qa_out/timing-original-song.wav', language='en',
     word_timestamps=True, vad_filter=False, condition_on_previous_text=False, beam_size=5)
 result = {'device': device, 'offset': 11.8, 'words': [

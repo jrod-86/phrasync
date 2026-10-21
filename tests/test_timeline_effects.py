@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from phrasync.footage import TIMELINE_EFFECTS, effects_enabled, prepare_footage
+from karaokesesh.footage import TIMELINE_EFFECTS, effects_enabled, prepare_footage
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
 

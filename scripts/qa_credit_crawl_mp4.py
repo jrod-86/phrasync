@@ -24,10 +24,10 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from phrasync import kinetic  # noqa: E402
-from phrasync.media import decode_test, probe_duration, run_ffmpeg  # noqa: E402
-from phrasync.renderer import render_project  # noqa: E402
-from phrasync.subtitles import parse_srt  # noqa: E402
+from karaokesesh import kinetic  # noqa: E402
+from karaokesesh.media import decode_test, probe_duration, run_ffmpeg  # noqa: E402
+from karaokesesh.renderer import render_project  # noqa: E402
+from karaokesesh.subtitles import parse_srt  # noqa: E402
 
 # Synthetic SRT fixture (acceptance test 1: "Importing an SRT and selecting
 # Karaoke Credit Crawl produces..."). Fed through the real parse_srt pipeline.

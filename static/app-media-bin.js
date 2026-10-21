@@ -80,7 +80,7 @@ function refreshMediaBin() {
     };
     card.append(preview, name, meta, add, remove);
     card.addEventListener("dragstart", event => {
-      event.dataTransfer.setData("application/x-phrasync-media", asset.id); event.dataTransfer.effectAllowed = "copy";
+      event.dataTransfer.setData("application/x-karaokesesh-media", asset.id); event.dataTransfer.effectAllowed = "copy";
     });
     card.addEventListener("dblclick", () => addMediaClip(asset.id)); bin.append(card);
   }
@@ -94,14 +94,14 @@ function refreshMediaBin() {
 }
 function initMediaBin() {
   const bin = document.getElementById("footageBin"), lane = document.getElementById("footageLane");
-  const accepts = event => [...event.dataTransfer.types].some(type => type === "Files" || type === "application/x-phrasync-media");
+  const accepts = event => [...event.dataTransfer.types].some(type => type === "Files" || type === "application/x-karaokesesh-media");
   for (const target of [bin, lane]) {
     target.addEventListener("dragover", event => { if (!accepts(event)) return; event.preventDefault(); event.dataTransfer.dropEffect = "copy"; target.classList.add("drop-active"); });
     target.addEventListener("dragleave", () => target.classList.remove("drop-active"));
     target.addEventListener("drop", async event => {
       if (!accepts(event)) return; event.preventDefault(); target.classList.remove("drop-active");
       if (event.dataTransfer.files.length) { await importFootage([...event.dataTransfer.files]); return; }
-      const id = event.dataTransfer.getData("application/x-phrasync-media");
+      const id = event.dataTransfer.getData("application/x-karaokesesh-media");
       if (target === lane && id) {
         const x = event.clientX - lane.getBoundingClientRect().left;
         const track = Math.min((project.background.tracks?.length || 1) - 1, Math.max(0, Math.floor((event.clientY - lane.getBoundingClientRect().top)/38)));
@@ -110,7 +110,7 @@ function initMediaBin() {
     });
   }
   initNumericSliders();
-  document.addEventListener("phrasync-language-change", () => { mediaBinSignature = ""; refreshMediaBin(); });
+  document.addEventListener("karaokesesh-language-change", () => { mediaBinSignature = ""; refreshMediaBin(); });
 }
 
 // Keep the existing precise inputs and their handlers; sliders drive that same path.

@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 
 import pytest
-from phrasync.processes import background_flags
+from karaokesesh.processes import background_flags
 
 
 def test_all_application_subprocesses_hide_console():
-    root = Path(__file__).resolve().parents[1] / "phrasync"
+    root = Path(__file__).resolve().parents[1] / "karaokesesh"
     count = 0
     for source in root.glob("*.py"):
         for node in ast.walk(ast.parse(source.read_text(encoding="utf-8"))):
@@ -30,8 +30,8 @@ def test_hidden_child_has_no_console_window():
 
 def test_native_window_explicit_icon_and_identity():
     source = (Path(__file__).resolve().parents[1] / "app.py").read_text(encoding="utf-8")
-    assert 'icon=str(ASSETS_DIR / "Phrasync.ico")' in source
-    assert 'SetCurrentProcessExplicitAppUserModelID("Phrasync.Desktop")' in source
+    assert 'icon=str(ASSETS_DIR / "KaraokeSesh.ico")' in source
+    assert 'SetCurrentProcessExplicitAppUserModelID("KaraokeSesh.Desktop")' in source
 
 
 def test_packaging_includes_whisper_vad_and_ocr_models():

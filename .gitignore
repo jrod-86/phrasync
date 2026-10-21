@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 workspace/
-.phrasync/
+.karaokesesh/
 dist/
 build/
 release/
@@ -39,15 +39,15 @@ Thumbs.db
 *.webm
 *.wmv
 *.m4v
-!docs/media/phrasync-demo.mp4
+!docs/media/karaokesesh-demo.mp4
 
 # Local projects, generated renders, and exports.
 exports/
 renders/
 projects/
 personal/
-*.phrasync.json
-*.phrasync-project.json
+*.karaokesesh.json
+*.karaokesesh-project.json
 
 # Credentials and private signing material.
 .secrets/

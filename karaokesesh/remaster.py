@@ -50,7 +50,7 @@ def remaster_file(source: Path, destination: Path) -> None:
 def remaster_asset(asset: Asset) -> Asset:
     """Replace an uploaded song with its 48 kHz / 32-bit stereo WAV master."""
     source = Path(asset.path)
-    with tempfile.TemporaryDirectory(prefix="phrasync-remaster-") as folder:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-remaster-") as folder:
         output = Path(folder) / "master.wav"
         try:
             remaster_file(source, output)

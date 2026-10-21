@@ -18,7 +18,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     out = root / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='phrasync-world-') as profile:
+    with tempfile.TemporaryDirectory(prefix='karaokesesh-world-') as profile:
         server = subprocess.Popen([sys.executable, '-m', 'http.server', '5591', '--bind', '127.0.0.1'],
                                   cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         browser = subprocess.Popen([str(chrome_path()), '--headless=new', '--no-first-run',

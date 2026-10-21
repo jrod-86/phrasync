@@ -1,4 +1,4 @@
-from phrasync.align import MIN_WORD_DURATION, align_cues
+from karaokesesh.align import MIN_WORD_DURATION, align_cues
 from copy import deepcopy
 
 

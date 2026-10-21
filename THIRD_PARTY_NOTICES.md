@@ -1,10 +1,10 @@
 # Third-party notices
 
-Phrasync is licensed under Apache-2.0. Its dependencies and tools remain under their respective licenses; the Phrasync license does not replace those terms. See `NOTICE` for the project's attribution notice.
+KaraokeSesh is licensed under Apache-2.0. Its dependencies and tools remain under their respective licenses; the KaraokeSesh license does not replace those terms. See `NOTICE` for the project's attribution notice.
 
 ## FFmpeg
 
-Phrasync uses FFmpeg for media probing, decoding, audio conversion, and H.264 export. It prefers a system FFmpeg executable and otherwise uses the binary supplied by `imageio-ffmpeg`.
+KaraokeSesh uses FFmpeg for media probing, decoding, audio conversion, and H.264 export. It prefers a system FFmpeg executable and otherwise uses the binary supplied by `imageio-ffmpeg`.
 
 The Windows development environment used for version 0.1.0 had `imageio-ffmpeg` 0.6.0 and an FFmpeg 7.1 binary configured with GPL/version-3 options and libx264. That exact binary is therefore GPL-covered. Other operating systems or future package versions may supply a different build; inspect the actual binary with `ffmpeg -version` before distributing it.
 

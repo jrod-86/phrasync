@@ -13,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", default="http://127.0.0.1:5505/?desktop=1")
     args = parser.parse_args()
-    with tempfile.TemporaryDirectory(prefix="phrasync-045-qa-", ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-045-qa-", ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen([
             str(chrome_path()), "--headless=new", "--no-first-run",
             "--remote-debugging-port=9236", "--remote-allow-origins=*",

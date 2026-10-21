@@ -1,7 +1,7 @@
 import asyncio
 import socket
 
-from phrasync.server import (
+from karaokesesh.server import (
     available_port,
     browser_host,
     install_windows_transport_error_filter,

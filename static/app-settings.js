@@ -5,7 +5,7 @@
 // workspace settings.json (/api/settings/preferences) and are cached in
 // localStorage so the start page and shortcuts can read them at launch.
 
-const PREFS_KEY = "phrasync.prefs";
+const PREFS_KEY = "karaokesesh.prefs";
 const PREF_DEFAULTS = {
   exportDirectory: null, exportThreads: 0, stepSeconds: 1, imageDuration: 5,
   newAspect: "original", newResolution: 1080, newFps: 30, defaultEncoder: "cpu",

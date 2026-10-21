@@ -4,7 +4,7 @@
 // Studio or lyric panel wider and the preview smaller (or the other way round).
 // Double-click a divider to put that side back to its default width.
 
-const LAYOUT_KEY = "phrasync.layout";
+const LAYOUT_KEY = "karaokesesh.layout";
 const PANEL_LIMITS = { left: [260, 640], right: [260, 620] };
 const PREVIEW_MIN = 340;
 

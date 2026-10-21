@@ -1,9 +1,9 @@
-# Phrasync 0.4.7 — Microsoft Store update fixes
+# KaraokeSesh 0.4.7 — Microsoft Store update fixes
 
 This maintenance release fixes defects in the in-app update flow and makes update confirmations and failures clearer.
 
-- Replaced the browser confirmation showing `127.0.0.1` with an accessible, branded Phrasync dialog in English/Italian. Cancel is the safe default; Escape and Not now do not start installation.
-- Store installation requests now start on the desktop UI thread, with StoreContext associated with the actual Phrasync window. The asynchronous operation is awaited away from the UI thread so native Store consent remains responsive.
+- Replaced the browser confirmation showing `127.0.0.1` with an accessible, branded KaraokeSesh dialog in English/Italian. Cancel is the safe default; Escape and Not now do not start installation.
+- Store installation requests now start on the desktop UI thread, with StoreContext associated with the actual KaraokeSesh window. The asynchronous operation is awaited away from the UI thread so native Store consent remains responsive.
 - Correctly interpret numeric WinRT results and distinguish completion, cancellation, pending installation, low battery and Wi-Fi requirements.
 - Preserve original native errors and HRESULT codes in Diagnostics instead of discarding them behind a generic message.
 - Prevent overlapping installation requests and provide an explicit Open Microsoft Store fallback.

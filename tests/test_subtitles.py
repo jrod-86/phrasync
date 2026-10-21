@@ -1,4 +1,4 @@
-from phrasync.subtitles import (
+from karaokesesh.subtitles import (
     cues_to_srt,
     parse_lrc,
     parse_plain,

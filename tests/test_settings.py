@@ -2,7 +2,7 @@ from pathlib import Path
 
 import os
 
-from phrasync.settings import hf_token_status, remove_hf_token, save_hf_token, saved_hf_token
+from karaokesesh.settings import hf_token_status, remove_hf_token, save_hf_token, saved_hf_token
 
 
 def test_hugging_face_token_lifecycle(tmp_path, monkeypatch):
@@ -41,7 +41,7 @@ def test_assets_resolve_after_the_workspace_moves(tmp_path, monkeypatch):
     """
     import json
 
-    from phrasync import storage
+    from karaokesesh import storage
 
     uploads = tmp_path / "uploads"
     uploads.mkdir(parents=True)
@@ -71,7 +71,7 @@ def test_assets_resolve_after_the_workspace_moves(tmp_path, monkeypatch):
 
 
 def test_preferences_are_cleaned_and_merged(tmp_path):
-    from phrasync.settings import PREFERENCE_DEFAULTS, preferences, save_preferences
+    from karaokesesh.settings import PREFERENCE_DEFAULTS, preferences, save_preferences
 
     path = tmp_path / "settings.json"
     assert preferences(path) == PREFERENCE_DEFAULTS

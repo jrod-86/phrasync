@@ -1,4 +1,4 @@
-/* Original procedural ocean for Phrasync. No downloaded textures or assets.
+/* Original procedural ocean for KaraokeSesh. No downloaded textures or assets.
  * A world-space water surface and atmospheric sky share one full-screen pass.
  * Only playback time drives motion, keeping preview, seeking and export equal.
  */

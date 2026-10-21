@@ -72,7 +72,7 @@ class DesktopExportBridge:
 
         selected = self._window.create_file_dialog(
             webview.FileDialog.OPEN, directory=str(self._file_directory),
-            allow_multiple=False, file_types=("Phrasync project (*.json;*.phrasync;*.verseframe)",),
+            allow_multiple=False, file_types=("KaraokeSesh project (*.json;*.karaokesesh;*.phrasync;*.verseframe)",),
         )
         if not selected:
             return None

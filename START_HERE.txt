@@ -1,4 +1,4 @@
-PHRASYNC STUDIO: QUICK START
+KARAOKESESH STUDIO: QUICK START
 
 WINDOWS
 Double-click: run_windows.bat
@@ -14,8 +14,8 @@ Control-click run_macos.command, choose Open, and approve it.
 The first launch installs dependencies, so it can take several minutes.
 The editor opens at: http://127.0.0.1:5500
 
-Use the power button in the top bar to stop Phrasync and release the port.
-If the port is already occupied, the launcher reopens Phrasync or chooses the
+Use the power button in the top bar to stop KaraokeSesh and release the port.
+If the port is already occupied, the launcher reopens KaraokeSesh or chooses the
 next available port automatically.
 
 Full instructions: README.md

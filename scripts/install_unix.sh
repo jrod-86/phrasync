@@ -18,4 +18,4 @@ python -m pip install -r requirements.txt
 if ! python -m pip install -r requirements-ai.txt; then
   echo "Core app installed. Optional AI pack failed; retry with scripts/install_ai_unix.sh." >&2
 fi
-echo "Phrasync installation complete. Run ./run_linux.sh or ./run_macos.command"
+echo "KaraokeSesh installation complete. Run ./run_linux.sh or ./run_macos.command"

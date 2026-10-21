@@ -161,7 +161,7 @@ def test_interface_defaults_to_english_and_offers_persistent_italian_toggle():
     assert 'id="onboardingLanguageToggle"' in html
     assert 'id="onboardingDialog"' in html
     assert "Your first transcription downloads an AI model" in html
-    assert 'const LANGUAGE_KEY = "phrasync.language"' in i18n
+    assert 'const LANGUAGE_KEY = "karaokesesh.language"' in i18n
     assert 'currentLanguage = "en"' in i18n
     assert '"Start creating": "Inizia a creare"' in i18n
     assert "initI18n();" in app

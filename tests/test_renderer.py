@@ -8,11 +8,11 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from phrasync.font_utils import resolve_font_path
-from phrasync.media import decode_test, probe_duration, run_ffmpeg
-from phrasync.qa import postflight_render
-from phrasync.renderer import render_project
-from phrasync.storage import delete_asset, store_path
+from karaokesesh.font_utils import resolve_font_path
+from karaokesesh.media import decode_test, probe_duration, run_ffmpeg
+from karaokesesh.qa import postflight_render
+from karaokesesh.renderer import render_project
+from karaokesesh.storage import delete_asset, store_path
 
 
 def make_tone(path: Path, duration: float = 2.0, rate: int = 16000) -> None:

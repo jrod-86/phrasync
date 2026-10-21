@@ -1,7 +1,7 @@
 "use strict";
 
 /* ------------------------------------------------------------------ *
- * Kinetic lyric engine (mirrors phrasync/kinetic.py)
+ * Kinetic lyric engine (mirrors karaokesesh/kinetic.py)
  * ------------------------------------------------------------------ */
 
 const K = () => window.VFKinetic;

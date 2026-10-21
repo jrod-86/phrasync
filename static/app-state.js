@@ -3,9 +3,9 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const clone = value => JSON.parse(JSON.stringify(value));
-const STORAGE_KEY = "phrasync.project.v1";
-const THEME_KEY = "phrasync.theme";
-// The app shipped as VerseFrame before Phrasync; read those keys once so an
+const STORAGE_KEY = "karaokesesh.project.v1";
+const THEME_KEY = "karaokesesh.theme";
+// The app shipped as VerseFrame before KaraokeSesh; read those keys once so an
 // existing autosave and theme choice survive the rename.
 const LEGACY_STORAGE_KEY = "verseframe.project.v1";
 const LEGACY_THEME_KEY = "verseframe.theme";

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <title>Phrasync</title>
+  <title>KaraokeSesh</title>
   <link rel="icon" href="/favicon.svg" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
@@ -12,8 +12,7 @@
   <div class="home-page" id="homePage" hidden>
     <aside class="home-nav">
       <div class="brand home-brand">
-        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
-        <div><strong>PHRA<span>//</span>SYNC</strong><small>local karaoke &amp; lyric studio</small></div>
+        <img class="brand-logo" src="/static/brand/karaokesesh-banner.png" alt="KaraokeSesh" draggable="false" />
       </div>
       <nav>
         <button type="button" class="active"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
@@ -47,9 +46,8 @@
   </div>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand" aria-label="Phrasync">
-        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="7" y="11" width="19" height="5.5" rx="2.75"/><rect x="12" y="23.5" width="21" height="5.5" rx="2.75"/><rect class="ph" x="20.5" y="7" width="3" height="26" rx="1.5"/></svg>
-        <div><strong>PHRA<span>//</span>SYNC</strong><small>local karaoke &amp; lyric studio</small></div>
+      <div class="brand" aria-label="KaraokeSesh">
+        <img class="brand-logo" src="/static/brand/karaokesesh-banner.png" alt="KaraokeSesh" draggable="false" />
         <details id="projectMenu" class="project-menu app-menu"><summary>Menu</summary><nav aria-label="Menu">
           <div class="menu-group" tabindex="0"><span>File</span><div class="submenu">
             <button type="button" id="resetProjectButton">New project<kbd>Ctrl+N</kbd></button>
@@ -77,7 +75,7 @@
           </div></div>
           <div class="menu-group" tabindex="0"><span>Help</span><div class="submenu">
             <button type="button" data-menu="guide">Getting started</button>
-            <button type="button" data-menu="about">About Phrasync</button>
+            <button type="button" data-menu="about">About KaraokeSesh</button>
           </div></div>
           <hr>
           <button type="button" data-menu="settings">Settings</button>
@@ -91,7 +89,7 @@
         <button class="chip status-chip" id="engineStatus" type="button" title="Local engine status"><i></i><span>Checking engine</span></button>
         <button class="chip diagnostics-trigger" id="diagnosticsButton" type="button" title="Open support diagnostics">Diagnostics</button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Open settings">⚙</button>
-        <button class="icon-button" id="shutdownButton" type="button" title="Save and stop Phrasync" aria-label="Stop Phrasync">⏻</button>
+        <button class="icon-button" id="shutdownButton" type="button" title="Save and stop KaraokeSesh" aria-label="Stop KaraokeSesh">⏻</button>
         <button class="icon-button" id="themeToggle" type="button" title="Theme" aria-label="Choose a theme">
           <svg class="palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7.2" r="1.2"/><circle cx="15" cy="7.4" r="1.2"/></svg>
         </button>
@@ -347,7 +345,7 @@
             <label class="field sync-lyrics-field"><span>Your lyrics (optional)</span>
               <textarea id="syncLyrics" rows="4" placeholder="Paste the real lyrics, one sung line per line…"></textarea>
             </label>
-            <p class="microcopy" id="syncLyricsNote">With lyrics here, Phrasync keeps your words and line breaks and uses Whisper only to time them, so every word gets its own highlight. Labels like [Chorus] are skipped.</p>
+            <p class="microcopy" id="syncLyricsNote">With lyrics here, KaraokeSesh keeps your words and line breaks and uses Whisper only to time them, so every word gets its own highlight. Labels like [Chorus] are skipped.</p>
             <button class="button wide" id="transcribeButton" type="button">Transcribe song locally</button>
             <div class="transcription-progress" id="transcriptionProgress" hidden>
               <div><span id="transcriptionMessage">Preparing transcription…</span><output id="transcriptionPercent">0%</output></div>
@@ -600,7 +598,7 @@
         <div class="cue-list" id="cueList"></div>
 
         <div class="project-actions">
-          <input class="visually-hidden" id="projectInput" type="file" accept=".json,.phrasync,.verseframe" />
+          <input class="visually-hidden" id="projectInput" type="file" accept=".json,.karaokesesh,.phrasync,.verseframe" />
         </div>
       </aside>
     </main>
@@ -653,10 +651,10 @@
       <div class="onboarding-content">
         <div class="onboarding-icon" aria-hidden="true">◉</div>
         <h3>Your first transcription downloads an AI model</h3>
-        <p>Choose a Whisper model and select <strong>Transcribe</strong>. The first run downloads that model to this computer. Phrasync will show the download percentage, transferred size, and estimated time remaining.</p>
+        <p>Choose a Whisper model and select <strong>Transcribe</strong>. The first run downloads that model to this computer. KaraokeSesh will show the download percentage, transferred size, and estimated time remaining.</p>
         <div class="onboarding-points">
           <p><strong>It happens once per model.</strong><span>Later transcriptions start directly from the local copy.</span></p>
-          <p><strong>Your media stays local.</strong><span>Audio, lyrics, transcripts, projects, and exports are not uploaded to Phrasync.</span></p>
+          <p><strong>Your media stays local.</strong><span>Audio, lyrics, transcripts, projects, and exports are not uploaded to KaraokeSesh.</span></p>
           <p><strong>NVIDIA acceleration is automatic.</strong><span>With a compatible NVIDIA GPU and current driver, transcription uses CUDA; otherwise the interface clearly reports CPU mode.</span></p>
         </div>
         <a class="button secondary" href="https://buymeacoffee.com/jaydemks" target="_blank" rel="noopener noreferrer" data-external><span aria-hidden="true">☕</span> Buy me a coffee</a>
@@ -678,7 +676,7 @@
 
   <dialog id="settingsDialog" class="modal settings-modal">
     <form method="dialog" class="modal-card" novalidate>
-      <header><div><span class="eyebrow">PHRASYNC</span><h2>Settings</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
+      <header><div><span class="eyebrow">KARAOKESESH</span><h2>Settings</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></header>
       <nav class="set-tabs" role="tablist">
         <button type="button" data-set-tab="projects" class="active">Projects</button>
         <button type="button" data-set-tab="edit">Edit</button>
@@ -740,14 +738,14 @@
           </div>
 <section class="integration-card store-update-card">
           <div class="integration-heading"><div><strong>App updates</strong><span id="storeUpdateVersion">Checking installation…</span></div><span class="integration-badge">Microsoft Store</span></div>
-          <p>Check for new Phrasync versions and install them through Microsoft Store. Your projects remain on this computer.</p>
+          <p>Check for new KaraokeSesh versions and install them through Microsoft Store. Your projects remain on this computer.</p>
           <p id="storeUpdateMessage" role="status" aria-live="polite">Open settings to check the installation.</p>
           <div class="settings-actions"><button class="button secondary" id="storeUpdateOpen" type="button" hidden>Open Microsoft Store</button><button class="button secondary" id="storeUpdateCheck" type="button">Check for updates</button><button class="button primary" id="storeUpdateInstall" type="button" hidden>Install update</button></div>
         </section>
         </section>
         <section class="set-page" data-set-page="about" hidden>
 <section class="integration-card about-card">
-          <div class="integration-heading"><div><strong>Phrasync</strong><span id="aboutVersion">Version 0.4.5</span></div><span class="integration-badge">FREE · LOCAL</span></div>
+          <div class="integration-heading"><div><strong>KaraokeSesh</strong><span id="aboutVersion">Version 0.4.5</span></div><span class="integration-badge">FREE · LOCAL</span></div>
           <p>Local lyric-video and subtitle studio. Transcription, editing and rendering run on your computer.</p>
           <p><span>Created by</span> <strong>Giovanni De Miccoli</strong></p>
           <nav class="author-links" aria-label="Developer links">
@@ -767,8 +765,8 @@
 
   <dialog id="storeUpdateConfirm" class="modal" aria-labelledby="storeUpdateConfirmTitle" aria-describedby="storeUpdateConfirmText">
     <form method="dialog" class="modal-card">
-      <header><div><span class="eyebrow">PHRASYNC · MICROSOFT STORE</span><h2 id="storeUpdateConfirmTitle">Update Phrasync</h2></div></header>
-      <div class="settings-content"><p id="storeUpdateConfirmText">Save your project before continuing. Microsoft Store may close Phrasync to install the update. Your saved projects and media stay on this computer.</p></div>
+      <header><div><span class="eyebrow">KARAOKESESH · MICROSOFT STORE</span><h2 id="storeUpdateConfirmTitle">Update KaraokeSesh</h2></div></header>
+      <div class="settings-content"><p id="storeUpdateConfirmText">Save your project before continuing. Microsoft Store may close KaraokeSesh to install the update. Your saved projects and media stay on this computer.</p></div>
       <footer><button class="button secondary" value="cancel" autofocus>Not now</button><button class="button primary" value="install">Install update</button></footer>
     </form>
   </dialog>
@@ -797,7 +795,7 @@
           <div class="render-destination-actions">
             <button class="button secondary" id="chooseRenderDirectory" type="button">Choose folder</button>
             <button class="button secondary" id="openRenderDirectory" type="button">Open renders folder</button>
-            <button class="button secondary" id="openDefaultRenderDirectory" type="button">Open Phrasync default folder</button>
+            <button class="button secondary" id="openDefaultRenderDirectory" type="button">Open KaraokeSesh default folder</button>
           </div>
         </div>
         <section class="export-group export-range">

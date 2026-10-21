@@ -1,4 +1,4 @@
-"""Capture README screenshots from a running local Phrasync instance."""
+"""Capture README screenshots from a running local KaraokeSesh instance."""
 
 from __future__ import annotations
 
@@ -86,7 +86,7 @@ def main() -> None:
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory(prefix="phrasync-chrome-") as profile:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-chrome-") as profile:
         process = subprocess.Popen(
             [
                 str(chrome_path()),
@@ -114,7 +114,7 @@ def main() -> None:
             devtools.call("Page.navigate", {"url": args.url})
             time.sleep(2.0)
             if not devtools.evaluate("Boolean(document.querySelector('#stage'))"):
-                raise RuntimeError("Phrasync did not load")
+                raise RuntimeError("KaraokeSesh did not load")
             if devtools.evaluate("Boolean(document.querySelector('#onboardingDialog')?.open)"):
                 devtools.screenshot(args.out / "first-run.png", "#onboardingDialog .modal-card")
                 devtools.evaluate("document.querySelector('#onboardingContinue').click()")

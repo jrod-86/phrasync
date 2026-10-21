@@ -1,13 +1,13 @@
-# Phrasync: Build Notes
+# KaraokeSesh: Build Notes
 
 ## Included in this package
 
 - FastAPI local backend
 - Responsive HTML/CSS/JavaScript editor
 - Live audio-synchronised, word-level kinetic preview
-- Shared kinetic engine: `static/kinetic.js` and `phrasync/kinetic.py`
-- Local audio analysis: `phrasync/audio_analysis.py` (spectral-flux onsets, tempo, waveform)
-- Lyric-to-music alignment: `phrasync/align.py` (latency estimation, onset snapping, scoring)
+- Shared kinetic engine: `static/kinetic.js` and `karaokesesh/kinetic.py`
+- Local audio analysis: `karaokesesh/audio_analysis.py` (spectral-flux onsets, tempo, waveform)
+- Lyric-to-music alignment: `karaokesesh/align.py` (latency estimation, onset snapping, scoring)
 - Canvas timeline with waveform, onsets, beat grid, and draggable phrase/word lanes
 - Image/video asset upload and management
 - Dynamic preview visuals and matching offline render visuals
@@ -35,7 +35,7 @@ The automated test suite was run successfully in the delivery environment: **52 
   and asserts field-by-field equality with the Python implementation across
   every preset, several cues, and a grid of timestamps and beat values. Any
   change to one file must be mirrored in the other or that test fails.
-- Audio analysis caches its result per file in `~/.phrasync/analysis`, keyed by
+- Audio analysis caches its result per file in `~/.karaokesesh/analysis`, keyed by
   name, size, mtime, and analysis version. A four-minute song analyses in about
   1.5 seconds on CPU.
 - Alignment never invents words: it only shifts existing word timings, keeps them

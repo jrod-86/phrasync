@@ -58,7 +58,7 @@ def _ui_delegate(callback):
 def _start_install_on_ui(updates):
     native = getattr(_window, "native", None)
     if native is None or native.IsDisposed or not native.IsHandleCreated:
-        raise StoreUpdateUnavailable("The Phrasync desktop window is not ready. Reopen the app and try again.")
+        raise StoreUpdateUnavailable("The KaraokeSesh desktop window is not ready. Reopen the app and try again.")
     result = {}
 
     def start():
@@ -102,7 +102,7 @@ def package_identity() -> str | None:
 
 def _context() -> Any:
     if not package_identity():
-        raise StoreUpdateUnavailable("Store updates are available in the Microsoft Store installation of Phrasync.")
+        raise StoreUpdateUnavailable("Store updates are available in the Microsoft Store installation of KaraokeSesh.")
     try:
         from winrt.windows.services.store import StoreContext
         return StoreContext.get_default()

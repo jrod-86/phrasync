@@ -25,7 +25,7 @@ async function main() {
     fetch(`${endpoint}/json`).then(response => response.json()),
   ]);
   const page = pages.find(item => item.type === "page");
-  if (!page) throw new Error("Phrasync WebView page not found");
+  if (!page) throw new Error("KaraokeSesh WebView page not found");
   const system = await rpc(version.webSocketDebuggerUrl, "SystemInfo.getInfo");
   const expression = `new Promise(resolve => {
     const frames = [];

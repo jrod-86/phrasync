@@ -1,6 +1,6 @@
 """Populate an already staged portable build with the Store manifest and tiles.
 
-The stage must contain Phrasync.exe and _internal. It is not signed or installed;
+The stage must contain KaraokeSesh.exe and _internal. It is not signed or installed;
 Partner Center signs and distributes the package after certification.
 """
 
@@ -26,11 +26,11 @@ TILES = {
 
 
 def prepare(stage: Path) -> None:
-    if not (stage / "Phrasync.exe").is_file() or not (stage / "_internal").is_dir():
-        raise ValueError("The stage must already contain the portable Phrasync build")
+    if not (stage / "KaraokeSesh.exe").is_file() or not (stage / "_internal").is_dir():
+        raise ValueError("The stage must already contain the portable KaraokeSesh build")
     assets = stage / "Assets"
     assets.mkdir(exist_ok=True)
-    with Image.open(ROOT / "assets" / "Phrasync.png") as source:
+    with Image.open(ROOT / "assets" / "KaraokeSesh.png") as source:
         source = source.convert("RGBA")
         for name, (width, height) in TILES.items():
             tile = Image.new("RGBA", (width, height), (0, 0, 0, 0))

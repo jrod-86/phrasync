@@ -83,7 +83,7 @@ def main() -> int:
     parser.add_argument("--url", default="http://127.0.0.1:5500")
     args = parser.parse_args()
 
-    with tempfile.TemporaryDirectory(prefix="phrasync-matrix-", ignore_cleanup_errors=True) as profile:
+    with tempfile.TemporaryDirectory(prefix="karaokesesh-matrix-", ignore_cleanup_errors=True) as profile:
         browser = subprocess.Popen(
             [
                 str(chrome_path()), "--headless=new", "--hide-scrollbars",

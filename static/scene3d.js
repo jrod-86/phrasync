@@ -1,5 +1,5 @@
 /*
- * Phrasync 3D scene — an endless themed corridor rendered with a hand-rolled
+ * KaraokeSesh 3D scene — an endless themed corridor rendered with a hand-rolled
  * perspective projection on a 2D canvas.
  *
  * There is no mesh pipeline here on purpose: props are declarative primitive

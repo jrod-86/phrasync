@@ -34,7 +34,7 @@ def _utc_now() -> str:
 
 def _safe_title(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip()).strip("._")
-    return cleaned[:64] or "phrasync_export"
+    return cleaned[:64] or "karaokesesh_export"
 
 
 @dataclass
@@ -71,7 +71,7 @@ class JobManager:
     def __init__(self) -> None:
         self.jobs: dict[str, Job] = {}
         self.lock = threading.RLock()
-        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="phrasync-job")
+        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="karaokesesh-job")
 
     def _save(self, job: Job) -> None:
         job.updated_at = _utc_now()
@@ -79,7 +79,7 @@ class JobManager:
             json.dumps(job.public(), indent=2), encoding="utf-8"
         )
 
-    def create_render(self, project: dict[str, Any], title: str = "phrasync_export", output_dir: Path | None = None) -> Job:
+    def create_render(self, project: dict[str, Any], title: str = "karaokesesh_export", output_dir: Path | None = None) -> Job:
         if output_dir is None or not output_dir.is_dir():
             raise ValueError("Choose an export folder before starting a render")
         job = Job(id=uuid.uuid4().hex, kind="render")

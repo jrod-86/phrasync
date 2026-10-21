@@ -5,14 +5,14 @@
   const translate = value => typeof window.t === "function" ? window.t(value) : value;
   let packaged = false, available = false, busy = false;
   const states = {
-    completed: "Update installed. Restart Phrasync to use the new version.",
+    completed: "Update installed. Restart KaraokeSesh to use the new version.",
     canceled: "Update canceled. No further installation was requested. You can try again when ready.",
     "low-battery": "Connect your computer to power, then try the update again.",
     "wifi-required": "Connect to Wi-Fi, then try the update again.",
     "wifi-recommended": "Microsoft Store recommends Wi-Fi for this update. Connect to Wi-Fi and try again.",
     pending: "The update is pending in Microsoft Store. Open Microsoft Store to review it.",
     downloading: "Microsoft Store is downloading the update. Open Microsoft Store to review its progress.",
-    deploying: "Microsoft Store is installing the update. Phrasync may close.",
+    deploying: "Microsoft Store is installing the update. KaraokeSesh may close.",
     "other-error": "Microsoft Store reported an installation error. See Diagnostics or open Microsoft Store to try again."
   };
   function message(value) {
@@ -37,9 +37,9 @@
     try {
       const data = await request("/api/store-updates/status");
       packaged = Boolean(data.packaged);
-      $("storeUpdateVersion").textContent = `Phrasync ${data.version}`;
+      $("storeUpdateVersion").textContent = `KaraokeSesh ${data.version}`;
       message(packaged ? "Ready to check Microsoft Store for updates."
-        : "This is a local preview. Update checks work after installing Phrasync from Microsoft Store.");
+        : "This is a local preview. Update checks work after installing KaraokeSesh from Microsoft Store.");
     } catch (error) { packaged = false; message(error.message); }
     finally { setBusy(false); }
   }
@@ -50,7 +50,7 @@
     try {
       const data = await request("/api/store-updates/check");
       showInstall(Boolean(data.available));
-      message(data.available ? "A Phrasync update is available." : "Phrasync is up to date.");
+      message(data.available ? "A KaraokeSesh update is available." : "KaraokeSesh is up to date.");
     } catch (error) { message(error.message); $("storeUpdateOpen").hidden = false; }
     finally { setBusy(false); }
   }
@@ -70,7 +70,7 @@
       $("storeUpdateOpen").hidden = true;
       message("Microsoft Store is downloading and installing the update. The app may close.");
       const data = await request("/api/store-updates/install");
-      if (data.state === "up-to-date") { showInstall(false); message("Phrasync is up to date."); }
+      if (data.state === "up-to-date") { showInstall(false); message("KaraokeSesh is up to date."); }
       else {
         message(states[data.state] || "Microsoft Store returned an unexpected update status. See Diagnostics or open Microsoft Store.");
         if (data.state === "completed") showInstall(false);

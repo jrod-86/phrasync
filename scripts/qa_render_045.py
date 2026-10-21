@@ -6,9 +6,9 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from phrasync.renderer import render_project
-from phrasync.webgl_renderer import _DevTools
-from phrasync.media import run_ffmpeg, decode_test, probe_duration
+from karaokesesh.renderer import render_project
+from karaokesesh.webgl_renderer import _DevTools
+from karaokesesh.media import run_ffmpeg, decode_test, probe_duration
 
 
 def main():

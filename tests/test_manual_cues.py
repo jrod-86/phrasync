@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 import numpy as np
 
-from phrasync import kinetic
-from phrasync import render_typography
-from phrasync.renderer import RenderContext
-from phrasync.subtitles import normalize_cues
+from karaokesesh import kinetic
+from karaokesesh import render_typography
+from karaokesesh.renderer import RenderContext
+from karaokesesh.subtitles import normalize_cues
 
 
 ROOT = Path(__file__).resolve().parent.parent

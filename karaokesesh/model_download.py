@@ -197,7 +197,7 @@ def ensure_model(
         except BaseException as exc:  # handed back to the transcription worker
             failure.append(exc)
 
-    worker = threading.Thread(target=download, name=f"phrasync-download-{model_name}", daemon=True)
+    worker = threading.Thread(target=download, name=f"karaokesesh-download-{model_name}", daemon=True)
     worker.start()
     last_bytes = 0
     last_report = 0.0

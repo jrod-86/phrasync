@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app as app_module
-from phrasync import store_updates
+from karaokesesh import store_updates
 
 
 class FakeStore:
@@ -30,7 +30,7 @@ def test_portable_preview_never_calls_store(monkeypatch):
     monkeypatch.setattr(store_updates, "package_identity", lambda: None)
     monkeypatch.setattr(app_module, "_require_local_request", lambda request: None)
     client = TestClient(app_module.app)
-    from phrasync.config import APP_VERSION
+    from karaokesesh.config import APP_VERSION
     assert client.get("/api/store-updates/status").json() == {"version": APP_VERSION, "packaged": False}
     assert client.post("/api/store-updates/check", headers={"Origin": "http://testserver"}).status_code == 503
     assert client.post("/api/store-updates/install", headers={"Origin": "http://testserver"}).status_code == 503

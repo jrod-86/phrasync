@@ -9,10 +9,10 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from phrasync.font_utils import font_status
-from phrasync.media import ffmpeg_exe
-from phrasync.ocr import capability_status as ocr_status
-from phrasync.transcribe import capability_status as transcription_status
+from karaokesesh.font_utils import font_status
+from karaokesesh.media import ffmpeg_exe
+from karaokesesh.ocr import capability_status as ocr_status
+from karaokesesh.transcribe import capability_status as transcription_status
 
 
 def main() -> None:

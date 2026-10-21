@@ -10,12 +10,12 @@ root = Path(sys.argv[1]).resolve()
 root.mkdir(parents=True, exist_ok=True)
 os.environ["HF_HOME"] = str(root / "hf")
 os.environ["HF_XET_CACHE"] = str(root / "xet")
-os.environ["PHRASYNC_HOME"] = str(root / "workspace")
+os.environ["KARAOKESESH_HOME"] = str(root / "workspace")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fastapi.testclient import TestClient
 import app
-from phrasync import jobs
-from phrasync.model_download import ensure_model
+from karaokesesh import jobs
+from karaokesesh.model_download import ensure_model
 
 
 def transfer_only(path, model, language, vad_filter, progress, **kwargs):

@@ -197,7 +197,7 @@ function initFootage() {
     else timeline.setView(timeline.viewStart + (event.deltaX || event.deltaY) / 400 * timeline.viewSpan, timeline.viewSpan);
   }, { passive: false });
   lane.addEventListener("dblclick", () => { document.getElementById("footageSection").open = true; document.getElementById("footageSelect").focus(); });
-  document.addEventListener("phrasync-language-change", () => {
+  document.addEventListener("karaokesesh-language-change", () => {
     for (const [key, label] of [...footageClipFields, ...footageEffects]) {
       const input = document.getElementById(`${footageClipFields.some(a => a[0] === key) ? "clip" : "fx"}-${key}`);
       if (input) { input.closest("label").querySelector("span").textContent = t(label); input.setAttribute("aria-label", t(label)); }

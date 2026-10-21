@@ -2,14 +2,14 @@ from types import SimpleNamespace
 
 import numpy as np
 
-import phrasync.transcribe as transcribe_module
-from phrasync.language_map import (
+import karaokesesh.transcribe as transcribe_module
+from karaokesesh.language_map import (
     language_spans,
     parse_language_request,
     span_clip_timestamps,
     spans_from_phrases,
 )
-from phrasync.transcription_guard import (
+from karaokesesh.transcription_guard import (
     TEMPERATURE_FALLBACK,
     gauntlet_report,
     segment_diagnostic,

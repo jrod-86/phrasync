@@ -151,7 +151,7 @@ function duplicateCue(id = selectedCueId) {
   const text = card?.querySelector("textarea");
   text?.focus({ preventScroll: true }); text?.select();
 }
-document.addEventListener("phrasync-language-change", () => renderCueList({ page: cueListPage }));
+document.addEventListener("karaokesesh-language-change", () => renderCueList({ page: cueListPage }));
 async function createCuesFromLines(lines, replace) {
   lines = lines.map(line => line.trim()).filter(Boolean);
   if (!lines.length) return;

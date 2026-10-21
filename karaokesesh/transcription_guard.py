@@ -11,7 +11,7 @@ TEMPERATURE_FALLBACK = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)
 def whisper_options(language: str, vad_filter: bool) -> dict[str, Any]:
     """Return conservative decode options for one language.
 
-    Mixed-language tracks are handled a level up, in `phrasync.language_map`,
+    Mixed-language tracks are handled a level up, in `karaokesesh.language_map`,
     which splits the song into spans and calls this once per span. Every decode
     therefore runs with one language locked in and full context conditioning.
     """

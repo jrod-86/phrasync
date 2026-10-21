@@ -10,7 +10,7 @@ root.mkdir(parents=True, exist_ok=True)
 os.environ["HF_HOME"] = str(root / "hf")
 os.environ["HF_XET_CACHE"] = str(root / "xet")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from phrasync.model_download import ensure_model, downloaded_bytes, model_path
+from karaokesesh.model_download import ensure_model, downloaded_bytes, model_path
 
 events = []
 started = time.monotonic()

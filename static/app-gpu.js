@@ -3,7 +3,7 @@
 // GPU picker: lets transcription run on a chosen NVIDIA card while another is
 // busy. The choice belongs to this computer, not the project.
 
-const GPU_KEY = "phrasync.gpu";
+const GPU_KEY = "karaokesesh.gpu";
 
 function chosenGpu() {
   const value = $("#whisperGpu")?.value || "auto";

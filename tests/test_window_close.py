@@ -1,6 +1,6 @@
 import threading
 
-from phrasync.desktop_export import DesktopExportBridge
+from karaokesesh.desktop_export import DesktopExportBridge
 
 
 class FakeWindow:

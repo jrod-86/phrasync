@@ -1,29 +1,29 @@
 "use strict";
 
-const LANGUAGE_KEY = "phrasync.language";
-const ONBOARDING_KEY = "phrasync.onboarding.v2";
+const LANGUAGE_KEY = "karaokesesh.language";
+const ONBOARDING_KEY = "karaokesesh.onboarding.v2";
 
 const ITALIAN = {
   "Error code:": "Codice errore:",
   "The Microsoft Store update service is unavailable on this device.": "Il servizio di aggiornamento Microsoft Store non è disponibile su questo dispositivo.",
   "Could not check Microsoft Store for updates. Try again later or open the Store listing.": "Impossibile verificare gli aggiornamenti Microsoft Store. Riprova più tardi oppure apri la pagina dello Store.",
   "Microsoft Store could not be reached.": "Impossibile contattare Microsoft Store.",
-  "Update Phrasync": "Aggiorna Phrasync",
+  "Update KaraokeSesh": "Aggiorna KaraokeSesh",
   "Not now": "Non ora",
   "Open Microsoft Store": "Apri Microsoft Store",
-  "Save your project before continuing. Microsoft Store may close Phrasync to install the update. Your saved projects and media stay on this computer.": "Salva il progetto prima di continuare. Microsoft Store potrebbe chiudere Phrasync per installare l'aggiornamento. I progetti salvati e i file multimediali rimangono su questo computer.",
+  "Save your project before continuing. Microsoft Store may close KaraokeSesh to install the update. Your saved projects and media stay on this computer.": "Salva il progetto prima di continuare. Microsoft Store potrebbe chiudere KaraokeSesh per installare l'aggiornamento. I progetti salvati e i file multimediali rimangono su questo computer.",
   "Update canceled. No further installation was requested. You can try again when ready.": "Aggiornamento annullato. Non sono state richieste altre installazioni. Puoi riprovare quando vuoi.",
   "Connect your computer to power, then try the update again.": "Collega il computer all'alimentazione, poi riprova l'aggiornamento.",
   "Connect to Wi-Fi, then try the update again.": "Connettiti al Wi-Fi, poi riprova l'aggiornamento.",
   "Microsoft Store recommends Wi-Fi for this update. Connect to Wi-Fi and try again.": "Microsoft Store consiglia il Wi-Fi per questo aggiornamento. Connettiti al Wi-Fi e riprova.",
   "The update is pending in Microsoft Store. Open Microsoft Store to review it.": "L'aggiornamento è in attesa su Microsoft Store. Apri Microsoft Store per verificarlo.",
   "Microsoft Store is downloading the update. Open Microsoft Store to review its progress.": "Microsoft Store sta scaricando l'aggiornamento. Apri Microsoft Store per verificare l'avanzamento.",
-  "Microsoft Store is installing the update. Phrasync may close.": "Microsoft Store sta installando l'aggiornamento. Phrasync potrebbe chiudersi.",
+  "Microsoft Store is installing the update. KaraokeSesh may close.": "Microsoft Store sta installando l'aggiornamento. KaraokeSesh potrebbe chiudersi.",
   "Microsoft Store reported an installation error. See Diagnostics or open Microsoft Store to try again.": "Microsoft Store ha segnalato un errore d'installazione. Consulta la Diagnostica o apri Microsoft Store per riprovare.",
   "Microsoft Store returned an unexpected update status. See Diagnostics or open Microsoft Store.": "Microsoft Store ha restituito uno stato inatteso. Consulta la Diagnostica o apri Microsoft Store.",
   "Open Microsoft Store from the Windows Start menu.": "Apri Microsoft Store dal menu Start di Windows.",
   "Microsoft Store could not install the update. See Diagnostics for details or open Microsoft Store and try again.": "Microsoft Store non ha potuto installare l'aggiornamento. Consulta la Diagnostica per i dettagli oppure apri Microsoft Store e riprova.",
-  "The Phrasync desktop window is not ready. Reopen the app and try again.": "La finestra desktop di Phrasync non è pronta. Riapri l'app e riprova.",
+  "The KaraokeSesh desktop window is not ready. Reopen the app and try again.": "La finestra desktop di KaraokeSesh non è pronta. Riapri l'app e riprova.",
   "An update installation is already in progress.": "È già in corso l'installazione di un aggiornamento.",
   "Video rate control": "Controllo bitrate video",
   "Automatic quality (CRF)": "Qualità automatica (CRF)",
@@ -38,18 +38,18 @@ const ITALIAN = {
   "Scroll timeline": "Scorri la timeline",
   "App updates": "Aggiornamenti dell'app",
   "Checking installation…": "Verifica dell'installazione…",
-  "Check for new Phrasync versions and install them through Microsoft Store. Your projects remain on this computer.": "Controlla le nuove versioni di Phrasync e installale tramite Microsoft Store. I progetti rimangono su questo computer.",
+  "Check for new KaraokeSesh versions and install them through Microsoft Store. Your projects remain on this computer.": "Controlla le nuove versioni di KaraokeSesh e installale tramite Microsoft Store. I progetti rimangono su questo computer.",
   "Open settings to check the installation.": "Apri le impostazioni per verificare l'installazione.",
   "Check for updates": "Controlla aggiornamenti",
   "Install update": "Installa aggiornamento",
-  "This is a local preview. Update checks work after installing Phrasync from Microsoft Store.": "Questa è una versione di prova locale. Il controllo degli aggiornamenti funzionerà dopo l'installazione da Microsoft Store.",
+  "This is a local preview. Update checks work after installing KaraokeSesh from Microsoft Store.": "Questa è una versione di prova locale. Il controllo degli aggiornamenti funzionerà dopo l'installazione da Microsoft Store.",
   "Ready to check Microsoft Store for updates.": "Pronto a cercare aggiornamenti su Microsoft Store.",
   "Checking Microsoft Store…": "Controllo di Microsoft Store…",
-  "A Phrasync update is available.": "È disponibile un aggiornamento di Phrasync.",
-  "Phrasync is up to date.": "Phrasync è aggiornato.",
-  "Install this Phrasync update now? Save your project first; the app may close during installation.": "Vuoi installare ora l'aggiornamento di Phrasync? Salva prima il progetto: l'app potrebbe chiudersi durante l'installazione.",
+  "A KaraokeSesh update is available.": "È disponibile un aggiornamento di KaraokeSesh.",
+  "KaraokeSesh is up to date.": "KaraokeSesh è aggiornato.",
+  "Install this KaraokeSesh update now? Save your project first; the app may close during installation.": "Vuoi installare ora l'aggiornamento di KaraokeSesh? Salva prima il progetto: l'app potrebbe chiudersi durante l'installazione.",
   "Microsoft Store is downloading and installing the update. The app may close.": "Microsoft Store sta scaricando e installando l'aggiornamento. L'app potrebbe chiudersi.",
-  "Update installed. Restart Phrasync to use the new version.": "Aggiornamento installato. Riavvia Phrasync per usare la nuova versione.",
+  "Update installed. Restart KaraokeSesh to use the new version.": "Aggiornamento installato. Riavvia KaraokeSesh per usare la nuova versione.",
   "Diagnostics": "Diagnostica",
   "Open support diagnostics": "Apri la diagnostica di supporto",
   "LOCAL SUPPORT": "SUPPORTO LOCALE",
@@ -99,7 +99,7 @@ const ITALIAN = {
   "MP4/WebM · up to 16 GB · long-form video": "MP4/WebM · fino a 16 GB · video lunghi",
   "Importing": "Importazione",
   "Checking media…": "Verifica del file…",
-  "Import interrupted. Check that Phrasync is still running and try again.": "Importazione interrotta. Verifica che Phrasync sia aperto e riprova.",
+  "Import interrupted. Check that KaraokeSesh is still running and try again.": "Importazione interrotta. Verifica che KaraokeSesh sia aperto e riprova.",
   "Import cancelled.": "Importazione annullata.",
   "The local server returned an invalid import response.": "Il server locale ha restituito una risposta di importazione non valida.",
   "local karaoke & lyric studio": "studio locale per karaoke e lyric video",
@@ -109,8 +109,8 @@ const ITALIAN = {
   "Local engine status": "Stato motore locale",
   "Settings": "Impostazioni",
   "Open settings": "Apri impostazioni",
-  "Save and stop Phrasync": "Salva e chiudi Phrasync",
-  "Stop Phrasync": "Chiudi Phrasync",
+  "Save and stop KaraokeSesh": "Salva e chiudi KaraokeSesh",
+  "Stop KaraokeSesh": "Chiudi KaraokeSesh",
   "Toggle light/dark theme": "Cambia tema chiaro/scuro",
   "Toggle theme": "Cambia tema",
   "Critic check": "Controllo qualità",
@@ -291,7 +291,7 @@ const ITALIAN = {
   "Loading export folder…": "Caricamento cartella di esportazione…",
   "Choose folder": "Scegli cartella",
   "Open renders folder": "Apri cartella dei video esportati",
-  "Open Phrasync default folder": "Apri cartella predefinita di Phrasync",
+  "Open KaraokeSesh default folder": "Apri cartella predefinita di KaraokeSesh",
   "Start export": "Avvia esportazione",
   "Choose a folder and start export.": "Scegli una cartella e avvia l'esportazione.",
   "Browser Downloads folder": "Cartella Download del browser",
@@ -303,11 +303,11 @@ const ITALIAN = {
   "Your first transcription downloads an AI model": "La prima trascrizione scarica un modello AI",
   "Choose a Whisper model and select": "Scegli un modello Whisper e premi",
   "Transcribe": "Trascrivi",
-  ". The first run downloads that model to this computer. Phrasync will show the download percentage, transferred size, and estimated time remaining.": ". Al primo utilizzo il modello viene scaricato su questo computer. Phrasync mostrerà percentuale, dimensione trasferita e tempo rimanente stimato.",
+  ". The first run downloads that model to this computer. KaraokeSesh will show the download percentage, transferred size, and estimated time remaining.": ". Al primo utilizzo il modello viene scaricato su questo computer. KaraokeSesh mostrerà percentuale, dimensione trasferita e tempo rimanente stimato.",
   "It happens once per model.": "Succede una sola volta per modello.",
   "Later transcriptions start directly from the local copy.": "Le trascrizioni successive partono direttamente dalla copia locale.",
   "Your media stays local.": "I tuoi file restano locali.",
-  "Audio, lyrics, transcripts, projects, and exports are not uploaded to Phrasync.": "Audio, testi, trascrizioni, progetti ed esportazioni non vengono caricati su Phrasync.",
+  "Audio, lyrics, transcripts, projects, and exports are not uploaded to KaraokeSesh.": "Audio, testi, trascrizioni, progetti ed esportazioni non vengono caricati su KaraokeSesh.",
   "NVIDIA acceleration is automatic.": "L'accelerazione NVIDIA è automatica.",
   "With a compatible NVIDIA GPU and current driver, transcription uses CUDA; otherwise the interface clearly reports CPU mode.": "Con una GPU NVIDIA compatibile e driver aggiornati, la trascrizione usa CUDA; altrimenti l'interfaccia indica chiaramente la modalità CPU.",
   "Start creating": "Inizia a creare",
@@ -325,7 +325,7 @@ const ITALIAN = {
 };
 
 let currentLanguage = "en";
-// The ten most spoken languages, plus Italian (Phrasync's original second language).
+// The ten most spoken languages, plus Italian (KaraokeSesh's original second language).
 // Each one's strings live in static/i18n/<code>.json, keyed by the English text.
 const LANGUAGES = { en: "English", zh: "中文 (简体)", hi: "हिन्दी", es: "Español", ar: "العربية", fr: "Français",
   bn: "বাংলা", pt: "Português", ru: "Русский", id: "Bahasa Indonesia", it: "Italiano" };
@@ -347,8 +347,8 @@ async function loadLanguage(language) {
 
 function translateTextNode(node, language) {
   if (!node.parentElement || node.parentElement.closest("script,style,[data-no-i18n]")) return;
-  if (node.__phrasyncEnglish === undefined) node.__phrasyncEnglish = node.nodeValue;
-  const original = node.__phrasyncEnglish;
+  if (node.__karaokeseshEnglish === undefined) node.__karaokeseshEnglish = node.nodeValue;
+  const original = node.__karaokeseshEnglish;
   const trimmed = original.trim();
   if (!trimmed) return;
   const translated = translateExact(trimmed, language);
@@ -369,9 +369,9 @@ function translateElement(root = document, language = currentLanguage) {
       const value = element.getAttribute(attribute);
       if (!value) continue;
       const key = {
-        title: "phrasyncEnglishTitle",
-        "aria-label": "phrasyncEnglishAriaLabel",
-        placeholder: "phrasyncEnglishPlaceholder",
+        title: "karaokeseshEnglishTitle",
+        "aria-label": "karaokeseshEnglishAriaLabel",
+        placeholder: "karaokeseshEnglishPlaceholder",
       }[attribute];
       if (!element.dataset[key]) element.dataset[key] = value;
       element.setAttribute(attribute, translateExact(element.dataset[key], language));
@@ -394,7 +394,7 @@ async function setInterfaceLanguage(language) {
   document.documentElement.lang = currentLanguage;
   translateElement(document, currentLanguage);
   updateLanguageButtons();
-  document.dispatchEvent(new CustomEvent("phrasync-language-change", { detail: currentLanguage }));
+  document.dispatchEvent(new CustomEvent("karaokesesh-language-change", { detail: currentLanguage }));
 }
 
 function formatByteCount(value) {

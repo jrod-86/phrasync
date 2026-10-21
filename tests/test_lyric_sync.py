@@ -4,11 +4,11 @@ import json
 import time
 from pathlib import Path
 
-import phrasync.jobs as jobs_module
-from phrasync.jobs import JobManager
-from phrasync.kinetic import has_genuine_word_timing
-from phrasync.lyric_sync import lyric_lines, sync_lyrics
-from phrasync.subtitles import parse_lrc, parse_lyrics_file, parse_srt
+import karaokesesh.jobs as jobs_module
+from karaokesesh.jobs import JobManager
+from karaokesesh.kinetic import has_genuine_word_timing
+from karaokesesh.lyric_sync import lyric_lines, sync_lyrics
+from karaokesesh.subtitles import parse_lrc, parse_lyrics_file, parse_srt
 
 
 def _heard(*words: tuple[str, float]) -> list[dict]:
